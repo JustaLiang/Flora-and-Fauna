@@ -17,7 +17,7 @@ contract Laboratory is Garden {
     function extractCytokeninFrom(uint plantID) external {
         require(msg.sender == ownerOf(plantID),
                 "Laboratory: caller is not the owner of this plant");
-        int prosperity = plants[plantID].prosperity;
+        int prosperity = _plants[plantID].prosperity;
         require(prosperity >= 0,
                 "Laboratory: only extract cytokenins from healthy plants");
         _burn(plantID);
@@ -27,7 +27,7 @@ contract Laboratory is Garden {
     function recoverPhototropism(uint plantID) external {
         require(msg.sender == ownerOf(plantID),
                 "Laboratory: caller is not the owner of this plant");
-        Plant storage sample = plants[plantID];
+        Plant storage sample = _plants[plantID];
         int height = sample.height;
         priceFeed = AggregatorV3Interface(sample.gardenAddress);
         (,int price,,,) = priceFeed.latestRoundData();

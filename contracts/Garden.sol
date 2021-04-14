@@ -8,7 +8,8 @@ import "@OpenZeppelin/contracts/access/Ownable.sol";
 contract Garden is ERC721, Ownable {
  
     uint public plantCounter;
-    int public decimals;
+    uint public decimals;
+    int private sig;
     address public laboratoryAddress;
     AggregatorV3Interface private priceFeed;
 
@@ -19,10 +20,9 @@ contract Garden is ERC721, Ownable {
         int         prosperity;
         uint        mutationCount;
         uint        recoveryCount;
-        uint        startTime;
     }
 
-    Plant[] public plants;
+    Plant[] internal _plants;
 
     event GrowthRecord( uint indexed plantID,
                         address indexed gardenAddress,
@@ -33,44 +33,53 @@ contract Garden is ERC721, Ownable {
     constructor() ERC721("Cytokenin Plant", "CKP") {
         plantCounter = 0;
         decimals = 4;
+        sig = int(10**decimals);
+    }
+
+    function checkPlant(uint plantID) public view returns (Plant memory) {
+        require(_exists(plantID),
+                "Garden: plant does not exist");
+        return _plants[plantID];
     }
 
     function seed(address gardenAddress_, bool phototropism_) external {
         priceFeed = AggregatorV3Interface(gardenAddress_);
-        (,int price,,uint timeStamp,) = priceFeed.latestRoundData();
-        plants.push(Plant(gardenAddress_, phototropism_, price, 0, 0, 0, timeStamp));
+        (,int price,,,) = priceFeed.latestRoundData();
+        _plants.push(Plant(gardenAddress_, phototropism_, price, 0, 0, 0));
         _mint(msg.sender, plantCounter);
 
         emit GrowthRecord(plantCounter, gardenAddress_, phototropism_, price, 0);
         plantCounter += 1;
     }
     
-    function mutate(uint plantID_) external {
-        require(ownerOf(plantID_) == msg.sender,
+    function changePhototropism(uint plantID) external {
+        require(_exists(plantID),
+                "Garden: plant does not exist");
+        require(ownerOf(plantID) == msg.sender,
                 "Garden: caller is not the owner of this plant");
 
-        Plant storage sample = plants[plantID_];
+        Plant storage sample = _plants[plantID];
         address gardenAddress = sample.gardenAddress;
         priceFeed = AggregatorV3Interface(gardenAddress);
         (,int price,,,) = priceFeed.latestRoundData();
         int change;
         bool phototropism;
         if (sample.phototropism) {
-            change = price*decimals/sample.height - decimals;
+            change = price*sig/sample.height - sig;
             phototropism = false;
         }
         else {
-            change = decimals - price*decimals/sample.height;
+            change = sig - price*sig/sample.height;
             phototropism = true;
         }
         sample.phototropism = phototropism;
         sample.height = price;
-        int prosperity = (decimals + sample.prosperity)*(decimals + change);
-        prosperity = prosperity/decimals - decimals;
+        int prosperity = (sig + sample.prosperity)*(sig + change);
+        prosperity = prosperity/sig - sig;
         sample.prosperity = prosperity;
         sample.mutationCount += 1;
 
-        emit GrowthRecord(plantID_, gardenAddress, phototropism, price, prosperity);
+        emit GrowthRecord(plantID, gardenAddress, phototropism, price, prosperity);
     }
 
     function getPlantsByOwner(address owner) external view returns(uint[] memory) {
