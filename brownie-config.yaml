@@ -1,0 +1,44 @@
+# using chainlink and OpenZeppelin
+dependencies:
+  - smartcontractkit/chainlink-brownie-contracts@1.0.2
+  - OpenZeppelin/openzeppelin-contracts@4.0.0
+
+# compiler settings
+compiler:
+  solc:
+    remappings:
+      - '@chainlink=smartcontractkit/chainlink-brownie-contracts@1.0.2'
+      - '@OpenZeppelin=OpenZeppelin/openzeppelin-contracts@4.0.0'
+
+# exclude SafeMath when calculating test coverage
+reports:
+  exclude_contracts:
+    - ERC20
+    - ERC721
+    - Ownable
+    - MockV3Aggregator
+
+# automatically fetch contract sources from Etherscan
+autofetch_sources: True
+# environment settings
+dotenv: .env
+# change to trye to verify smart contracts
+verify: False
+
+# set a custom mnemonic for the development network
+networks:
+  default: development
+  kovan:
+    eth_usd_price_feed: '0x9326BFA02ADD2366b30bacB125260Af641031331'
+    uni_usd_price_feed: '0xDA5904BdBfB4EF12a3955aEcA103F51dc87c7C39'
+    comp_usd_price_feed: '0xECF93D14d25E02bA2C13698eeDca9aA98348EFb6'
+    link_usd_price_feed: '0x396c5E36DD0a0F5a5D33dae44368D4193f69a1F0'
+  rinkeby:
+    eth_usd_price_feed: '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e'
+    uni_usd_price_feed: '0xcf0f51ca2cDAecb464eeE4227f5295F2384F84ED' # actually BNB/USD price feed
+    comp_usd_price_feed: '0xE96C4407597CD507002dF88ff6E0008AB41266Ee' # actually SNX/USD price feed
+    link_usd_price_feed: '0xd8bD0a1cB028a31AA859A21A3758685a95dE4623'
+
+# wallets
+wallets:
+  from_key: ${PRIVATE_KEY}
