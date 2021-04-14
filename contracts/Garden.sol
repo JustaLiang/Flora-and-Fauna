@@ -8,7 +8,7 @@ import "@OpenZeppelin/contracts/access/Ownable.sol";
 contract Garden is ERC721, Ownable {
  
     uint public plantCounter;
-    uint public decimals;
+    int public decimals;
     address public laboratoryAddress;
     AggregatorV3Interface private priceFeed;
 
@@ -49,25 +49,26 @@ contract Garden is ERC721, Ownable {
         require(ownerOf(plantID_) == msg.sender,
                 "Garden: caller is not the owner of this plant");
 
-        address gardenAddress = plants[plantID_].gardenAddress;
+        Plant storage sample = plants[plantID_];
+        address gardenAddress = sample.gardenAddress;
         priceFeed = AggregatorV3Interface(gardenAddress);
         (,int price,,,) = priceFeed.latestRoundData();
         int change;
         bool phototropism;
-        if (plants[plantID_].phototropism) {
-            change = price*decimals/plants[plantID_].height - decimals;
+        if (sample.phototropism) {
+            change = price*decimals/sample.height - decimals;
             phototropism = false;
         }
         else {
-            change = decimals - price*decimals/plants[plantID_].height;
+            change = decimals - price*decimals/sample.height;
             phototropism = true;
         }
-        plants[plantID_].phototropism = phototropism;
-        plants[plantID_].height = price;
-        int prosperity = (decimals + plants[plantID_].prosperity)*(decimals + change);
+        sample.phototropism = phototropism;
+        sample.height = price;
+        int prosperity = (decimals + sample.prosperity)*(decimals + change);
         prosperity = prosperity/decimals - decimals;
-        plants[plantID_].prosperity = prosperity;
-        plants[plantID_].mutationCount += 1;
+        sample.prosperity = prosperity;
+        sample.mutationCount += 1;
 
         emit GrowthRecord(plantID_, gardenAddress, phototropism, price, prosperity);
     }
@@ -84,12 +85,4 @@ contract Garden is ERC721, Ownable {
         }
         return plantIDList;
     }
-
-    function changePhototropism(uint plantID) external {
-        require(msg.sender == laboratoryAddress,
-                "Garden: this method only call by Laboratory");
-        plants[plantID].phototropism = !plants[plantID].phototropism;
-        plants[plantID].recoveryCount += 1;
-    }
-
 }

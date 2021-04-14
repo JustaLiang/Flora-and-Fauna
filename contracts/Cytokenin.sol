@@ -23,7 +23,7 @@ contract Cytokenin is ERC20, Ownable {
 
     function setLaboratoryAddress(address laboratoryAddress_) external onlyOwner {
         require(!ifSetLaboratoryAddress,
-                "Cytokenin: address of Laboratory have been set");
+                "Cytokenin: address of Laboratory has been set");
         laboratoryAddress = laboratoryAddress_;
         ifSetLaboratoryAddress = true;
     }

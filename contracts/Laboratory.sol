@@ -1,42 +1,44 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./GardenInterface.sol";
 import "./CytokeninInterface.sol";
+import "./Garden.sol";
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 
-contract Laboratory {
+contract Laboratory is Garden {
 
-    GardenInterface private garden;
     CytokeninInterface private cytokenin;
     AggregatorV3Interface private priceFeed;
 
-    constructor(address gardenAddress,
-                address cytokeninAddress) {
-        garden = GardenInterface(gardenAddress);
+    constructor(address cytokeninAddress) {
         cytokenin = CytokeninInterface(cytokeninAddress);
     }
 
     function extractCytokeninFrom(uint plantID) external {
-        require(msg.sender == garden.ownerOf(plantID),
+        require(msg.sender == ownerOf(plantID),
                 "Laboratory: caller is not the owner of this plant");
-        garden.transferFrom(msg.sender, address(this), plantID);
-        (,,,int prosperity,,,) = garden.plants(plantID);
-        uint prosp = uint(prosperity);
-        cytokenin.mint(msg.sender, prosp);
+        int prosperity = plants[plantID].prosperity;
+        require(prosperity >= 0,
+                "Laboratory: only extract cytokenins from healthy plants");
+        _burn(plantID);
+        cytokenin.mint(msg.sender, uint(prosperity));
     }
 
-    function changePhototropism(uint plantID) external {
-        require(msg.sender == garden.ownerOf(plantID),
+    function recoverPhototropism(uint plantID) external {
+        require(msg.sender == ownerOf(plantID),
                 "Laboratory: caller is not the owner of this plant");
-        (address gardenAddr,bool phototropism,int height,,,,) = garden.plants(plantID);
-        priceFeed = AggregatorV3Interface(gardenAddr);
+        Plant storage sample = plants[plantID];
+        int height = sample.height;
+        priceFeed = AggregatorV3Interface(sample.gardenAddress);
         (,int price,,,) = priceFeed.latestRoundData();
-        if (phototropism) {
+        bool phototropism;
+        if (sample.phototropism) {
             price = height - price;
+            phototropism = false;
         }
         else {
             price = price - height;
+            phototropism = true;
         }
         uint cost;
         if (price < 0) {
@@ -46,6 +48,7 @@ contract Laboratory {
             cost = uint(price);
         }
         cytokenin.burn(msg.sender, cost);
-        garden.changePhototropism(plantID);
+        sample.phototropism = phototropism;
+        sample.recoveryCount += 1;
     }
 }
