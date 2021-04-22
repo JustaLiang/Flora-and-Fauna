@@ -18,7 +18,7 @@ contract Garden is ERC721, Ownable {
         bool        phototropism;
         int         height;
         int         prosperity;
-        uint        mutationCount;
+        uint        changeCount;
         uint        recoveryCount;
     }
 
@@ -36,10 +36,22 @@ contract Garden is ERC721, Ownable {
         sig = int(10**decimals);
     }
 
-    function checkPlant(uint plantID) public view returns (Plant memory) {
+    modifier checkOperator(uint plantID) {
+        require(_isApprovedOrOwner(msg.sender, plantID),
+                "Garden: caller can't access this plant");
+        _;
+    }
+
+    function showPlant(uint plantID) public view returns (Plant memory) {
         require(_exists(plantID),
                 "Garden: plant does not exist");
         return _plants[plantID];
+    }
+
+    function isAlive(uint plantID) public view returns (bool) {
+        require(_exists(plantID),
+                "Garden: plant does not exist");
+        return _plants[plantID].height > 0;
     }
 
     function seed(address gardenAddress_, bool phototropism_) external {
@@ -52,13 +64,11 @@ contract Garden is ERC721, Ownable {
         plantCounter += 1;
     }
     
-    function changePhototropism(uint plantID) external {
-        require(_exists(plantID),
-                "Garden: plant does not exist");
-        require(ownerOf(plantID) == msg.sender,
-                "Garden: caller is not the owner of this plant");
-
+    function changePhototropism(uint plantID) public checkOperator(plantID) {
         Plant storage sample = _plants[plantID];
+        require(isAlive(plantID),
+                "Garden: plant is not alive");
+
         address gardenAddress = sample.gardenAddress;
         priceFeed = AggregatorV3Interface(gardenAddress);
         (,int price,,,) = priceFeed.latestRoundData();
@@ -77,7 +87,7 @@ contract Garden is ERC721, Ownable {
         int prosperity = (sig + sample.prosperity)*(sig + change);
         prosperity = prosperity/sig - sig;
         sample.prosperity = prosperity;
-        sample.mutationCount += 1;
+        sample.changeCount += 1;
 
         emit GrowthRecord(plantID, gardenAddress, phototropism, price, prosperity);
     }
