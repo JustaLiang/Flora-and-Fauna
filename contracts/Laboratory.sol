@@ -23,10 +23,10 @@ contract Laboratory is Garden {
         require(!isAlive(plantID),
                 "Laboratory: plant is alive");
         int prosperity = _plants[plantID].prosperity;
-        require(prosperity >= 0,
-                "Laboratory: only extract cytokenins from healthy plants");
+        if (prosperity > 0) {
+            cytokenin.mint(msg.sender, uint(prosperity));
+        }
         _burn(plantID);
-        cytokenin.mint(msg.sender, uint(prosperity));
     }
 
     function recoverPhototropism(uint plantID) external checkOperator(plantID) {
