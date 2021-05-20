@@ -1,3 +1,7 @@
+# change the build directory to be within react's scope
+project_structure:
+    build: client/src/artifacts
+
 # using chainlink and OpenZeppelin
 dependencies:
   - smartcontractkit/chainlink-brownie-contracts@1.0.2
@@ -28,6 +32,9 @@ verify: False
 # set a custom mnemonic for the development network
 networks:
   default: development
+  development:
+    cmd_settings:
+      mnemonic: hill law jazz limb penalty escape public dish stand bracket blue jar
   kovan:
     eth_usd_price_feed: '0x9326BFA02ADD2366b30bacB125260Af641031331'
     btc_usd_price_feed: '0x6135b13325bfC4B00278B4abC5e20bbce2D6580e'
@@ -38,6 +45,9 @@ networks:
     btc_usd_price_feed: '0xECe365B379E1dD183B20fc5f022230C044d51404'
     bnb_usd_price_feed: '0xcf0f51ca2cDAecb464eeE4227f5295F2384F84ED'
     link_usd_price_feed: '0xd8bD0a1cB028a31AA859A21A3758685a95dE4623'
+
+# enable output of development artifacts to load with react
+dev_deployment_artifacts: true
 
 # wallets
 wallets:
