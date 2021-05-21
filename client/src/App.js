@@ -11,8 +11,11 @@ class App extends React.Component {
         web3: null,
         accounts: null,
         chainid: null,
+        cytokenin: null,
         laboratory: null,
+        ckDecimals: 0,
         //--- display
+        yourCytokenin: 0,
         yourPlants: {},
         plantInfo: [],
         //--- input
@@ -59,25 +62,28 @@ class App extends React.Component {
             return
         }
 
-        const laboratory = await this.loadContract("dev", "Laboratory", 0)
+        const cytokenin = await this.loadContract("dev", "Cytokenin")
+        const laboratory = await this.loadContract("dev", "Laboratory")
+        const ckDecimals = await cytokenin.methods.decimals().call()
 
-        if (!laboratory) {
+        if (!cytokenin || !laboratory) {
             return
         }
 
-        this.setState({ laboratory })
+        this.setState({ cytokenin, laboratory, ckDecimals })
 
+        await this.getCytokeninBalance()
         await this.getPlantList()
     }
 
-    loadContract = async (chain, contractName, index) => {
+    loadContract = async (chain, contractName) => {
         // Load a deployed contract instance into a web3 contract object
         const { web3 } = this.state
 
         // Get the address of the most recent deployment from the deployment map
         let address
         try {
-            address = map[chain][contractName][index]
+            address = map[chain][contractName][0]
         } catch (e) {
             console.log(`Couldn't find any deployed contract "${contractName}" on the chain "${chain}".`)
             return undefined
@@ -93,6 +99,14 @@ class App extends React.Component {
         }
 
         return new web3.eth.Contract(contractArtifact.abi, address)
+    }
+
+    getCytokeninBalance = async () => {
+        const {accounts, cytokenin, ckDecimals} = this.state
+        if (accounts.length == 0) {
+            return
+        }
+        this.setState({ yourCytokenin: ((await cytokenin.methods.balanceOf(accounts[0]).call())/10**ckDecimals).toFixed(2) })
     }
 
     getPlantList = async () => {
@@ -162,8 +176,9 @@ class App extends React.Component {
 
     render() {
         const {
-            web3, accounts, chainid, laboratory,
-            yourPlants, plantInfo,
+            web3, accounts, chainid,
+            cytokenin, laboratory,
+            yourCytokenin, yourPlants, plantInfo,
             aggregatorIndex, queryPlantID, changePlantID
         } = this.state
 
@@ -175,7 +190,7 @@ class App extends React.Component {
             return <div>Wrong Network! Switch to your local RPC "Localhost: 8545" in your Web3 provider (e.g. Metamask)</div>
         }
 
-        if (!laboratory) {
+        if (!cytokenin || !laboratory) {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
@@ -193,6 +208,7 @@ class App extends React.Component {
             }
 
             <h1>Crypto Gardener</h1>
+            <div> <h3>your cytokenin</h3>{yourCytokenin}</div>
             <div> <h3>your plants</h3>{plantList}</div>
             <br/>
             <form onSubmit={(e) => this.plantSeed(e)}>
