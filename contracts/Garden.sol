@@ -23,7 +23,7 @@ contract Garden is ERC721, Ownable {
         uint        recoveryCount;
     }
 
-    Plant[] public plants;
+    Plant[] private plants;
 
     event GrowthRecord( uint indexed plantID,
                         address indexed aggregator,
@@ -42,6 +42,10 @@ contract Garden is ERC721, Ownable {
         require(_isApprovedOrOwner(msg.sender, plantID),
                 "Garden: gardener can't access this plant");
         _;
+    }
+
+    function showPlant(uint plantID) public view returns (Plant memory) {
+        return plants[plantID];
     }
 
     function seed(address aggregator_, bool directionUp_) external {

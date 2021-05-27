@@ -25,4 +25,9 @@ def deploy_garden():
 
 def main():
     ck, gd = deploy_garden()
+    if network.show_active() == "development":
+        dev = get_dev_account()
+        justa = accounts.at("0xA77D84DD50AC12A5C98846e673B29C5Ddb079F50", force=True)
+        dev.transfer(justa, "50 ether")
+        ck.transfer(justa, 77*10**18, {"from":dev})
     return ck, gd, brownie.run("aggregators")

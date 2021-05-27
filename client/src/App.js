@@ -12,14 +12,14 @@ class App extends React.Component {
         accounts: null,
         chainid: null,
         cytokenin: null,
-        laboratory: null,
+        garden: null,
         ckDecimals: 0,
         //--- display
         yourCytokenin: 0,
         yourPlants: {},
         plantInfo: [],
         //--- input
-        seedForLong : true,
+        directionUp : true,
         aggregatorIndex: 0,
         queryPlantID: 0,
         changePlantID: 0,
@@ -64,14 +64,14 @@ class App extends React.Component {
         }
 
         const cytokenin = await this.loadContract("dev", "Cytokenin")
-        const laboratory = await this.loadContract("dev", "Laboratory")
+        const garden = await this.loadContract("dev", "Garden")
         const ckDecimals = await cytokenin.methods.decimals().call()
 
-        if (!cytokenin || !laboratory) {
+        if (!cytokenin || !garden) {
             return
         }
 
-        this.setState({ cytokenin, laboratory, ckDecimals })
+        this.setState({ cytokenin, garden, ckDecimals })
     
         await this.getCytokeninBalance()
         await this.getPlantList()
@@ -111,21 +111,21 @@ class App extends React.Component {
     }
 
     getPlantList = async () => {
-        const { accounts, laboratory } = this.state
+        const { accounts, garden } = this.state
         if (accounts.length == 0) {
             return
         }
-        const plantIDs = await laboratory.methods.getPlantsByOwner(accounts[0]).call()
+        const plantIDs = await garden.methods.getPlantsByOwner(accounts[0]).call()
         let yourPlants = {}
         for (let id of plantIDs)
         {
-            yourPlants[id] = await laboratory.methods.showPlant(id).call()
+            yourPlants[id] = await garden.methods.showPlant(id).call()
         }
         this.setState({ yourPlants })
     }
 
     plantSeed = async (e) => {
-        const { accounts, laboratory, seedForLong, aggregatorIndex } = this.state
+        const { accounts, garden, directionUp, aggregatorIndex } = this.state
         e.preventDefault()
         const aggs = map["dev"]["MockV3Aggregator"]
         if (aggregatorIndex >= aggs.length || aggregatorIndex < 0) {
@@ -133,7 +133,7 @@ class App extends React.Component {
             return
         }
         const aggregator = aggs[aggregatorIndex]
-        await laboratory.methods.seed(aggregator, seedForLong).send({ from: accounts[0] })
+        await garden.methods.seed(aggregator, directionUp).send({ from: accounts[0] })
             .on("receipt", async () => {
                 await this.getPlantList()
             })
@@ -143,7 +143,7 @@ class App extends React.Component {
     }
 
     showCertainPlant = async (e) => {
-        const { laboratory, queryPlantID } = this.state
+        const { garden, queryPlantID } = this.state
         e.preventDefault()
         const pid = parseInt(queryPlantID)
         if (isNaN(pid)) {
@@ -151,7 +151,7 @@ class App extends React.Component {
             return
         }
         try {
-            this.setState({ plantInfo: await laboratory.methods.showPlant(pid).call() })
+            this.setState({ plantInfo: await garden.methods.showPlant(pid).call() })
         } catch (e) {
             console.log(e)
             this.setState({ plantInfo: ["not exists"] })
@@ -159,14 +159,14 @@ class App extends React.Component {
     }
 
     changeDirection = async (e) => {
-        const { accounts, laboratory, changePlantID } = this.state
+        const { accounts, garden, changePlantID } = this.state
         e.preventDefault()
         const pid = parseInt(changePlantID)
         if (isNaN(pid)) {
             alert("invalid plant ID")
             return
         }
-        await laboratory.methods.changePhototropism(pid).send({ from: accounts[0] })
+        await garden.methods.turnAround(pid).send({ from: accounts[0] })
             .on("receipt", async () => {
                 await this.getPlantList()
             })
@@ -178,7 +178,7 @@ class App extends React.Component {
     render() {
         const {
             web3, accounts, chainid,
-            cytokenin, laboratory,
+            cytokenin, garden,
             yourCytokenin, yourPlants, plantInfo,
             aggregatorIndex, queryPlantID, changePlantID
         } = this.state
@@ -191,7 +191,7 @@ class App extends React.Component {
             return <div>Wrong Network! Switch to your local RPC "Localhost: 8545" in your Web3 provider (e.g. Metamask)</div>
         }
 
-        if (!cytokenin || !laboratory) {
+        if (!cytokenin || !garden) {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
@@ -222,8 +222,8 @@ class App extends React.Component {
                         onChange={(e) => this.setState({ aggregatorIndex: e.target.value })}
                     />
                     <br />
-                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.state.seedForLong = true)}>go up</button>
-                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.state.seedForLong = false)}>go down</button>
+                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.state.directionUp = true)}>go up</button>
+                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.state.directionUp = false)}>go down</button>
                 </div>
             </form>
             <br/>
