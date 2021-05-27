@@ -29,7 +29,7 @@ contract Garden is ERC721, Ownable {
                         address indexed aggregator,
                         bool indexed directionUp,
                         int latestPrice,
-                        int prosperit);
+                        int prosperity);
     
     constructor(address cytokeninAddress) ERC721("Crypto Plants", "CryptoPlants") {
         idCounter = 0;

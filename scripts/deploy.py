@@ -1,7 +1,7 @@
 # deploy.py
 from brownie import (
     network, accounts, config,
-    Cytokenin, Laboratory)
+    Cytokenin, Garden)
 import brownie
 
 def get_dev_account():
@@ -16,13 +16,13 @@ def deploy_cytokenin():
     dev = get_dev_account()
     return Cytokenin.deploy({"from": dev}, publish_source=config["verify"])
 
-def deploy_laboratory():
+def deploy_garden():
     dev = get_dev_account()
     ck = deploy_cytokenin()
-    lab = Laboratory.deploy(ck.address, {"from": dev}, publish_source=config["verify"])
-    ck.setLaboratoryAddress(lab.address, {"from": dev})
-    return ck, lab
+    gd = Garden.deploy(ck.address, {"from": dev}, publish_source=config["verify"])
+    ck.setGardenAddress(gd.address, {"from": dev})
+    return ck, gd
 
 def main():
-    ck, lab = deploy_laboratory()
-    return ck, lab, brownie.run("aggregators")
+    ck, gd = deploy_garden()
+    return ck, gd, brownie.run("aggregators")
