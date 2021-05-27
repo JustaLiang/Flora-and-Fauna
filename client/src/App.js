@@ -19,6 +19,7 @@ class App extends React.Component {
         yourPlants: {},
         plantInfo: [],
         //--- input
+        seedForLong : true,
         aggregatorIndex: 0,
         queryPlantID: 0,
         changePlantID: 0,
@@ -71,7 +72,7 @@ class App extends React.Component {
         }
 
         this.setState({ cytokenin, laboratory, ckDecimals })
-
+    
         await this.getCytokeninBalance()
         await this.getPlantList()
     }
@@ -124,7 +125,7 @@ class App extends React.Component {
     }
 
     plantSeed = async (e) => {
-        const { accounts, laboratory, aggregatorIndex } = this.state
+        const { accounts, laboratory, seedForLong, aggregatorIndex } = this.state
         e.preventDefault()
         const aggs = map["dev"]["MockV3Aggregator"]
         if (aggregatorIndex >= aggs.length || aggregatorIndex < 0) {
@@ -132,7 +133,7 @@ class App extends React.Component {
             return
         }
         const aggregator = aggs[aggregatorIndex]
-        await laboratory.methods.seed(aggregator, true).send({ from: accounts[0] })
+        await laboratory.methods.seed(aggregator, seedForLong).send({ from: accounts[0] })
             .on("receipt", async () => {
                 await this.getPlantList()
             })
@@ -221,13 +222,14 @@ class App extends React.Component {
                         onChange={(e) => this.setState({ aggregatorIndex: e.target.value })}
                     />
                     <br />
-                    <button type="submit" disabled={!isAccountsUnlocked}>seed</button>
+                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.state.seedForLong = true)}>go up</button>
+                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.state.seedForLong = false)}>go down</button>
                 </div>
             </form>
             <br/>
             <form onSubmit={(e) => this.showCertainPlant(e)}>
                 <div>
-                    <h3>query a plant</h3>
+                    <h3>check a plant</h3>
                     <input
                         name="queryPlantID"
                         type="text"

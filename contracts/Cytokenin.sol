@@ -6,33 +6,33 @@ import "@OpenZeppelin/contracts/access/Ownable.sol";
 
 contract Cytokenin is ERC20, Ownable {
 
-    bool public ifSetLaboratoryAddress;
-    address public laboratoryAddress;
+    bool public ifSetGardenAddress;
+    address public gardenAddress;
 
     constructor() ERC20("Cytokenin", "CK") {
         _mint(msg.sender, 7777777777e18);
-        ifSetLaboratoryAddress = false;
-        laboratoryAddress = address(0);
+        ifSetGardenAddress = false;
+        gardenAddress = address(0);
     }
 
-    modifier onlyLaboratory {
-        require(msg.sender == laboratoryAddress,
-                "Cytokenin: this method only call by Laboratory");
+    modifier onlyGarden {
+        require(msg.sender == gardenAddress,
+                "Cytokenin: this method is only for Garden");
         _;
     }
 
-    function setLaboratoryAddress(address laboratoryAddress_) external onlyOwner {
-        require(!ifSetLaboratoryAddress,
-                "Cytokenin: address of Laboratory has been set");
-        laboratoryAddress = laboratoryAddress_;
-        ifSetLaboratoryAddress = true;
+    function setGardenAddress(address gardenAddress_) external onlyOwner {
+        require(!ifSetGardenAddress,
+                "Cytokenin: address of Garden has been set");
+        gardenAddress = gardenAddress_;
+        ifSetGardenAddress = true;
     }
 
-    function mint(address who, uint amount) external onlyLaboratory {
+    function mint(address who, uint amount) external onlyGarden {
         _mint(who, amount*10**decimals());
     }
 
-    function burn(address who, uint amount) external onlyLaboratory {
+    function burn(address who, uint amount) external onlyGarden {
         _burn(who, amount*10**decimals());
     }
 }

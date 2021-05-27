@@ -4,92 +4,79 @@ pragma solidity ^0.8.0;
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 import "@OpenZeppelin/contracts/token/ERC721/ERC721.sol";
 import "@OpenZeppelin/contracts/access/Ownable.sol";
+import "./CytokeninInterface.sol";
 
 contract Garden is ERC721, Ownable {
  
-    uint public plantCounter;
+    uint public idCounter;
     uint public decimals;
     int private sig;
-    address public laboratoryAddress;
-    AggregatorV3Interface private priceFeed;
+    AggregatorV3Interface private pricefeed;
+    CytokeninInterface private cytokeninContract;
 
     struct Plant {
-        address     gardenAddress;
-        bool        phototropism;
-        int         height;
+        address     aggregator;
+        bool        directionUp;
+        int         latestPrice;  
         int         prosperity;
-        uint        changeCount;
+        uint        turningCount;
         uint        recoveryCount;
     }
 
-    Plant[] internal _plants;
+    Plant[] public plants;
 
     event GrowthRecord( uint indexed plantID,
-                        address indexed gardenAddress,
-                        bool indexed phototropism,
-                        int height,
-                        int prosperity);
+                        address indexed aggregator,
+                        bool indexed directionUp,
+                        int latestPrice,
+                        int prosperit);
     
-    constructor() ERC721("Cytokenin Plant", "CKP") {
-        plantCounter = 0;
-        decimals = 4;
+    constructor(address cytokeninAddress) ERC721("Crypto Plants", "CryptoPlants") {
+        idCounter = 0;
+        decimals = 3;
         sig = int(10**decimals);
+        cytokeninContract = CytokeninInterface(cytokeninAddress);
     }
 
-    modifier checkOperator(uint plantID) {
+    modifier checkGardener(uint plantID) {
         require(_isApprovedOrOwner(msg.sender, plantID),
-                "Garden: caller can't access this plant");
+                "Garden: gardener can't access this plant");
         _;
     }
 
-    function showPlant(uint plantID) public view returns (Plant memory) {
-        require(_exists(plantID),
-                "Garden: plant does not exist");
-        return _plants[plantID];
-    }
+    function seed(address aggregator_, bool directionUp_) external {
+        pricefeed = AggregatorV3Interface(aggregator_);
+        (,int price,,,) = pricefeed.latestRoundData();
+        plants.push(Plant(aggregator_, directionUp_, price, 0, 0, 0));
+        _mint(msg.sender, idCounter);
 
-    function isAlive(uint plantID) public view returns (bool) {
-        require(_exists(plantID),
-                "Garden: plant does not exist");
-        return _plants[plantID].height > 0;
-    }
-
-    function seed(address gardenAddress_, bool phototropism_) external {
-        priceFeed = AggregatorV3Interface(gardenAddress_);
-        (,int price,,,) = priceFeed.latestRoundData();
-        _plants.push(Plant(gardenAddress_, phototropism_, price, 0, 0, 0));
-        _mint(msg.sender, plantCounter);
-
-        emit GrowthRecord(plantCounter, gardenAddress_, phototropism_, price, 0);
-        plantCounter += 1;
+        emit GrowthRecord(idCounter, aggregator_, directionUp_, price, 0);
+        idCounter += 1;
     }
     
-    function changePhototropism(uint plantID) public checkOperator(plantID) {
-        Plant storage sample = _plants[plantID];
-        require(isAlive(plantID),
-                "Garden: plant is not alive");
-
-        address gardenAddress = sample.gardenAddress;
-        priceFeed = AggregatorV3Interface(gardenAddress);
-        (,int price,,,) = priceFeed.latestRoundData();
+    function turnAround(uint plantID) public checkGardener(plantID) {
+        Plant storage sample = plants[plantID];
+        address aggregator = sample.aggregator;
+        pricefeed = AggregatorV3Interface(aggregator);
+        (,int price,,,) = pricefeed.latestRoundData();
         int change;
-        bool phototropism;
-        if (sample.phototropism) {
-            change = price*sig/sample.height - sig;
-            phototropism = false;
+        bool directionUp;
+        if (sample.directionUp) {
+            change = price*sig/sample.latestPrice - sig;
+            directionUp = false;
         }
         else {
-            change = sig - price*sig/sample.height;
-            phototropism = true;
+            change = sig - price*sig/sample.latestPrice;
+            directionUp = true;
         }
-        sample.phototropism = phototropism;
-        sample.height = price;
+        sample.directionUp = directionUp;
+        sample.latestPrice = price;
         int prosperity = (sig + sample.prosperity)*(sig + change);
         prosperity = prosperity/sig - sig;
         sample.prosperity = prosperity;
-        sample.changeCount += 1;
+        sample.turningCount += 1;
 
-        emit GrowthRecord(plantID, gardenAddress, phototropism, price, prosperity);
+        emit GrowthRecord(plantID, aggregator, directionUp, price, prosperity);
     }
 
     function getPlantsByOwner(address owner) external view returns(uint[] memory) {
@@ -103,5 +90,39 @@ contract Garden is ERC721, Ownable {
             }
         }
         return plantIDList;
+    }
+
+    function extractCytokenin(uint plantID) external checkGardener(plantID) {
+        int prosperity = plants[plantID].prosperity;
+        if (prosperity > 0) {
+            cytokeninContract.mint(msg.sender, uint(prosperity));
+        }
+        _burn(plantID);
+    }
+
+    function recoverTurning(uint plantID) external checkGardener(plantID) {
+        Plant storage sample = plants[plantID];
+        int latestPrice = sample.latestPrice;
+        pricefeed = AggregatorV3Interface(sample.aggregator);
+        (,int price,,,) = pricefeed.latestRoundData();
+        bool directionUp;
+        if (sample.directionUp) {
+            price = latestPrice - price;
+            directionUp = false;
+        }
+        else {
+            price = price - latestPrice;
+            directionUp = true;
+        }
+        uint cost;
+        if (price < 0) {
+            cost = 0;
+        }
+        else {
+            cost = uint(price);
+        }
+        cytokeninContract.burn(msg.sender, cost);
+        sample.directionUp = directionUp;
+        sample.recoveryCount += 1;
     }
 }
