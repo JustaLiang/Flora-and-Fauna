@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@OpenZeppelin/contracts/token/ERC20/ERC20.sol";
-import "@OpenZeppelin/contracts/access/Ownable.sol";
+import "@openZeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openZeppelin/contracts/access/Ownable.sol";
 
 contract Cytokenin is ERC20, Ownable {
 

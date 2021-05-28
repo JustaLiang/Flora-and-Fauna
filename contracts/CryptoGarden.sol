@@ -2,11 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
-import "@OpenZeppelin/contracts/token/ERC721/ERC721.sol";
-import "@OpenZeppelin/contracts/access/Ownable.sol";
+import "@openZeppelin/contracts/token/ERC721/ERC721.sol";
 import "./CytokeninInterface.sol";
 
-contract Garden is ERC721, Ownable {
+contract CryptoGarden is ERC721 {
  
     uint public idCounter;
     uint public decimals;
@@ -14,7 +13,7 @@ contract Garden is ERC721, Ownable {
     AggregatorV3Interface private pricefeed;
     CytokeninInterface private cytokeninContract;
 
-    struct Plant {
+    struct CryptoPlant {
         address     aggregator;
         bool        directionUp;
         int         latestPrice;  
@@ -23,7 +22,7 @@ contract Garden is ERC721, Ownable {
         uint        recoveryCount;
     }
 
-    Plant[] private plants;
+    CryptoPlant[] private cryptoPlants;
 
     event GrowthRecord( uint indexed plantID,
                         address indexed aggregator,
@@ -31,7 +30,7 @@ contract Garden is ERC721, Ownable {
                         int latestPrice,
                         int prosperity);
     
-    constructor(address cytokeninAddress) ERC721("Crypto Plants", "CryptoPlants") {
+    constructor(address cytokeninAddress) ERC721("Crypto Plants", "CP") {
         idCounter = 0;
         decimals = 3;
         sig = int(10**decimals);
@@ -44,14 +43,14 @@ contract Garden is ERC721, Ownable {
         _;
     }
 
-    function showPlant(uint plantID) public view returns (Plant memory) {
-        return plants[plantID];
+    function showPlant(uint plantID) public view returns (CryptoPlant memory) {
+        return cryptoPlants[plantID];
     }
 
     function seed(address aggregator_, bool directionUp_) external {
         pricefeed = AggregatorV3Interface(aggregator_);
         (,int price,,,) = pricefeed.latestRoundData();
-        plants.push(Plant(aggregator_, directionUp_, price, 0, 0, 0));
+        cryptoPlants.push(CryptoPlant(aggregator_, directionUp_, price, 0, 0, 0));
         _mint(msg.sender, idCounter);
 
         emit GrowthRecord(idCounter, aggregator_, directionUp_, price, 0);
@@ -59,7 +58,7 @@ contract Garden is ERC721, Ownable {
     }
     
     function turnAround(uint plantID) public checkGardener(plantID) {
-        Plant storage sample = plants[plantID];
+        CryptoPlant storage sample = cryptoPlants[plantID];
         address aggregator = sample.aggregator;
         pricefeed = AggregatorV3Interface(aggregator);
         (,int price,,,) = pricefeed.latestRoundData();
@@ -97,7 +96,7 @@ contract Garden is ERC721, Ownable {
     }
 
     function extractCytokenin(uint plantID) external checkGardener(plantID) {
-        int prosperity = plants[plantID].prosperity;
+        int prosperity = cryptoPlants[plantID].prosperity;
         if (prosperity > 0) {
             cytokeninContract.mint(msg.sender, uint(prosperity));
         }
@@ -105,7 +104,7 @@ contract Garden is ERC721, Ownable {
     }
 
     function recoverTurning(uint plantID) external checkGardener(plantID) {
-        Plant storage sample = plants[plantID];
+        CryptoPlant storage sample = cryptoPlants[plantID];
         int latestPrice = sample.latestPrice;
         pricefeed = AggregatorV3Interface(sample.aggregator);
         (,int price,,,) = pricefeed.latestRoundData();

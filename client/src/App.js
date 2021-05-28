@@ -64,7 +64,7 @@ class App extends React.Component {
         }
 
         const cytokenin = await this.loadContract("dev", "Cytokenin")
-        const garden = await this.loadContract("dev", "Garden")
+        const garden = await this.loadContract("dev", "CryptoGarden")
         const ckDecimals = await cytokenin.methods.decimals().call()
 
         if (!cytokenin || !garden) {

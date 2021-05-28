@@ -12,7 +12,7 @@ compiler:
   solc:
     remappings:
       - '@chainlink=smartcontractkit/chainlink-brownie-contracts@1.0.2'
-      - '@OpenZeppelin=OpenZeppelin/openzeppelin-contracts@4.0.0'
+      - '@openZeppelin=OpenZeppelin/openzeppelin-contracts@4.0.0'
 
 # exclude SafeMath when calculating test coverage
 reports:
