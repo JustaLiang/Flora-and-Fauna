@@ -52,3 +52,4 @@ dev_deployment_artifacts: true
 # wallets
 wallets:
   from_key: ${PRIVATE_KEY}
+  test_key: ${TEST_PUBLIC_KEY}
