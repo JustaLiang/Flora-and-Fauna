@@ -20,7 +20,8 @@ class App extends React.Component {
         plantInfo: [],
         //--- input
         directionUp : true,
-        aggregatorIndex: 0,
+        aggOptions: [],
+        aggregator: "",
         queryPlantID: 0,
         changePlantID: 0,
     }
@@ -66,12 +67,14 @@ class App extends React.Component {
         const cytokenin = await this.loadContract("dev", "Cytokenin")
         const garden = await this.loadContract("dev", "CryptoGarden")
         const ckDecimals = await cytokenin.methods.decimals().call()
+        const aggOptions = map["dev"]["MockV3Aggregator"]
+        const aggregator = aggOptions[0]
 
         if (!cytokenin || !garden) {
             return
         }
 
-        this.setState({ cytokenin, garden, ckDecimals })
+        this.setState({ cytokenin, garden, ckDecimals, aggOptions, aggregator })
     
         await this.getCytokeninBalance()
         await this.getPlantList()
@@ -104,7 +107,7 @@ class App extends React.Component {
 
     getCytokeninBalance = async () => {
         const {accounts, cytokenin, ckDecimals} = this.state
-        if (accounts.length == 0) {
+        if (accounts.length === 0) {
             return
         }
         this.setState({ yourCytokenin: ((await cytokenin.methods.balanceOf(accounts[0]).call())/10**ckDecimals).toFixed(2) })
@@ -112,7 +115,7 @@ class App extends React.Component {
 
     getPlantList = async () => {
         const { accounts, garden } = this.state
-        if (accounts.length == 0) {
+        if (accounts.length === 0) {
             return
         }
         const plantIDs = await garden.methods.getPlantsByOwner(accounts[0]).call()
@@ -125,14 +128,8 @@ class App extends React.Component {
     }
 
     plantSeed = async (e) => {
-        const { accounts, garden, directionUp, aggregatorIndex } = this.state
+        const { accounts, garden, directionUp, aggregator } = this.state
         e.preventDefault()
-        const aggs = map["dev"]["MockV3Aggregator"]
-        if (aggregatorIndex >= aggs.length || aggregatorIndex < 0) {
-            console.log(`invalid aggregator (max: ${aggs.length - 1})`)
-            return
-        }
-        const aggregator = aggs[aggregatorIndex]
         await garden.methods.seed(aggregator, directionUp).send({ from: accounts[0] })
             .on("receipt", async () => {
                 await this.getPlantList()
@@ -150,12 +147,17 @@ class App extends React.Component {
             alert("invalid plant ID")
             return
         }
-        try {
-            this.setState({ plantInfo: await garden.methods.showPlant(pid).call() })
-        } catch (e) {
-            console.log(e)
+        if (!(await garden.methods.existPlant(pid).call())) {
             this.setState({ plantInfo: ["not exists"] })
+            return
         }
+
+        garden.methods.showPlant(pid).call().then((result) => {
+            this.setState({ plantInfo: result })
+        }).catch((err) => {
+            console.log(err)
+            this.setState({ plantInfo: ["not exists"] })
+        })
     }
 
     changeDirection = async (e) => {
@@ -180,7 +182,7 @@ class App extends React.Component {
             web3, accounts, chainid,
             cytokenin, garden,
             yourCytokenin, yourPlants, plantInfo,
-            aggregatorIndex, queryPlantID, changePlantID
+            aggOptions, aggregator, queryPlantID, changePlantID
         } = this.state
 
         if (!web3) {
@@ -199,6 +201,9 @@ class App extends React.Component {
         const plantList = Object.keys(yourPlants).map(function (id) {
             return <li key={id}> {id}: {yourPlants[id].join(" | ")}</li>
         });
+        const aggSelection = aggOptions.map((opt) => 
+            <option key={opt} value={opt}> {opt} </option>
+        )
 
         return (<div className="App">
             {
@@ -215,15 +220,12 @@ class App extends React.Component {
             <form onSubmit={(e) => this.plantSeed(e)}>
                 <div>
                     <h3>plant a seed</h3>
-                    <input
-                        name="aggregatorIndex"
-                        type="text"
-                        value={aggregatorIndex}
-                        onChange={(e) => this.setState({ aggregatorIndex: e.target.value })}
-                    />
+                    <select name="aggOptions" value={aggregator} onChange={(e) => this.setState({ aggregator: e.target.value })}>
+                        {aggSelection}
+                    </select>
                     <br />
-                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.state.directionUp = true)}>go up</button>
-                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.state.directionUp = false)}>go down</button>
+                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: true}))}>go up</button>
+                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: false}))}>go down</button>
                 </div>
             </form>
             <br/>

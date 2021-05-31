@@ -43,6 +43,10 @@ contract CryptoGarden is ERC721 {
         _;
     }
 
+    function existPlant(uint plantID) public view returns (bool) {
+        return _exists(plantID);
+    }
+
     function showPlant(uint plantID) public view returns (CryptoPlant memory) {
         return cryptoPlants[plantID];
     }
