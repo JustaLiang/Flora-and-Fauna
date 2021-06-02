@@ -1,2 +1,2 @@
-# Cytokenin
-Dynamic NFT created by crypto market price.
+# CryptoGarden
+Cultivate plants (dynamic NFTs) by predicting market. 
