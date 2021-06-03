@@ -1,14 +1,15 @@
 import React from "react"
 import './App.css'
-import {getWeb3} from "./getWeb3"
 import map from "./artifacts/deployments/map.json"
 import {getEthereum} from "./getEthereum"
+import Web3 from "web3"
 
 class App extends React.Component {
 
     state = {
         //--- base
         web3: null,
+        ethereum: null,
         accounts: null,
         chainid: null,
         cytokenin: null,
@@ -28,31 +29,17 @@ class App extends React.Component {
 
     componentDidMount = async () => {
 
-        // Get network provider and web3 instance.
-        const web3 = await getWeb3()
-
-        // Try and enable accounts (connect metamask)
         try {
             const ethereum = await getEthereum()
-            ethereum.enable()
+            const accounts = await ethereum.request({ method: 'eth_accounts' });
+            const chainid = parseInt(await ethereum.request({ method: 'eth_chainId' }))
+            const web3 = new Web3(ethereum)
+            this.setState({web3, ethereum, accounts, chainid }, await this.loadInitialContracts)
         } catch (e) {
             console.log(`Could not enable accounts. Interaction with contracts not available.
             Use a modern browser with a Web3 plugin to fix this issue.`)
             console.log(e)
         }
-
-        // Use web3 to get the user's accounts
-        const accounts = await web3.eth.getAccounts()
-
-        // Get the current chain id
-        const chainid = parseInt(await web3.eth.getChainId())
-
-        this.setState({
-            web3,
-            accounts,
-            chainid
-        }, await this.loadInitialContracts)
-
     }
 
     loadInitialContracts = async () => {
@@ -216,18 +203,18 @@ class App extends React.Component {
 
     render() {
         const {
-            web3, accounts, chainid,
+            ethereum, accounts, chainid,
             cytokenin, garden,
             yourCytokenin, yourPlants, plantInfo,
             aggOptions, aggregator, queryPlantID
         } = this.state
 
-        if (!web3) {
-            return <div>Loading Web3, accounts, and contracts...</div>
+        if (!ethereum) {
+            return <div>Loading ethereum, accounts, and contracts...</div>
         }
 
         if (isNaN(chainid) || chainid <= 42) {
-            return <div>Wrong Network! Switch to your local RPC "Localhost: 8545" in your Web3 provider (e.g. Metamask)</div>
+            return <div>Wrong Network! Switch to your local RPC "Localhost: 8545" in your ethereum provider (e.g. Metamask)</div>
         }
 
         if (!cytokenin || !garden) {
