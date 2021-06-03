@@ -130,13 +130,26 @@ class App extends React.Component {
     plantSeed = async (e) => {
         const { accounts, garden, directionUp, aggregator } = this.state
         e.preventDefault()
-        await garden.methods.seed(aggregator, directionUp).send({ from: accounts[0] })
+        garden.methods.seed(aggregator, directionUp).send({ from: accounts[0] })
             .on("receipt", async () => {
-                await this.getPlantList()
+                this.getPlantList()
             })
             .on("error", async () => {
                 console.log("error")
             })
+    }
+
+    plantInterface = (id) => {
+        const { yourPlants } = this.state
+        return <form className="plant" key={id} onSubmit={(e) => this.showCertainPlant(e)}>
+            <div>
+                {id}: {yourPlants[id].join(" | ")}
+                <button type="submit" value={id} onClick={(e) => this.setState({ queryPlantID: e.target.value })}>check</button>
+                <button value={id} onClick={(e) => this.changeDirection(e)}>turn</button>
+                <button value={id} onClick={(e) => this.extractCytokenin(e)}>extract</button>
+                <button value={id} onClick={(e) => this.recover(e)}>recover</button>
+            </div>
+        </form>
     }
 
     showCertainPlant = async (e) => {
@@ -161,16 +174,40 @@ class App extends React.Component {
     }
 
     changeDirection = async (e) => {
-        const { accounts, garden, changePlantID } = this.state
+        const { accounts, garden } = this.state
         e.preventDefault()
-        const pid = parseInt(changePlantID)
-        if (isNaN(pid)) {
-            alert("invalid plant ID")
-            return
-        }
-        await garden.methods.turnAround(pid).send({ from: accounts[0] })
+        const pid = parseInt(e.target.value)
+        garden.methods.turnAround(pid).send({ from: accounts[0] })
             .on("receipt", async () => {
-                await this.getPlantList()
+                this.getPlantList()
+            })
+            .on("error", async () => {
+                console.log("error")
+            })
+    }
+
+    extractCytokenin = async (e) => {
+        const { accounts, garden } = this.state
+        e.preventDefault()
+        const pid = parseInt(e.target.value)
+        garden.methods.extractCytokenin(pid).send({ from:accounts[0] })
+            .on("receipt", async () => {
+                this.getPlantList()
+                this.getCytokeninBalance()
+            })
+            .on("error", async () => {
+                console.log("error")
+            })
+    }
+
+    recover = async (e) => {
+        const { accounts, garden } = this.state
+        e.preventDefault()
+        const pid = parseInt(e.target.value)
+        garden.methods.recoverTurning(pid).send({ from: accounts[0] })
+            .on("receipt", async () => {
+                this.getPlantList()
+                this.getCytokeninBalance()
             })
             .on("error", async () => {
                 console.log("error")
@@ -182,7 +219,7 @@ class App extends React.Component {
             web3, accounts, chainid,
             cytokenin, garden,
             yourCytokenin, yourPlants, plantInfo,
-            aggOptions, aggregator, queryPlantID, changePlantID
+            aggOptions, aggregator, queryPlantID
         } = this.state
 
         if (!web3) {
@@ -198,9 +235,7 @@ class App extends React.Component {
         }
 
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
-        const plantList = Object.keys(yourPlants).map(function (id) {
-            return <li key={id}> {id}: {yourPlants[id].join(" | ")}</li>
-        });
+        const plantList = Object.keys(yourPlants).map((id) => this.plantInterface(id))
         const aggSelection = aggOptions.map((opt) => 
             <option key={opt} value={opt}> {opt} </option>
         )
@@ -242,20 +277,6 @@ class App extends React.Component {
                     <button type="submit" disabled={!isAccountsUnlocked}>query</button>
                 </div>
             <div> <br/>{plantInfo.join(" | ")}</div>
-            </form>
-            <br/>
-            <form onSubmit={(e) => this.changeDirection(e)}>
-                <div>
-                    <h3>change a plant</h3>
-                    <input
-                        name="changePlantID"
-                        type="text"
-                        value={changePlantID}
-                        onChange={(e) => this.setState({ changePlantID: e.target.value })}
-                    />
-                    <br />
-                    <button type="submit" disabled={!isAccountsUnlocked}>change</button>
-                </div>
             </form>
         </div>)
     }

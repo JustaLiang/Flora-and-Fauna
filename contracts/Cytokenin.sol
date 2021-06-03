@@ -28,11 +28,11 @@ contract Cytokenin is ERC20, Ownable {
         ifSetGardenAddress = true;
     }
 
-    function mint(address who, uint amount) external onlyGarden {
-        _mint(who, amount*10**decimals());
+    function mint(address gardener, uint amount) external onlyGarden {
+        _mint(gardener, amount*10**decimals());
     }
 
-    function burn(address who, uint amount) external onlyGarden {
-        _burn(who, amount*10**decimals());
+    function burn(address gardener, uint amount) external onlyGarden {
+        _burn(gardener, amount*10**decimals());
     }
 }

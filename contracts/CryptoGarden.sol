@@ -18,8 +18,6 @@ contract CryptoGarden is ERC721 {
         bool        directionUp;
         int         latestPrice;  
         int         prosperity;
-        uint        turningCount;
-        uint        recoveryCount;
     }
 
     CryptoPlant[] private cryptoPlants;
@@ -54,7 +52,7 @@ contract CryptoGarden is ERC721 {
     function seed(address aggregator_, bool directionUp_) external {
         pricefeed = AggregatorV3Interface(aggregator_);
         (,int price,,,) = pricefeed.latestRoundData();
-        cryptoPlants.push(CryptoPlant(aggregator_, directionUp_, price, 0, 0, 0));
+        cryptoPlants.push(CryptoPlant(aggregator_, directionUp_, price, 0));
         _mint(msg.sender, idCounter);
 
         emit GrowthRecord(idCounter, aggregator_, directionUp_, price, 0);
@@ -81,7 +79,6 @@ contract CryptoGarden is ERC721 {
         int prosperity = (sig + sample.prosperity)*(sig + change);
         prosperity = prosperity/sig - sig;
         sample.prosperity = prosperity;
-        sample.turningCount += 1;
 
         emit GrowthRecord(plantID, aggregator, directionUp, price, prosperity);
     }
@@ -105,6 +102,8 @@ contract CryptoGarden is ERC721 {
             cytokeninContract.mint(msg.sender, uint(prosperity));
         }
         _burn(plantID);
+        emit GrowthRecord(plantID, address(0), false, 0, 0);
+
     }
 
     function recoverTurning(uint plantID) external checkGardener(plantID) {
@@ -112,24 +111,25 @@ contract CryptoGarden is ERC721 {
         int latestPrice = sample.latestPrice;
         pricefeed = AggregatorV3Interface(sample.aggregator);
         (,int price,,,) = pricefeed.latestRoundData();
+        int change;
         bool directionUp;
         if (sample.directionUp) {
-            price = latestPrice - price;
+            change = price*sig/latestPrice - sig;
             directionUp = false;
         }
         else {
-            price = price - latestPrice;
+            change = sig - price*sig/latestPrice;
             directionUp = true;
         }
         uint cost;
-        if (price < 0) {
+        if (change >= 0) {
             cost = 0;
         }
         else {
-            cost = uint(price);
+            cost = uint(-2*change);
         }
         cytokeninContract.burn(msg.sender, cost);
         sample.directionUp = directionUp;
-        sample.recoveryCount += 1;
+        emit GrowthRecord(plantID, sample.aggregator, sample.directionUp, latestPrice, sample.prosperity);
     }
 }

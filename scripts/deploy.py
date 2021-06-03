@@ -27,6 +27,6 @@ def main():
     if network.show_active() == "development":
         dev = get_dev_account()
         test_account = config["wallets"]["test_key"]
-        dev.transfer(test_account, "50 ether")
+        dev.transfer(test_account, "100 ether")
         ck.transfer(test_account, 77*10**18, {"from":dev})
     return ck, gd, run("aggregators")
