@@ -6,3 +6,4 @@ client/src/artifacts
 reports/
 .pytest_cache
 .env
+.vscode/

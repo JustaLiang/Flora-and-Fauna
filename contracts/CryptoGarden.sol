@@ -121,12 +121,9 @@ contract CryptoGarden is ERC721 {
             change = sig - price*sig/latestPrice;
             directionUp = true;
         }
-        uint cost;
-        if (change >= 0) {
-            cost = 0;
-        }
-        else {
-            cost = uint(-2*change);
+        uint cost = 0;
+        if (change < 0 && sample.prosperity > 0) {
+            cost = uint(-2*change*sample.prosperity/sig);
         }
         cytokeninContract.burn(msg.sender, cost);
         sample.directionUp = directionUp;
