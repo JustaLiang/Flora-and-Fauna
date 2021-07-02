@@ -35,16 +35,6 @@ networks:
   development:
     cmd_settings:
       mnemonic: hill law jazz limb penalty escape public dish stand bracket blue jar
-  kovan:
-    eth_usd_price_feed: '0x9326BFA02ADD2366b30bacB125260Af641031331'
-    btc_usd_price_feed: '0x6135b13325bfC4B00278B4abC5e20bbce2D6580e'
-    bnb_usd_price_feed: '0x8993ED705cdf5e84D0a3B754b5Ee0e1783fcdF16'
-    link_usd_price_feed: '0x396c5E36DD0a0F5a5D33dae44368D4193f69a1F0'
-  rinkeby:
-    eth_usd_price_feed: '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e'
-    btc_usd_price_feed: '0xECe365B379E1dD183B20fc5f022230C044d51404'
-    bnb_usd_price_feed: '0xcf0f51ca2cDAecb464eeE4227f5295F2384F84ED'
-    link_usd_price_feed: '0xd8bD0a1cB028a31AA859A21A3758685a95dE4623'
 
 # enable output of development artifacts to load with react
 dev_deployment_artifacts: true

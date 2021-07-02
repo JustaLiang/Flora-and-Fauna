@@ -21,8 +21,8 @@ class App extends React.Component {
         plantInfo: [],
         //--- input
         directionUp : true,
-        aggOptions: [],
-        aggregator: "",
+        pairOptions: ["ETH / USD","LINK / USD","BTC / USD","BTC / ETH","BNB / USD","LTC / USD","XRP / USD"],
+        pair: "ETH / USD",
         queryPlantID: 0,
         changePlantID: 0,
     }
@@ -55,10 +55,14 @@ class App extends React.Component {
             return
         }
         const ckDecimals = await cytokenin.methods.decimals().call()
-        const aggOptions = map[chain]["MockV3Aggregator"]
-        const aggregator = aggOptions[0]
+        
+        if (chainid > 42) {
+            this.setState({ 
+                pairOptions : map[chain]["MockV3Aggregator"],
+                pair: map[chain]["MockV3Aggregator"][0]})
+        }
 
-        this.setState({ cytokenin, garden, ckDecimals, aggOptions, aggregator })
+        this.setState({ cytokenin, garden, ckDecimals })
     
         await this.getCytokeninBalance()
         await this.getPlantList()
@@ -111,18 +115,6 @@ class App extends React.Component {
         this.setState({ yourPlants })
     }
 
-    plantSeed = async (e) => {
-        const { accounts, garden, directionUp, aggregator } = this.state
-        e.preventDefault()
-        garden.methods.seed(aggregator, directionUp).send({ from: accounts[0] })
-            .on("receipt", async () => {
-                this.getPlantList()
-            })
-            .on("error", async () => {
-                console.log("error")
-            })
-    }
-
     plantInterface = (id) => {
         const { yourPlants } = this.state
         return <form className="plant" key={id} onSubmit={(e) => this.showCertainPlant(e)}>
@@ -157,6 +149,34 @@ class App extends React.Component {
         })
     }
 
+    plantSeed = async (e) => {
+        const { web3, chainid, accounts, garden, directionUp, pair } = this.state
+        e.preventDefault()
+        let aggregator;
+        if (chainid <= 42){
+            aggregator = pair.replace(" / ", "-").toLowerCase()
+            await web3.eth.ens.getAddress(aggregator + '.data.eth')
+                .then((address) => {
+                    aggregator = address;
+                    console.log(aggregator)
+                })
+                .catch(() => {
+                    return
+                })
+        } else {
+            aggregator = pair;
+            console.log(aggregator)
+        }
+
+        garden.methods.seed(aggregator, directionUp).send({ from: accounts[0] })
+            .on("receipt", async () => {
+                this.getPlantList()
+            })
+            .on("error", async () => {
+                console.log("error")
+            })
+    }
+    
     changeDirection = async (e) => {
         const { accounts, garden } = this.state
         e.preventDefault()
@@ -203,7 +223,7 @@ class App extends React.Component {
             ethereum, accounts, chainid,
             cytokenin, garden,
             yourCytokenin, yourPlants, plantInfo,
-            aggOptions, aggregator, queryPlantID
+            pairOptions, pair, queryPlantID
         } = this.state
 
         if (!ethereum) {
@@ -220,7 +240,7 @@ class App extends React.Component {
 
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
         const plantList = Object.keys(yourPlants).map((id) => this.plantInterface(id))
-        const aggSelection = aggOptions.map((opt) => 
+        const aggSelection = pairOptions.map((opt) => 
             <option key={opt} value={opt}> {opt} </option>
         )
 
@@ -239,7 +259,7 @@ class App extends React.Component {
             <form onSubmit={(e) => this.plantSeed(e)}>
                 <div>
                     <h3>plant a seed</h3>
-                    <select name="aggOptions" value={aggregator} onChange={(e) => this.setState({ aggregator: e.target.value })}>
+                    <select name="pairOptions" value={pair} onChange={(e) => this.setState({ pair: e.target.value })}>
                         {aggSelection}
                     </select>
                     <br />

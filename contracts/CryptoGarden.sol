@@ -103,7 +103,6 @@ contract CryptoGarden is ERC721 {
         }
         _burn(plantID);
         emit GrowthRecord(plantID, address(0), false, 0, 0);
-
     }
 
     function recoverTurning(uint plantID) external checkGardener(plantID) {
@@ -122,9 +121,15 @@ contract CryptoGarden is ERC721 {
             directionUp = true;
         }
         uint cost = 0;
-        if (change < 0 && sample.prosperity > 0) {
-            cost = uint(-2*change*sample.prosperity/sig);
+        if (change < 0) {
+            if (sample.prosperity > sig) {
+                cost = uint(-2*change*sample.prosperity/sig);
+            }
+            else {
+                cost = uint(-2*change);
+            }
         }
+
         cytokeninContract.burn(msg.sender, cost);
         sample.directionUp = directionUp;
         emit GrowthRecord(plantID, sample.aggregator, sample.directionUp, latestPrice, sample.prosperity);
