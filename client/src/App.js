@@ -45,21 +45,18 @@ class App extends React.Component {
     loadInitialContracts = async () => {
         
         const { chainid } = this.state
-
+        let chain = "dev";
         if (chainid <= 42) {
-            // Wrong Network!
-            return
+            chain = chainid.toString()
         }
-
-        const cytokenin = await this.loadContract("dev", "Cytokenin")
-        const garden = await this.loadContract("dev", "CryptoGarden")
-        const ckDecimals = await cytokenin.methods.decimals().call()
-        const aggOptions = map["dev"]["MockV3Aggregator"]
-        const aggregator = aggOptions[0]
-
+        const cytokenin = await this.loadContract(chain, "Cytokenin")
+        const garden = await this.loadContract(chain, "CryptoGarden")
         if (!cytokenin || !garden) {
             return
         }
+        const ckDecimals = await cytokenin.methods.decimals().call()
+        const aggOptions = map[chain]["MockV3Aggregator"]
+        const aggregator = aggOptions[0]
 
         this.setState({ cytokenin, garden, ckDecimals, aggOptions, aggregator })
     
@@ -76,7 +73,7 @@ class App extends React.Component {
         try {
             address = map[chain][contractName][0]
         } catch (e) {
-            console.log(`Couldn't find any deployed contract "${contractName}" on the chain "${chain}".`)
+            console.log(`Couldn't find any deployed contract "${contractName}" on the chain (ID: "${chain}").`)
             return undefined
         }
 
@@ -213,8 +210,8 @@ class App extends React.Component {
             return <div>Loading ethereum, accounts, and contracts...</div>
         }
 
-        if (isNaN(chainid) || chainid <= 42) {
-            return <div>Wrong Network! Switch to your local RPC "Localhost: 8545" in your ethereum provider (e.g. Metamask)</div>
+        if (isNaN(chainid)) {
+            return <div>Wrong Network!</div>
         }
 
         if (!cytokenin || !garden) {
