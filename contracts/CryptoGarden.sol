@@ -46,7 +46,7 @@ contract CryptoGarden is ERC721 {
                         int latestPrice,
                         int prosperity);
     
-    constructor(address ensRegistry, address cytokeninAddress) ERC721("Crypto Plants", "CP") {
+    constructor(address ensRegistry, address cytokeninAddress) ERC721("Crypiranha Plant", "CP") {
         idCounter = 0;
         decimals = 3;
         sig = int(10**decimals);

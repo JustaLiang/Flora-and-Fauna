@@ -9,7 +9,7 @@ contract Cytokenin is ERC20, Ownable {
     bool public ifSetGardenAddress;
     address public gardenAddress;
 
-    constructor() ERC20("Cytokenin", "CK") {
+    constructor() ERC20("Cytokenin", "CTK") {
         _mint(msg.sender, 7777777777e18);
         ifSetGardenAddress = false;
         gardenAddress = address(0);

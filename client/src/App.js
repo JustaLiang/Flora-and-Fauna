@@ -115,7 +115,9 @@ class App extends React.Component {
         const { yourPlants } = this.state
         return <form className="plant" key={id} onSubmit={(e) => this.showCertainPlant(e)}>
             <div>
-                {id}: {yourPlants[id].join(" | ")}
+                #{id} <br/>
+                {yourPlants[id][0].substring(0,16)}... <br/> 
+                {yourPlants[id].slice(1).join(" | ")} <br/>
                 <button type="submit" value={id} onClick={(e) => this.setState({ queryPlantID: e.target.value })}>check</button>
                 <button value={id} onClick={(e) => this.changeDirection(e)}>turn</button>
                 <button value={id} onClick={(e) => this.extractCytokenin(e)}>extract</button>
@@ -152,7 +154,7 @@ class App extends React.Component {
         e.preventDefault()
         const pairNode = namehash.hash(`${quote}-${base}.data.eth`)
 
-        await garden.methods.seed(pairNode, directionUp).send({ from: accounts[0] })
+        garden.methods.seed(pairNode, directionUp).send({ from: accounts[0] })
             .then(() => {
                 this.setState({seedResponse: "Plant a seed successfully"})
                 this.getPlantList()
