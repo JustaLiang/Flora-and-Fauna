@@ -4,6 +4,8 @@ import map from "./artifacts/deployments/map.json"
 import {getEthereum} from "./getEthereum"
 import Web3 from "web3"
 
+const namehash = require("eth-ens-namehash")
+
 class App extends React.Component {
 
     state = {
@@ -19,12 +21,12 @@ class App extends React.Component {
         yourCytokenin: 0,
         yourPlants: {},
         plantInfo: [],
+        seedResponse: "",
         //--- input
-        directionUp : true,
-        pairOptions: ["ETH / USD","LINK / USD","BTC / USD","BTC / ETH","BNB / USD","LTC / USD","XRP / USD"],
-        pair: "ETH / USD",
+        directionUp: true,
+        quote: "ETH",
+        base: "USD",
         queryPlantID: 0,
-        changePlantID: 0,
     }
 
     componentDidMount = async () => {
@@ -55,12 +57,6 @@ class App extends React.Component {
             return
         }
         const ckDecimals = await cytokenin.methods.decimals().call()
-        
-        if (chainid > 42) {
-            this.setState({ 
-                pairOptions : map[chain]["MockV3Aggregator"],
-                pair: map[chain]["MockV3Aggregator"][0]})
-        }
 
         this.setState({ cytokenin, garden, ckDecimals })
     
@@ -141,39 +137,29 @@ class App extends React.Component {
             return
         }
 
-        garden.methods.showPlant(pid).call().then((result) => {
+        garden.methods.showPlant(pid).call()
+            .then((result) => {
             this.setState({ plantInfo: result })
-        }).catch((err) => {
+            })
+            .catch((err) => {
             console.log(err)
             this.setState({ plantInfo: ["not exists"] })
-        })
+            })
     }
 
     plantSeed = async (e) => {
-        const { web3, chainid, accounts, garden, directionUp, pair } = this.state
+        const { accounts, garden, directionUp, quote, base } = this.state
         e.preventDefault()
-        let aggregator;
-        if (chainid <= 42){
-            aggregator = pair.replace(" / ", "-").toLowerCase()
-            await web3.eth.ens.getAddress(aggregator + '.data.eth')
-                .then((address) => {
-                    aggregator = address;
-                    console.log(aggregator)
-                })
-                .catch(() => {
-                    return
-                })
-        } else {
-            aggregator = pair;
-            console.log(aggregator)
-        }
+        const pairNode = namehash.hash(`${quote}-${base}.data.eth`)
 
-        garden.methods.seed(aggregator, directionUp).send({ from: accounts[0] })
-            .on("receipt", async () => {
+        await garden.methods.seed(pairNode, directionUp).send({ from: accounts[0] })
+            .then(() => {
+                this.setState({seedResponse: "Plant a seed successfully"})
                 this.getPlantList()
             })
-            .on("error", async () => {
-                console.log("error")
+            .catch((err) => {
+                console.log(err)
+                this.setState({seedResponse: "Invalid pair"})
             })
     }
     
@@ -182,11 +168,11 @@ class App extends React.Component {
         e.preventDefault()
         const pid = parseInt(e.target.value)
         garden.methods.turnAround(pid).send({ from: accounts[0] })
-            .on("receipt", async () => {
+            .then(() => {
                 this.getPlantList()
             })
-            .on("error", async () => {
-                console.log("error")
+            .catch((err) => {
+                console.log(err)
             })
     }
 
@@ -195,12 +181,12 @@ class App extends React.Component {
         e.preventDefault()
         const pid = parseInt(e.target.value)
         garden.methods.extractCytokenin(pid).send({ from:accounts[0] })
-            .on("receipt", async () => {
+            .then(() => {
                 this.getPlantList()
                 this.getCytokeninBalance()
             })
-            .on("error", async () => {
-                console.log("error")
+            .catch((err) => {
+                console.log(err)
             })
     }
 
@@ -209,12 +195,12 @@ class App extends React.Component {
         e.preventDefault()
         const pid = parseInt(e.target.value)
         garden.methods.recoverTurning(pid).send({ from: accounts[0] })
-            .on("receipt", async () => {
+            .then(() => {
                 this.getPlantList()
                 this.getCytokeninBalance()
             })
-            .on("error", async () => {
-                console.log("error")
+            .catch((err) => {
+                console.log(err)
             })
     }
 
@@ -222,8 +208,8 @@ class App extends React.Component {
         const {
             ethereum, accounts, chainid,
             cytokenin, garden,
-            yourCytokenin, yourPlants, plantInfo,
-            pairOptions, pair, queryPlantID
+            yourCytokenin, yourPlants, plantInfo, seedResponse,
+            quote, base, queryPlantID
         } = this.state
 
         if (!ethereum) {
@@ -240,9 +226,6 @@ class App extends React.Component {
 
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
         const plantList = Object.keys(yourPlants).map((id) => this.plantInterface(id))
-        const aggSelection = pairOptions.map((opt) => 
-            <option key={opt} value={opt}> {opt} </option>
-        )
 
         return (<div className="App">
             {
@@ -259,12 +242,15 @@ class App extends React.Component {
             <form onSubmit={(e) => this.plantSeed(e)}>
                 <div>
                     <h3>plant a seed</h3>
-                    <select name="pairOptions" value={pair} onChange={(e) => this.setState({ pair: e.target.value })}>
-                        {aggSelection}
-                    </select>
+                    <input name="quote" type="text" value={quote}
+                        onChange={(e) => this.setState({ quote: e.target.value })}/>
+                    {" / "}
+                    <input name="base" type="text" value={base}
+                        onChange={(e) => this.setState({ base: e.target.value })}/>
                     <br />
                     <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: true}))}>go up</button>
                     <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: false}))}>go down</button>
+                    <p>{seedResponse}</p>
                 </div>
             </form>
             <br/>

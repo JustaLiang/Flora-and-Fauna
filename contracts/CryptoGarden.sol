@@ -3,15 +3,33 @@ pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 import "@openZeppelin/contracts/token/ERC721/ERC721.sol";
-import "./CytokeninInterface.sol";
+import "@openZeppelin/contracts/token/ERC20/IERC20.sol";
 
+// ENS Registry Contract
+interface ENS {
+    function resolver(bytes32 node) external view returns (Resolver);
+}
+
+// Chainlink Resolver
+interface Resolver {
+    function addr(bytes32 node) external view returns (address);
+}
+
+// Cytokenin operation
+interface CytokeninInterface is IERC20 {
+    function mint(address who, uint amount) external;
+    function burn(address who, uint amount) external;
+}
+
+// main
 contract CryptoGarden is ERC721 {
  
     uint public idCounter;
     uint public decimals;
     int private sig;
     AggregatorV3Interface private pricefeed;
-    CytokeninInterface private cytokeninContract;
+    CytokeninInterface private cytokenin;
+    ENS private ens;
 
     struct CryptoPlant {
         address     aggregator;
@@ -28,17 +46,23 @@ contract CryptoGarden is ERC721 {
                         int latestPrice,
                         int prosperity);
     
-    constructor(address cytokeninAddress) ERC721("Crypto Plants", "CP") {
+    constructor(address ensRegistry, address cytokeninAddress) ERC721("Crypto Plants", "CP") {
         idCounter = 0;
         decimals = 3;
         sig = int(10**decimals);
-        cytokeninContract = CytokeninInterface(cytokeninAddress);
+        ens = ENS(ensRegistry);
+        cytokenin = CytokeninInterface(cytokeninAddress);
     }
 
     modifier checkGardener(uint plantID) {
         require(_isApprovedOrOwner(msg.sender, plantID),
                 "Garden: gardener can't access this plant");
         _;
+    }
+
+    function _resolve(bytes32 node) private view returns (address) {
+        Resolver resolver = ens.resolver(node);
+        return resolver.addr(node);
     }
 
     function existPlant(uint plantID) public view returns (bool) {
@@ -49,13 +73,16 @@ contract CryptoGarden is ERC721 {
         return cryptoPlants[plantID];
     }
 
-    function seed(address aggregator_, bool directionUp_) external {
-        pricefeed = AggregatorV3Interface(aggregator_);
+    function seed(bytes32 node, bool directionUp) external {
+        address aggregator = _resolve(node);
+        require(aggregator != address(0),
+                "invalid price feed");
+        pricefeed = AggregatorV3Interface(aggregator);
         (,int price,,,) = pricefeed.latestRoundData();
-        cryptoPlants.push(CryptoPlant(aggregator_, directionUp_, price, 0));
+        cryptoPlants.push(CryptoPlant(aggregator, directionUp, price, 0));
         _mint(msg.sender, idCounter);
 
-        emit GrowthRecord(idCounter, aggregator_, directionUp_, price, 0);
+        emit GrowthRecord(idCounter, aggregator, directionUp, price, 0);
         idCounter += 1;
     }
     
@@ -99,7 +126,7 @@ contract CryptoGarden is ERC721 {
     function extractCytokenin(uint plantID) external checkGardener(plantID) {
         int prosperity = cryptoPlants[plantID].prosperity;
         if (prosperity > 0) {
-            cytokeninContract.mint(msg.sender, uint(prosperity));
+            cytokenin.mint(msg.sender, uint(prosperity));
         }
         _burn(plantID);
         emit GrowthRecord(plantID, address(0), false, 0, 0);
@@ -130,7 +157,7 @@ contract CryptoGarden is ERC721 {
             }
         }
 
-        cytokeninContract.burn(msg.sender, cost);
+        cytokenin.burn(msg.sender, cost);
         sample.directionUp = directionUp;
         emit GrowthRecord(plantID, sample.aggregator, sample.directionUp, latestPrice, sample.prosperity);
     }

@@ -35,6 +35,12 @@ networks:
   development:
     cmd_settings:
       mnemonic: hill law jazz limb penalty escape public dish stand bracket blue jar
+    mock_pair: ['eth-usd', 'btc-usd', 'link-usd', 'bnb-usd']
+    mock_price: [2000, 30000, 20, 300]
+  mainnet:
+    ens_registry: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
+  rinkeby:
+    ens_registry: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 
 # enable output of development artifacts to load with react
 dev_deployment_artifacts: true
