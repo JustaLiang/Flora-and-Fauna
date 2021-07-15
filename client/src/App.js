@@ -14,19 +14,19 @@ class App extends React.Component {
         ethereum: null,
         accounts: null,
         chainid: null,
-        cytokenin: null,
-        garden: null,
-        ckDecimals: 0,
+        ctkContract: null,
+        crhpContract: null,
+        ctkDecimals: 0,
         //--- display
-        yourCytokenin: 0,
-        yourPlants: {},
-        plantInfo: [],
+        ctkBalance: 0,
+        crhpList: {},
+        crhpInfo: [],
         seedResponse: "",
         //--- input
         directionUp: true,
         quote: "ETH",
         base: "USD",
-        queryPlantID: 0,
+        crhpID: 0,
     }
 
     componentDidMount = async () => {
@@ -51,16 +51,16 @@ class App extends React.Component {
         if (chainid <= 42) {
             chain = chainid.toString()
         }
-        const cytokenin = await this.loadContract(chain, "Cytokenin")
-        const garden = await this.loadContract(chain, "CryptoGarden")
-        if (!cytokenin || !garden) {
+        const ctkContract = await this.loadContract(chain, "Cytokenin")
+        const crhpContract = await this.loadContract(chain, "CrypiranhaPlant")
+        if (!ctkContract || !crhpContract) {
             return
         }
-        const ckDecimals = await cytokenin.methods.decimals().call()
+        const ctkDecimals = await ctkContract.methods.decimals().call()
 
-        this.setState({ cytokenin, garden, ckDecimals })
+        this.setState({ ctkContract, crhpContract, ctkDecimals })
     
-        await this.getCytokeninBalance()
+        await this.getCTKBalance()
         await this.getPlantList()
     }
 
@@ -89,72 +89,71 @@ class App extends React.Component {
         return new web3.eth.Contract(contractArtifact.abi, address)
     }
 
-    getCytokeninBalance = async () => {
-        const {accounts, cytokenin, ckDecimals} = this.state
+    getCTKBalance = async () => {
+        const {accounts, ctkContract, ctkDecimals} = this.state
         if (accounts.length === 0) {
             return
         }
-        this.setState({ yourCytokenin: ((await cytokenin.methods.balanceOf(accounts[0]).call())/10**ckDecimals).toFixed(2) })
+        this.setState({ ctkBalance: ((await ctkContract.methods.balanceOf(accounts[0]).call())/10**ctkDecimals).toFixed(2) })
     }
 
     getPlantList = async () => {
-        const { accounts, garden } = this.state
+        const { accounts, crhpContract } = this.state
         if (accounts.length === 0) {
             return
         }
-        const plantIDs = await garden.methods.getPlantsByOwner(accounts[0]).call()
-        let yourPlants = {}
+        const plantIDs = await crhpContract.methods.getPlantIDs(accounts[0]).call()
+        let crhpList = {}
         for (let id of plantIDs)
         {
-            yourPlants[id] = await garden.methods.showPlant(id).call()
+            crhpList[id] = await crhpContract.methods.getPlantInfo(id).call()
         }
-        this.setState({ yourPlants })
+        this.setState({ crhpList })
     }
 
-    plantInterface = (id) => {
-        const { yourPlants } = this.state
-        return <form className="plant" key={id} onSubmit={(e) => this.showCertainPlant(e)}>
+    plantDisplay = (id) => {
+        const { crhpList } = this.state
+        return <form className="plant" key={id} onSubmit={(e) => this.showPlantInfo(e)}>
             <div>
                 #{id} <br/>
-                {yourPlants[id][0].substring(0,16)}... <br/> 
-                {yourPlants[id].slice(1).join(" | ")} <br/>
-                <button type="submit" value={id} onClick={(e) => this.setState({ queryPlantID: e.target.value })}>check</button>
-                <button value={id} onClick={(e) => this.changeDirection(e)}>turn</button>
-                <button value={id} onClick={(e) => this.extractCytokenin(e)}>extract</button>
-                <button value={id} onClick={(e) => this.recover(e)}>recover</button>
+                {crhpList[id][0].substring(0,16)}... <br/> 
+                {crhpList[id].slice(1).join(" | ")} |--
+                <button type="submit" value={id} onClick={(e) => this.setState({ crhpID: e.target.value })}>check</button>
+                <br/>
+                <button value={id} onClick={(e) => this.keepGoing(e)}>keep going</button>
+                <button value={id} onClick={(e) => this.extractCTK(e)}>extract</button>
+                <br/>
+                <button value={id} onClick={(e) => this.turnAround(e)}>turn around</button>
+                <button value={id} onClick={(e) => this.mutateCRHP(e)}>mutate</button>
             </div>
         </form>
     }
 
-    showCertainPlant = async (e) => {
-        const { garden, queryPlantID } = this.state
+    showPlantInfo = async (e) => {
+        const { crhpContract, crhpID } = this.state
         e.preventDefault()
-        const pid = parseInt(queryPlantID)
+        const pid = parseInt(crhpID)
         if (isNaN(pid)) {
             alert("invalid plant ID")
             return
         }
-        if (!(await garden.methods.existPlant(pid).call())) {
-            this.setState({ plantInfo: ["not exists"] })
-            return
-        }
 
-        garden.methods.showPlant(pid).call()
+        crhpContract.methods.getPlantInfo(pid).call()
             .then((result) => {
-            this.setState({ plantInfo: result })
+            this.setState({ crhpInfo: result })
             })
             .catch((err) => {
             console.log(err)
-            this.setState({ plantInfo: ["not exists"] })
+            this.setState({ crhpInfo: ["not exists"] })
             })
     }
 
     plantSeed = async (e) => {
-        const { accounts, garden, directionUp, quote, base } = this.state
+        const { accounts, crhpContract, directionUp, quote, base } = this.state
         e.preventDefault()
         const pairNode = namehash.hash(`${quote}-${base}.data.eth`)
 
-        garden.methods.seed(pairNode, directionUp).send({ from: accounts[0] })
+        crhpContract.methods.seed(pairNode, directionUp).send({ from: accounts[0] })
             .then(() => {
                 this.setState({seedResponse: "Plant a seed successfully"})
                 this.getPlantList()
@@ -164,12 +163,12 @@ class App extends React.Component {
                 this.setState({seedResponse: "Invalid pair"})
             })
     }
-    
-    changeDirection = async (e) => {
-        const { accounts, garden } = this.state
+
+    keepGoing = async (e) => {
+        const { accounts, crhpContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        garden.methods.turnAround(pid).send({ from: accounts[0] })
+        crhpContract.methods.keepGoing(pid).send({ from: accounts[0] })
             .then(() => {
                 this.getPlantList()
             })
@@ -178,28 +177,41 @@ class App extends React.Component {
             })
     }
 
-    extractCytokenin = async (e) => {
-        const { accounts, garden } = this.state
+    turnAround = async (e) => {
+        const { accounts, crhpContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        garden.methods.extractCytokenin(pid).send({ from:accounts[0] })
+        crhpContract.methods.turnAround(pid).send({ from: accounts[0] })
             .then(() => {
                 this.getPlantList()
-                this.getCytokeninBalance()
             })
             .catch((err) => {
                 console.log(err)
             })
     }
 
-    recover = async (e) => {
-        const { accounts, garden } = this.state
+    extractCTK = async (e) => {
+        const { accounts, crhpContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        garden.methods.recoverTurning(pid).send({ from: accounts[0] })
+        crhpContract.methods.extract(pid).send({ from:accounts[0] })
             .then(() => {
                 this.getPlantList()
-                this.getCytokeninBalance()
+                this.getCTKBalance()
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+    }
+
+    mutateCRHP = async (e) => {
+        const { accounts, crhpContract } = this.state
+        e.preventDefault()
+        const pid = parseInt(e.target.value)
+        crhpContract.methods.mutate(pid).send({ from: accounts[0] })
+            .then(() => {
+                this.getPlantList()
+                this.getCTKBalance()
             })
             .catch((err) => {
                 console.log(err)
@@ -209,9 +221,9 @@ class App extends React.Component {
     render() {
         const {
             ethereum, accounts, chainid,
-            cytokenin, garden,
-            yourCytokenin, yourPlants, plantInfo, seedResponse,
-            quote, base, queryPlantID
+            ctkContract, crhpContract,
+            ctkBalance, crhpList, crhpInfo, seedResponse,
+            quote, base, crhpID
         } = this.state
 
         if (!ethereum) {
@@ -222,12 +234,12 @@ class App extends React.Component {
             return <div>Wrong Network!</div>
         }
 
-        if (!cytokenin || !garden) {
+        if (!ctkContract || !crhpContract) {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
-        const plantList = Object.keys(yourPlants).map((id) => this.plantInterface(id))
+        const plantList = Object.keys(crhpList).map((id) => this.plantDisplay(id))
 
         return (<div className="App">
             {
@@ -237,9 +249,9 @@ class App extends React.Component {
                     : null
             }
 
-            <h1>Crypto Gardener</h1>
-            <div> <h3>your cytokenin</h3>{yourCytokenin}</div>
-            <div> <h3>your plants</h3>{plantList}</div>
+            <h1>Crypiranha Plant</h1>
+            <div> <h3>cytokenin</h3>{ctkBalance}</div>
+            <div> <h3>garden</h3>{plantList}</div>
             <br/>
             <form onSubmit={(e) => this.plantSeed(e)}>
                 <div>
@@ -250,25 +262,31 @@ class App extends React.Component {
                     <input name="base" type="text" value={base}
                         onChange={(e) => this.setState({ base: e.target.value })}/>
                     <br />
+                    <a href="https://docs.chain.link/docs/ethereum-addresses/"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Check valid pairs
+                    </a>
+                    <br/>
                     <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: true}))}>go up</button>
                     <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: false}))}>go down</button>
                     <p>{seedResponse}</p>
                 </div>
             </form>
             <br/>
-            <form onSubmit={(e) => this.showCertainPlant(e)}>
+            <form onSubmit={(e) => this.showPlantInfo(e)}>
                 <div>
                     <h3>check a plant</h3>
                     <input
-                        name="queryPlantID"
+                        name="crhpID"
                         type="text"
-                        value={queryPlantID}
-                        onChange={(e) => this.setState({queryPlantID: e.target.value})}
+                        value={crhpID}
+                        onChange={(e) => this.setState({crhpID: e.target.value})}
                     />
                     <br/>
-                    <button type="submit" disabled={!isAccountsUnlocked}>query</button>
+                    <button type="submit" disabled={!isAccountsUnlocked}>check</button>
                 </div>
-            <div> <br/>{plantInfo.join(" | ")}</div>
+            <div> <br/>{crhpInfo.join(" | ")}</div>
             </form>
         </div>)
     }
