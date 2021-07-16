@@ -2,37 +2,52 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Cytokenin is ERC20, Ownable {
+/**
+ * @notice Unique operations only for CRHP contract
+ */
+interface CTK {
+    function mint(address gardener, uint amount) external;
+    function burn(address gardener, uint amount) external;
+}
 
-    bool public ifSetGardenAddress;
-    address public gardenAddress;
+/**
+ * @title Cytokenin (cytokinin + token)
+ * @notice ERC20 token minted or burnt by CryprianhaPlant contract
+ * @author Justa Liang
+ */
+contract Cytokenin is ERC20 {
 
-    constructor() ERC20("Cytokenin", "CTK") {
-        _mint(msg.sender, 7777777777e18);
-        ifSetGardenAddress = false;
-        gardenAddress = address(0);
+    /// @notice Address of corresponding CRHP contract
+    address public crhpAddress;
+
+    /// @dev set name, symbol, and CHRP contract address 
+    constructor(address crhpAddress_) ERC20("Cytokenin", "CTK") {
+        crhpAddress = crhpAddress_;
     }
 
-    modifier onlyGarden {
-        require(msg.sender == gardenAddress,
-                "Cytokenin: this method is only for Garden");
+    /// @dev Check if the operation is sent by CRHP contract
+    modifier onlyCRHP {
+        require(msg.sender == crhpAddress,
+                "CTK: this method is only for CRHP contract");
         _;
     }
 
-    function setGardenAddress(address gardenAddress_) external onlyOwner {
-        require(!ifSetGardenAddress,
-                "Cytokenin: address of Garden has been set");
-        gardenAddress = gardenAddress_;
-        ifSetGardenAddress = true;
-    }
-
-    function mint(address gardener, uint amount) external onlyGarden {
+    /** 
+     * @dev Mint CTK for gardener
+     * @param gardener Player of CRHP
+     * @param amount Amount of CTK (no decimal concerned)
+    */
+    function mint(address gardener, uint amount) external onlyCRHP {
         _mint(gardener, amount*10**decimals());
     }
 
-    function burn(address gardener, uint amount) external onlyGarden {
+    /** 
+     * @dev Burn CTK from gardener
+     * @param gardener Player of CRHP
+     * @param amount Amount of CTK (no decimal concerned)
+    */
+    function burn(address gardener, uint amount) external onlyCRHP {
         _burn(gardener, amount*10**decimals());
     }
 }

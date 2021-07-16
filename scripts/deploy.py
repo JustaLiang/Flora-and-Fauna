@@ -6,11 +6,10 @@ from brownie import (
 def main():
     dev = run("dev_account")
     ens = run("ens_registry")
-    ctk = Cytokenin.deploy({"from": dev}, publish_source=config["verify"])
-    crhp = CrypiranhaPlant.deploy(ens, ctk, {"from": dev}, publish_source=config["verify"])
-    ctk.setGardenAddress(crhp.address, {"from": dev})
+    crhp = CrypiranhaPlant.deploy(ens, {"from": dev}, publish_source=config["verify"])
+    ctk = Cytokenin.at(crhp.ctkAddress())
     if network.show_active() == "development":
-        test_account = config["wallets"]["test_key"]
+        test_account = config["wallets"]["test_account"]
         dev.transfer(test_account, "100 ether")
         ctk.transfer(test_account, 77*10**18, {"from":dev})
     return ctk, crhp, ens

@@ -21,7 +21,6 @@ class App extends React.Component {
         ctkBalance: 0,
         crhpList: {},
         crhpInfo: [],
-        seedResponse: "",
         //--- input
         directionUp: true,
         quote: "ETH",
@@ -117,7 +116,7 @@ class App extends React.Component {
             <div>
                 #{id} <br/>
                 {crhpList[id][0].substring(0,16)}... <br/> 
-                {crhpList[id].slice(1).join(" | ")} |--
+                {crhpList[id].slice(1).join(" | ")} |  .
                 <button type="submit" value={id} onClick={(e) => this.setState({ crhpID: e.target.value })}>check</button>
                 <br/>
                 <button value={id} onClick={(e) => this.keepGoing(e)}>keep going</button>
@@ -134,17 +133,17 @@ class App extends React.Component {
         e.preventDefault()
         const pid = parseInt(crhpID)
         if (isNaN(pid)) {
-            alert("invalid plant ID")
+            this.setState({ crhpInfo: ["invalid plant ID"] })
             return
         }
 
         crhpContract.methods.getPlantInfo(pid).call()
             .then((result) => {
-            this.setState({ crhpInfo: result })
+                this.setState({ crhpInfo: result })
             })
             .catch((err) => {
-            console.log(err)
-            this.setState({ crhpInfo: ["not exists"] })
+                console.log(err)
+                this.setState({ crhpInfo: ["not exists"] })
             })
     }
 
@@ -154,13 +153,13 @@ class App extends React.Component {
         const pairNode = namehash.hash(`${quote}-${base}.data.eth`)
 
         crhpContract.methods.seed(pairNode, directionUp).send({ from: accounts[0] })
-            .then(() => {
-                this.setState({seedResponse: "Plant a seed successfully"})
+            .on("receipt", (result) => {
+                const plantId = result["events"]["GrowthRecord"]["returnValues"]["plantID"]
+                alert(`You got plant #${plantId}`)
                 this.getPlantList()
             })
-            .catch((err) => {
+            .on("error", (err) => {
                 console.log(err)
-                this.setState({seedResponse: "Invalid pair"})
             })
     }
 
@@ -169,10 +168,10 @@ class App extends React.Component {
         e.preventDefault()
         const pid = parseInt(e.target.value)
         crhpContract.methods.keepGoing(pid).send({ from: accounts[0] })
-            .then(() => {
+            .on("receipt", () => {
                 this.getPlantList()
             })
-            .catch((err) => {
+            .on("error", (err) => {
                 console.log(err)
             })
     }
@@ -182,10 +181,10 @@ class App extends React.Component {
         e.preventDefault()
         const pid = parseInt(e.target.value)
         crhpContract.methods.turnAround(pid).send({ from: accounts[0] })
-            .then(() => {
+            .on("receipt", () => {
                 this.getPlantList()
             })
-            .catch((err) => {
+            .on("error", (err) => {
                 console.log(err)
             })
     }
@@ -195,11 +194,11 @@ class App extends React.Component {
         e.preventDefault()
         const pid = parseInt(e.target.value)
         crhpContract.methods.extract(pid).send({ from:accounts[0] })
-            .then(() => {
+            .on("receipt", () => {
                 this.getPlantList()
                 this.getCTKBalance()
             })
-            .catch((err) => {
+            .on("error", (err) => {
                 console.log(err)
             })
     }
@@ -209,11 +208,11 @@ class App extends React.Component {
         e.preventDefault()
         const pid = parseInt(e.target.value)
         crhpContract.methods.mutate(pid).send({ from: accounts[0] })
-            .then(() => {
+            .on("receipt", () => {
                 this.getPlantList()
                 this.getCTKBalance()
             })
-            .catch((err) => {
+            .on("error", (err) => {
                 console.log(err)
             })
     }
@@ -222,7 +221,7 @@ class App extends React.Component {
         const {
             ethereum, accounts, chainid,
             ctkContract, crhpContract,
-            ctkBalance, crhpList, crhpInfo, seedResponse,
+            ctkBalance, crhpList, crhpInfo,
             quote, base, crhpID
         } = this.state
 
@@ -270,7 +269,6 @@ class App extends React.Component {
                     <br/>
                     <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: true}))}>go up</button>
                     <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: false}))}>go down</button>
-                    <p>{seedResponse}</p>
                 </div>
             </form>
             <br/>
