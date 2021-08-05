@@ -12,7 +12,7 @@ Cultivate plants (dynamic NFTs) by predicting market.
     yarn install
     ```
 
-3. In [MetaMask](https://metamask.io/), set MetaMask local RPC  
+3. In [MetaMask](https://metamask.io/), set MetaMask local RPC.  
 <img src="./assets/CustomRPC.png" alt="Custom RPC" width="250" height="400"/><img src="./assets/CustomSettings.png" alt="Custom Settings" width="250" height="400"/>
 
 ## Usage (Local Network)
@@ -49,7 +49,7 @@ Cultivate plants (dynamic NFTs) by predicting market.
 5. Interact with the smart contracts using the web interface or via the Brownie console.
 
     ```python
-    # get the newest vyper storage contract
+    # get the newest CrypiranhaPlant contract
     >>> crhp = CrypiranhaPlant[-1]
 
     # seed a ETH/USD plant
@@ -64,7 +64,6 @@ Cultivate plants (dynamic NFTs) by predicting market.
 1. Start the React app.
 
     ```bash
-    # make sure to use a different terminal, not the brownie console
     cd client
     yarn start
     ```
