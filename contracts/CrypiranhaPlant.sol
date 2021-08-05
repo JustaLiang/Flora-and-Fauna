@@ -32,8 +32,8 @@ contract CrypiranhaPlant is ERC721 {
     /// @notice ID counter of CRHP, imply how many CRHPs have been created
     uint public plantIDCounter;
 
-    /// @dev imply precision of price change in percentage
-    int _base;
+    /// @dev Inital CRHP power
+    int _initPower;
 
     /// @dev ENS interface (fixed address)
     ENS private _ens;
@@ -66,7 +66,7 @@ contract CrypiranhaPlant is ERC721 {
     constructor(address ensRegistryAddr)
         ERC721("Crypiranha Plant", "CRHP") {
         plantIDCounter = 0;
-        _base = 1000;
+        _initPower = 1000;
         _ens = ENS(ensRegistryAddr);
         Cytokenin cytkContract = new Cytokenin(address(this));
         cytkAddress = address(cytkContract);
@@ -117,9 +117,9 @@ contract CrypiranhaPlant is ERC721 {
         
         // mint plant and store its data on chain
         _mint(msg.sender, plantIDCounter);
-        _plants.push(Plant(proxy, true, currPrice, _base));
+        _plants.push(Plant(proxy, true, currPrice, _initPower));
 
-        emit GrowthRecord(plantIDCounter, proxy, true, currPrice, _base);
+        emit GrowthRecord(plantIDCounter, proxy, true, currPrice, _initPower);
         plantIDCounter++;
     }
     
@@ -175,11 +175,11 @@ contract CrypiranhaPlant is ERC721 {
         Plant storage target = _plants[plantID];
         require(!target.active,
                 "CRHP: can only extract CYTK from inactive plant");
-        require(target.power > _base,
+        require(target.power > _initPower,
                 "CRHP: can only extract CYTK from healthy plant");
         
         _burn(plantID);
-        _cytk.mint(msg.sender, uint(target.power-_base));
+        _cytk.mint(msg.sender, uint(target.power-_initPower));
     }
 
     /** 
