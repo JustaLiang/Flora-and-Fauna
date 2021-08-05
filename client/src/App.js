@@ -242,7 +242,7 @@ class App extends React.Component {
                     : null
             }
             <h1>Crypiranha Plant</h1>
-            <img src="https://i.imgur.com/aZKE2Ve.jpeg" alt="Plant on Link" width="700" height="340"/>
+            <img src="https://i.imgur.com/aZKE2Ve.jpeg" alt="Plant on Link" width="500" height="250"/>
             <div> <h3>cytokenin</h3>{cytkBalance}</div>
             <div> <h3>garden</h3>{plantList}</div>
             <br/>
