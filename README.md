@@ -12,13 +12,10 @@ Cultivate plants (dynamic NFTs) by predicting market.
     yarn install
     ```
 
-3. In [MetaMask](https://metamask.io/) or another web3 browser extension.
+3. In [MetaMask](https://metamask.io/), set MetaMask local RPC  
+<img src="./assets/CustomRPC.png" alt="Custom RPC" width="250" height="400"/><img src="./assets/CustomSettings.png" alt="Custom Settings" width="250" height="400"/>
 
-4. Set MetaMask local RPC
-![Custom RPC](assets/CustomRPC.png)
-![Custom settings](assets/CustomSettings.png)
-
-## Usage (Local)
+## Usage (Local Network)
 
 1. Open the Brownie console. Starting the console launches a fresh instance in the background.
 
@@ -46,7 +43,7 @@ Cultivate plants (dynamic NFTs) by predicting market.
     yarn start
     ```
 
-4. Connect Metamask to the local Ganache network. In the upper right corner, click the network dropdown menu. Select `Localhost 8545`
+4. Connect Metamask to the local network. In the upper right corner, click the network dropdown menu. Select `Localhost`
 
 
 5. Interact with the smart contracts using the web interface or via the Brownie console.
@@ -56,7 +53,7 @@ Cultivate plants (dynamic NFTs) by predicting market.
     >>> crhp = CrypiranhaPlant[-1]
 
     # seed a ETH/USD plant
-    >>> crhp.seed(0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d)
+    >>> crhp.seed('0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d')
     ```
 
     Any changes to the contracts from the console should show on the website after a refresh, and vice versa.
