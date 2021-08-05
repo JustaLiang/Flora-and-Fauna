@@ -12,4 +12,4 @@ def main():
         test_account = config["wallets"]["test_account"]
         dev.transfer(test_account, "100 ether")
         cytk.transfer(test_account, 77*10**18, {"from":dev})
-    return cytk, crhp, ens
+    return crhp, cytk, ens
