@@ -7,9 +7,9 @@ def main():
     dev = run("dev_account")
     ens = run("ens_registry")
     crhp = CrypiranhaPlant.deploy(ens, {"from": dev}, publish_source=config["verify"])
-    ctk = Cytokenin.at(crhp.ctkAddress())
+    cytk = Cytokenin.at(crhp.cytkAddress())
     if network.show_active() == "development":
         test_account = config["wallets"]["test_account"]
         dev.transfer(test_account, "100 ether")
-        ctk.transfer(test_account, 77*10**18, {"from":dev})
-    return ctk, crhp, ens
+        cytk.transfer(test_account, 77*10**18, {"from":dev})
+    return cytk, crhp, ens

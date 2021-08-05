@@ -19,7 +19,6 @@ reports:
   exclude_contracts:
     - ERC20
     - ERC721
-    - Ownable
     - MockEnsRegistry
     - MockPublicResolver
     - MockV3Aggregator

@@ -26,17 +26,20 @@ interface Resolver {
  */
 contract CrypiranhaPlant is ERC721 {
 
-    /// @notice Address of corresponding CTK contract
-    address public ctkAddress;
+    /// @notice Address of corresponding CYTK contract
+    address public cytkAddress;
 
     /// @notice ID counter of CRHP, imply how many CRHPs have been created
     uint public plantIDCounter;
+
+    /// @dev imply precision of price change in percentage
+    int _base;
 
     /// @dev ENS interface (fixed address)
     ENS private _ens;
 
     /// @dev Cytokenin interface (fixed address)
-    CTK private _ctk;
+    CYTK private _cytk;
 
     /// @dev Part of plant data which must be saved on-chain
     struct Plant {
@@ -63,11 +66,12 @@ contract CrypiranhaPlant is ERC721 {
     constructor(address ensRegistryAddr)
         ERC721("Crypiranha Plant", "CRHP") {
         plantIDCounter = 0;
+        _base = 1000;
         _ens = ENS(ensRegistryAddr);
-        Cytokenin ctkContract = new Cytokenin(address(this));
-        ctkAddress = address(ctkContract);
-        _ctk = CTK(ctkAddress);
-        _ctk.mint(msg.sender, 7777777777);
+        Cytokenin cytkContract = new Cytokenin(address(this));
+        cytkAddress = address(cytkContract);
+        _cytk = CYTK(cytkAddress);
+        _cytk.mint(msg.sender, 7777777777);
     }
 
     /**
@@ -77,7 +81,7 @@ contract CrypiranhaPlant is ERC721 {
     */
     function getPlantInfo(uint plantID) public view returns (Plant memory) {
         require(_exists(plantID),
-                "CHRP: gargener query for nonexistent plant");
+                "CHRP: gardener query for nonexistent plant");
         return _plants[plantID];
     }
 
@@ -113,9 +117,9 @@ contract CrypiranhaPlant is ERC721 {
         
         // mint plant and store its data on chain
         _mint(msg.sender, plantIDCounter);
-        _plants.push(Plant(proxy, true, currPrice, 1000));
+        _plants.push(Plant(proxy, true, currPrice, _base));
 
-        emit GrowthRecord(plantIDCounter, proxy, true, currPrice, 1000);
+        emit GrowthRecord(plantIDCounter, proxy, true, currPrice, _base);
         plantIDCounter++;
     }
     
@@ -133,8 +137,8 @@ contract CrypiranhaPlant is ERC721 {
         (,int currPrice,,,) = pricefeed.latestRoundData();
 
         // update on-chain data
-        target.latestPrice = currPrice;
         target.power = ((currPrice << 10)/target.latestPrice*target.power) >> 10;
+        target.latestPrice = currPrice;
         target.active = false;
 
         // record plant state
@@ -164,21 +168,23 @@ contract CrypiranhaPlant is ERC721 {
 
     /** 
      * @notice Extract Cytokenin from a plant
-     * @dev Gardener get CTK
+     * @dev Gardener get CYTK
      * @param plantID ID of the plant
     */  
     function extract(uint plantID) external checkGardener(plantID){
         Plant storage target = _plants[plantID];
         require(!target.active,
-                "CRHP: can only extract CTK from inactive plant");
+                "CRHP: can only extract CYTK from inactive plant");
+        require(target.power > _base,
+                "CRHP: can only extract CYTK from healthy plant");
         
         _burn(plantID);
-        _ctk.mint(msg.sender, uint(target.power));
+        _cytk.mint(msg.sender, uint(target.power-_base));
     }
 
     /** 
-     * @notice Use CTK to stimulate a plant and change its state
-     * @dev Gardener cost CTK
+     * @notice Use CYTK to stimulate a plant and change its state
+     * @dev Gardener cost CYTK
      * @param plantID ID of the plant
     */  
     function stimulate(uint plantID) external checkGardener(plantID) {
@@ -188,16 +194,16 @@ contract CrypiranhaPlant is ERC721 {
         AggregatorV3Interface pricefeed = AggregatorV3Interface(target.proxy);
         (,int currPrice,,,) = pricefeed.latestRoundData();
 
-        // charge CTK from gardener
+        // charge CYTK from gardener
         if (target.active) {
             if (currPrice < target.latestPrice) {
-                _ctk.burn(msg.sender, uint((((target.latestPrice << 10)/currPrice*target.power) >> 10) - target.power));
+                _cytk.burn(msg.sender, uint(((target.latestPrice << 10)/currPrice*target.power) >> 10));
             }
             target.active = false;
         }
         else {
             if (currPrice > target.latestPrice) {
-                _ctk.burn(msg.sender, uint((((currPrice << 10)/target.latestPrice*target.power) >> 10) - target.power));
+                _cytk.burn(msg.sender, uint(((currPrice << 10)/target.latestPrice*target.power) >> 10));
             }
             target.active = true;
         }

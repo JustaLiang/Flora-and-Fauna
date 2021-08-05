@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /**
  * @notice Unique operations only for CRHP contract
  */
-interface CTK {
+interface CYTK {
     function mint(address gardener, uint amount) external;
     function burn(address gardener, uint amount) external;
 }
@@ -22,30 +22,30 @@ contract Cytokenin is ERC20 {
     address public crhpAddress;
 
     /// @dev set name, symbol, and CHRP contract address 
-    constructor(address crhpAddress_) ERC20("Cytokenin", "CTK") {
+    constructor(address crhpAddress_) ERC20("Cytokenin", "CYTK") {
         crhpAddress = crhpAddress_;
     }
 
     /// @dev Check if the operation is sent by CRHP contract
     modifier onlyCRHP {
         require(msg.sender == crhpAddress,
-                "CTK: this method is only for CRHP contract");
+                "CYTK: this method is only for CRHP contract");
         _;
     }
 
     /** 
-     * @dev Mint CTK for gardener
+     * @dev Mint CYTK for gardener
      * @param gardener Player of CRHP
-     * @param amount Amount of CTK (no decimal concerned)
+     * @param amount Amount of CYTK (no decimal concerned)
     */
     function mint(address gardener, uint amount) external onlyCRHP {
         _mint(gardener, amount*10**decimals());
     }
 
     /** 
-     * @dev Burn CTK from gardener
+     * @dev Burn CYTK from gardener
      * @param gardener Player of CRHP
-     * @param amount Amount of CTK (no decimal concerned)
+     * @param amount Amount of CYTK (no decimal concerned)
     */
     function burn(address gardener, uint amount) external onlyCRHP {
         _burn(gardener, amount*10**decimals());

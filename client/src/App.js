@@ -14,11 +14,11 @@ class App extends React.Component {
         ethereum: null,
         accounts: null,
         chainid: null,
-        ctkContract: null,
+        cytkContract: null,
         crhpContract: null,
-        ctkDecimals: 0,
+        cytkDecimals: 0,
         //--- display
-        ctkBalance: 0,
+        cytkBalance: 0,
         crhpList: {},
         crhpInfo: [],
         //--- input
@@ -50,17 +50,17 @@ class App extends React.Component {
         if (chainid <= 42) {
             chain = chainid.toString()
         }
-        const ctkContract = await this.loadContract(chain, "Cytokenin")
+        const cytkContract = await this.loadContract(chain, "Cytokenin")
         const crhpContract = await this.loadContract(chain, "CrypiranhaPlant")
-        if (!ctkContract || !crhpContract) {
+        if (!cytkContract || !crhpContract) {
             return
         }
-        const ctkDecimals = await ctkContract.methods.decimals().call()
+        const cytkDecimals = await cytkContract.methods.decimals().call()
 
-        this.setState({ ctkContract, crhpContract, ctkDecimals })
+        this.setState({ cytkContract, crhpContract, cytkDecimals })
     
-        await this.getCTKBalance()
-        await this.getPlantList()
+        await this.ctykGetBalance()
+        await this.crhpGetList()
     }
 
     loadContract = async (chain, contractName) => {
@@ -88,15 +88,15 @@ class App extends React.Component {
         return new web3.eth.Contract(contractArtifact.abi, address)
     }
 
-    getCTKBalance = async () => {
-        const {accounts, ctkContract, ctkDecimals} = this.state
+    ctykGetBalance = async () => {
+        const {accounts, cytkContract, cytkDecimals} = this.state
         if (accounts.length === 0) {
             return
         }
-        this.setState({ ctkBalance: ((await ctkContract.methods.balanceOf(accounts[0]).call())/10**ctkDecimals).toFixed(2) })
+        this.setState({ cytkBalance: ((await cytkContract.methods.balanceOf(accounts[0]).call())/10**cytkDecimals).toFixed(2) })
     }
 
-    getPlantList = async () => {
+    crhpGetList = async () => {
         const { accounts, crhpContract } = this.state
         if (accounts.length === 0) {
             return
@@ -110,25 +110,21 @@ class App extends React.Component {
         this.setState({ crhpList })
     }
 
-    plantDisplay = (id) => {
+    crhpDisplay = (id) => {
         const { crhpList } = this.state
-        return <form className="plant" key={id} onSubmit={(e) => this.showPlantInfo(e)}>
+        return <form className="plant" key={id} onSubmit={(e) => this.crhpShow(e)}>
             <div>
-                #{id} <br/>
-                {crhpList[id][0].substring(0,16)}... <br/> 
-                {crhpList[id].slice(1).join(" | ")} |  .
+                #{id} : | {crhpList[id][0].substring(0,10)}... | {crhpList[id].slice(1).join(" | ")} |
                 <button type="submit" value={id} onClick={(e) => this.setState({ crhpID: e.target.value })}>check</button>
-                <br/>
-                <button value={id} onClick={(e) => this.keepGoing(e)}>keep going</button>
-                <button value={id} onClick={(e) => this.extractCTK(e)}>extract</button>
-                <br/>
-                <button value={id} onClick={(e) => this.turnAround(e)}>turn around</button>
-                <button value={id} onClick={(e) => this.mutateCRHP(e)}>mutate</button>
+                <button value={id} onClick={(e) => this.crhpRest(e)}>rest</button>
+                <button value={id} onClick={(e) => this.crhpWake(e)}>wake</button>
+                <button value={id} onClick={(e) => this.crhpExtract(e)}>extract</button>
+                <button value={id} onClick={(e) => this.crhpStimulate(e)}>stimulate</button>
             </div>
         </form>
     }
 
-    showPlantInfo = async (e) => {
+    crhpShow = async (e) => {
         const { crhpContract, crhpID } = this.state
         e.preventDefault()
         const pid = parseInt(crhpID)
@@ -147,70 +143,68 @@ class App extends React.Component {
             })
     }
 
-    plantSeed = async (e) => {
-        const { accounts, crhpContract, directionUp, quote, base } = this.state
+    crhpSeed = async (e) => {
+        const { accounts, crhpContract, quote, base } = this.state
         e.preventDefault()
         const pairNode = namehash.hash(`${quote}-${base}.data.eth`)
 
-        crhpContract.methods.seed(pairNode, directionUp).send({ from: accounts[0] })
-            .on("receipt", (result) => {
-                const plantId = result["events"]["GrowthRecord"]["returnValues"]["plantID"]
-                alert(`You got plant #${plantId}`)
-                this.getPlantList()
+        crhpContract.methods.seed(pairNode).send({ from: accounts[0] })
+            .on("receipt", () => {
+                this.crhpGetList()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    keepGoing = async (e) => {
+    crhpRest = async (e) => {
         const { accounts, crhpContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        crhpContract.methods.keepGoing(pid).send({ from: accounts[0] })
+        crhpContract.methods.rest(pid).send({ from: accounts[0] })
             .on("receipt", () => {
-                this.getPlantList()
+                this.crhpGetList()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    turnAround = async (e) => {
+    crhpWake = async (e) => {
         const { accounts, crhpContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        crhpContract.methods.turnAround(pid).send({ from: accounts[0] })
+        crhpContract.methods.wake(pid).send({ from: accounts[0] })
             .on("receipt", () => {
-                this.getPlantList()
+                this.crhpGetList()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    extractCTK = async (e) => {
+    crhpExtract = async (e) => {
         const { accounts, crhpContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
         crhpContract.methods.extract(pid).send({ from:accounts[0] })
             .on("receipt", () => {
-                this.getPlantList()
-                this.getCTKBalance()
+                this.crhpGetList()
+                this.ctykGetBalance()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    mutateCRHP = async (e) => {
+    crhpStimulate = async (e) => {
         const { accounts, crhpContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        crhpContract.methods.mutate(pid).send({ from: accounts[0] })
+        crhpContract.methods.stimulate(pid).send({ from: accounts[0] })
             .on("receipt", () => {
-                this.getPlantList()
-                this.getCTKBalance()
+                this.crhpGetList()
+                this.ctykGetBalance()
             })
             .on("error", (err) => {
                 console.log(err)
@@ -220,8 +214,8 @@ class App extends React.Component {
     render() {
         const {
             ethereum, accounts, chainid,
-            ctkContract, crhpContract,
-            ctkBalance, crhpList, crhpInfo,
+            cytkContract, crhpContract,
+            cytkBalance, crhpList, crhpInfo,
             quote, base, crhpID
         } = this.state
 
@@ -233,12 +227,12 @@ class App extends React.Component {
             return <div>Wrong Network!</div>
         }
 
-        if (!ctkContract || !crhpContract) {
+        if (!cytkContract || !crhpContract) {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
-        const plantList = Object.keys(crhpList).map((id) => this.plantDisplay(id))
+        const plantList = Object.keys(crhpList).map((id) => this.crhpDisplay(id))
 
         return (<div className="App">
             {
@@ -249,10 +243,10 @@ class App extends React.Component {
             }
 
             <h1>Crypiranha Plant</h1>
-            <div> <h3>cytokenin</h3>{ctkBalance}</div>
+            <div> <h3>cytokenin</h3>{cytkBalance}</div>
             <div> <h3>garden</h3>{plantList}</div>
             <br/>
-            <form onSubmit={(e) => this.plantSeed(e)}>
+            <form onSubmit={(e) => this.crhpSeed(e)}>
                 <div>
                     <h3>plant a seed</h3>
                     <input name="quote" type="text" value={quote}
@@ -267,12 +261,11 @@ class App extends React.Component {
                         Check valid pairs
                     </a>
                     <br/>
-                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: true}))}>go up</button>
-                    <button type="submit" disabled={!isAccountsUnlocked} onClick={() => (this.setState({directionUp: false}))}>go down</button>
+                    <button type="submit" disabled={!isAccountsUnlocked}>seed</button>
                 </div>
             </form>
             <br/>
-            <form onSubmit={(e) => this.showPlantInfo(e)}>
+            <form onSubmit={(e) => this.crhpShow(e)}>
                 <div>
                     <h3>check a plant</h3>
                     <input
