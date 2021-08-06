@@ -3,8 +3,12 @@ Cultivate plants (dynamic NFTs) by predicting market.
 
 ## Installation
 
-1. [Install Brownie](https://eth-brownie.readthedocs.io/en/stable/install.html), if you haven't already. You must be using version `1.9.0` or newer.
-
+1. Install dependencies.
+    
+    ```bash
+    pip3 install -r requirements.txt
+    ```
+   
 2. Install the React client dependencies.
 
     ```bash
@@ -13,9 +17,10 @@ Cultivate plants (dynamic NFTs) by predicting market.
     ```
 
 3. In [MetaMask](https://metamask.io/), set MetaMask local RPC.  
-<img src="./assets/CustomRPC.png" alt="Custom RPC" width="250" height="400"/><img src="./assets/CustomSettings.png" alt="Custom Settings" width="250" height="400"/>
+  
+<img src="./assets/CustomRPC.png" alt="Custom RPC" width="250" height="400"/><img src="./assets/CustomSettings.png" alt="Custom Settings" width="250" height="400"/>  
 
-## Usage (Local Network)
+## Usage (Local testnet)
 
 1. Open the Brownie console. Starting the console launches a fresh instance in the background.
 
@@ -43,8 +48,10 @@ Cultivate plants (dynamic NFTs) by predicting market.
     yarn start
     ```
 
-4. Connect Metamask to the local network. In the upper right corner, click the network dropdown menu. Select `Localhost`
+4. Connect Metamask to the local network. In the upper right corner, click the network dropdown menu.  
+   Select `Localhost` and refresh the page.
 
+<img src="./assets/SelectLocal.png" alt="Select Local" width="250" height="400"/>  
 
 5. Interact with the smart contracts using the web interface or via the Brownie console.
 
@@ -59,7 +66,7 @@ Cultivate plants (dynamic NFTs) by predicting market.
     Any changes to the contracts from the console should show on the website after a refresh, and vice versa.
 
 
-## Usage (Rinkeby)
+## Usage (Rinkeby testnet)
 
 1. Start the React app.
 
@@ -67,6 +74,10 @@ Cultivate plants (dynamic NFTs) by predicting market.
     cd client
     yarn start
     ```
-2. Connect Metamask to the Rinkeby testnet
+    
+2. Connect Metamask to the local network. In the upper right corner, click the network dropdown menu.  
+   Select `Rinkeby` and refresh the page.
+  
+<img src="./assets/SelectRinkeby.png" alt="Select Rinkeby" width="250" height="400"/>  
 
-3. Interact with the smart contracts using the web interface
+3. Interact with the smart contracts using the web interface.
