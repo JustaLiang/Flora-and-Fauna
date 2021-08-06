@@ -44,7 +44,7 @@ networks:
     ens_registry: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 
 # enable output of development artifacts to load with react
-dev_deployment_artifacts: true
+dev_deployment_artifacts: True
 
 # wallets
 wallets:
