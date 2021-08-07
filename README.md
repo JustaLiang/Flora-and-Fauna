@@ -3,20 +3,26 @@ Cultivate plants (dynamic NFTs) by predicting market.
 
 ## Installation
 
-1. Install dependencies.
+1. Install Ganache.
+    
+    ```bash
+    npm install -g ganache-cli
+    ```
+
+2. Install project dependencies.
     
     ```bash
     pip3 install -r requirements.txt
     ```
    
-2. Install the React client dependencies.
+3. Install the React client dependencies.
 
     ```bash
     cd client
     yarn install
     ```
 
-3. In [MetaMask](https://metamask.io/), set MetaMask local RPC.  
+4. In [MetaMask](https://metamask.io/), set MetaMask local RPC.  
   
 <img src="./assets/CustomRPC.png" alt="Custom RPC" width="250" height="400"/><img src="./assets/CustomSettings.png" alt="Custom Settings" width="250" height="400"/>  
 

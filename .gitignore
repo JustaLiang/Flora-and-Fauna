@@ -5,6 +5,7 @@ build/
 reports/
 .pytest_cache
 .env
+env
 .vscode/
 **.DS_Store
 client/src/artifacts
