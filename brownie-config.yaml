@@ -14,7 +14,7 @@ compiler:
       - '@chainlink=smartcontractkit/chainlink-brownie-contracts@1.0.2'
       - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.0.0'
 
-# exclude SafeMath when calculating test coverage
+# exclude when calculating test coverage
 reports:
   exclude_contracts:
     - ERC20
