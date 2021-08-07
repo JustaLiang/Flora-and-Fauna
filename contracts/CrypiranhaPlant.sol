@@ -44,7 +44,7 @@ contract CrypiranhaPlant is ERC721 {
     /// @dev Part of plant data which must be saved on-chain
     struct Plant {
         address     proxy;        // which proxy of Chainlink price feed
-        bool        active;       // active or not 
+        bool        active;       // active or not
         int         latestPrice;  // latest updated price
         int         power;        // power of the plant
     }
@@ -52,13 +52,15 @@ contract CrypiranhaPlant is ERC721 {
     /// @dev Plant data storage
     Plant[] private _plants;
 
-    /// @notice Emit whenever apply operation on plant 
-    event GrowthRecord( uint indexed plantID,
-                        address indexed proxy,
-                        bool indexed active,
-                        int latestPrice,
-                        int power);
-    
+    /// @notice Emit whenever apply operation on plant
+    event GrowthRecord(
+        uint indexed plantID,
+        address indexed proxy,
+        bool indexed active,
+        int latestPrice,
+        int power
+    );
+
     /**
      * @dev Set name, symbol, and addresses of interactive contracts
      * @param ensRegistryAddr Address of ENS Registry
@@ -80,12 +82,13 @@ contract CrypiranhaPlant is ERC721 {
      * @return On-chain information of the plant
     */
     function getPlantInfo(uint plantID) public view returns (Plant memory) {
-        require(_exists(plantID),
-                "CHRP: gardener query for nonexistent plant");
+        require(
+            _exists(plantID),
+            "CHRP: gardener query for nonexistent plant");
         return _plants[plantID];
     }
 
-    /** 
+    /**
      * @notice Get plant IDs, like (2,6,9), given owner
      * @param owner Owner of these plants
      * @return IDs of these plants
@@ -103,18 +106,20 @@ contract CrypiranhaPlant is ERC721 {
         return plantIDs;
     }
 
-    /** 
+    /**
      * @notice Plant a seed
      * @param plantType ENS-namehash of given pair (ex: eth-usd.data.eth)
     */
     function seed(bytes32 plantType) external {
         address proxy = _resolve(plantType);
-        require(proxy != address(0),
-                "CRHP: invalid price feed");
+        require(
+            proxy != address(0),
+            "CRHP: invalid price feed");
+
         // get current price
         AggregatorV3Interface pricefeed = AggregatorV3Interface(proxy);
         (,int currPrice,,,) = pricefeed.latestRoundData();
-        
+
         // mint plant and store its data on chain
         _mint(msg.sender, plantIDCounter);
         _plants.push(Plant(proxy, true, currPrice, _initPower));
@@ -122,15 +127,16 @@ contract CrypiranhaPlant is ERC721 {
         emit GrowthRecord(plantIDCounter, proxy, true, currPrice, _initPower);
         plantIDCounter++;
     }
-    
-    /** 
+
+    /**
      * @notice Make an active plant rest and update its power
      * @param plantID ID of the plant
-    */    
+    */
     function rest(uint plantID) external checkGardener(plantID) {
         Plant storage target = _plants[plantID];
-        require(target.active,
-                "CRHP: plant is already inactive");
+        require(
+            target.active,
+            "CRHP: plant is already inactive");
 
         // get current price
         AggregatorV3Interface pricefeed = AggregatorV3Interface(target.proxy);
@@ -145,14 +151,15 @@ contract CrypiranhaPlant is ERC721 {
         emit GrowthRecord(plantID, target.proxy, false, currPrice, target.power);
     }
 
-    /** 
+    /**
      * @notice Make an inactive plant wake and update its price
      * @param plantID ID of the plant
-    */  
+    */
     function wake(uint plantID) external checkGardener(plantID) {
         Plant storage target = _plants[plantID];
-        require(!target.active,
-                "CRHP: plant is already active");
+        require(
+            !target.active,
+            "CRHP: plant is already active");
 
         // get current price
         AggregatorV3Interface pricefeed = AggregatorV3Interface(target.proxy);
@@ -166,30 +173,32 @@ contract CrypiranhaPlant is ERC721 {
         emit GrowthRecord(plantID, target.proxy, true, currPrice, target.power);
     }
 
-    /** 
+    /**
      * @notice Extract Cytokenin from a plant
      * @dev Gardener get CYTK
      * @param plantID ID of the plant
-    */  
+    */
     function extract(uint plantID) external checkGardener(plantID){
         Plant storage target = _plants[plantID];
-        require(!target.active,
-                "CRHP: can only extract CYTK from inactive plant");
-        require(target.power > _initPower,
-                "CRHP: can only extract CYTK from healthy plant");
-        
+        require(
+            !target.active,
+            "CRHP: can only extract CYTK from inactive plant");
+        require(
+            target.power > _initPower,
+            "CRHP: can only extract CYTK from healthy plant");
+
         _burn(plantID);
         _cytk.mint(msg.sender, uint(target.power-_initPower));
     }
 
-    /** 
+    /**
      * @notice Use CYTK to stimulate a plant and change its state
      * @dev Gardener cost CYTK
      * @param plantID ID of the plant
-    */  
+    */
     function stimulate(uint plantID) external checkGardener(plantID) {
         Plant storage target = _plants[plantID];
-        
+
         // get current price
         AggregatorV3Interface pricefeed = AggregatorV3Interface(target.proxy);
         (,int currPrice,,,) = pricefeed.latestRoundData();
@@ -214,12 +223,13 @@ contract CrypiranhaPlant is ERC721 {
 
     /// @dev Check if gardener can access the plant
     modifier checkGardener(uint plantID) {
-        require(_isApprovedOrOwner(msg.sender, plantID),
-                "CRHP: gardener can't access the plant");
+        require(
+            _isApprovedOrOwner(msg.sender, plantID),
+            "CRHP: gardener can't access the plant");
         _;
     }
 
-    /** 
+    /**
      * @dev Resolve ENS-namehash to Chainlink price feed proxy
      * @param node ENS-namehash of given pair
      * @return Chainlink price feed proxy
