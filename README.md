@@ -1,5 +1,5 @@
-# Cryprianha Plant
-Cultivate plants (dynamic NFTs) by predicting market. 
+# Green vs Red
+Train minions (dynamic NFTs) by predicting market. 
 
 ## Installation
 
@@ -34,7 +34,7 @@ Cultivate plants (dynamic NFTs) by predicting market.
     $ brownie console
     Brownie v1.14.4 - Python development framework for Ethereum
 
-    CrypiranhaPlantProject is the active project.
+    Project is the active project.
 
     Launching 'ganache-cli --port 8545 --gasLimit 12000000 --accounts 10 --hardfork istanbul --mnemonic hill law jazz limb penalty escape public dish stand bracket blue jar'...
     Brownie environment is ready.
@@ -62,11 +62,12 @@ Cultivate plants (dynamic NFTs) by predicting market.
 5. Interact with the smart contracts using the web interface or via the Brownie console.
 
     ```python
-    # get the newest CrypiranhaPlant contract
-    >>> crhp = CrypiranhaPlant[-1]
+    # get the newest GreenArmy contract
+    >>> g_army = GreenArmy[-1]
 
-    # seed a ETH/USD plant
-    >>> crhp.seed('0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d')
+    # recruit a minion at ETH/USD barrack
+    # 0xf599f... is the ens-namehash of "eth-usd.data.eth"
+    >>> g_army.recruit('0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d')
     ```
 
     Any changes to the contracts from the console should show on the website after a refresh, and vice versa.
