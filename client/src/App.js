@@ -14,18 +14,17 @@ class App extends React.Component {
         ethereum: null,
         accounts: null,
         chainid: null,
-        cytkContract: null,
-        crhpContract: null,
-        cytkDecimals: 0,
+        prtnContract: null,
+        armyContract: null,
+        prtnDecimals: 0,
         //--- display
-        cytkBalance: 0,
-        crhpList: {},
-        crhpInfo: [],
+        prtnBalance: 0,
+        minionList: {},
+        minionInfo: [],
         //--- input
-        directionUp: true,
         quote: "ETH",
         base: "USD",
-        crhpID: 0,
+        minionID: 0,
     }
 
     componentDidMount = async () => {
@@ -50,17 +49,17 @@ class App extends React.Component {
         if (chainid <= 42) {
             chain = chainid.toString()
         }
-        const cytkContract = await this.loadContract(chain, "Cytokenin")
-        const crhpContract = await this.loadContract(chain, "CrypiranhaPlant")
-        if (!cytkContract || !crhpContract) {
+        const prtnContract = await this.loadContract(chain, "GreenProtein")
+        const armyContract = await this.loadContract(chain, "GreenArmy")
+        if (!prtnContract || !armyContract) {
             return
         }
-        const cytkDecimals = await cytkContract.methods.decimals().call()
+        const prtnDecimals = await prtnContract.methods.decimals().call()
 
-        this.setState({ cytkContract, crhpContract, cytkDecimals })
+        this.setState({ prtnContract, armyContract, prtnDecimals })
     
-        await this.ctykGetBalance()
-        await this.crhpGetList()
+        await this.prtnGetBalance()
+        await this.armyGetList()
     }
 
     loadContract = async (chain, contractName) => {
@@ -88,123 +87,138 @@ class App extends React.Component {
         return new web3.eth.Contract(contractArtifact.abi, address)
     }
 
-    ctykGetBalance = async () => {
-        const {accounts, cytkContract, cytkDecimals} = this.state
+    prtnGetBalance = async () => {
+        const {accounts, prtnContract, prtnDecimals} = this.state
         if (accounts.length === 0) {
             return
         }
-        this.setState({ cytkBalance: ((await cytkContract.methods.balanceOf(accounts[0]).call())/10**cytkDecimals).toFixed(2) })
+        this.setState({ prtnBalance: ((await prtnContract.methods.balanceOf(accounts[0]).call())/10**prtnDecimals).toFixed(2) })
     }
 
-    crhpGetList = async () => {
-        const { accounts, crhpContract } = this.state
+    armyGetList = async () => {
+        const { accounts, armyContract } = this.state
         if (accounts.length === 0) {
             return
         }
-        const plantIDs = await crhpContract.methods.getPlantIDs(accounts[0]).call()
-        let crhpList = {}
-        for (let id of plantIDs)
+        const minionIDs = await armyContract.methods.getMinionIDs(accounts[0]).call()
+        let minionList = {}
+        for (let id of minionIDs)
         {
-            crhpList[id] = await crhpContract.methods.getPlantInfo(id).call()
+            minionList[id] = Object.values(await armyContract.methods.getMinionInfo(id).call())
         }
-        this.setState({ crhpList })
+        this.setState({ minionList })
     }
 
-    crhpDisplay = (id) => {
-        const { crhpList } = this.state
-        return <form className="plant" key={id} onSubmit={(e) => this.crhpShow(e)}>
+    armyDisplay = (id) => {
+        const { minionList } = this.state
+        return <form className="minion" key={id} onSubmit={(e) => this.armyShow(e)}>
             <div>
-                #{id} : | {crhpList[id][0].substring(0,10)}... | {crhpList[id].slice(1).join(" | ")} |
-                <button type="submit" value={id} onClick={(e) => this.setState({ crhpID: e.target.value })}>check</button>
-                <button value={id} onClick={(e) => this.crhpRest(e)}>rest</button>
-                <button value={id} onClick={(e) => this.crhpWake(e)}>wake</button>
-                <button value={id} onClick={(e) => this.crhpExtract(e)}>extract</button>
-                <button value={id} onClick={(e) => this.crhpStimulate(e)}>stimulate</button>
+                #{id} : | {minionList[id][0].substring(0,10)}... | {minionList[id].slice(1).join(" | ")} |
+                <button type="submit" value={id} onClick={(e) => this.setState({ minionID: e.target.value })}>check</button>
+                <button value={id} onClick={(e) => this.armyArm(e)}>arm</button>
+                <button value={id} onClick={(e) => this.armyTrain(e)}>train</button>
+                <button value={id} onClick={(e) => this.armySacrifice(e)}>sacrifice</button>
+                <button value={id} onClick={(e) => this.armyReinforce(e)}>reinforce</button>
+                <button value={id} onClick={(e) => this.armyRecover(e)}>recover</button>
             </div>
         </form>
     }
 
-    crhpShow = async (e) => {
-        const { crhpContract, crhpID } = this.state
+    armyShow = async (e) => {
+        const { armyContract, minionID } = this.state
         e.preventDefault()
-        const pid = parseInt(crhpID)
+        const pid = parseInt(minionID)
         if (isNaN(pid)) {
-            this.setState({ crhpInfo: ["invalid plant ID"] })
+            this.setState({ minionInfo: ["invalid minion ID"] })
             return
         }
 
-        crhpContract.methods.getPlantInfo(pid).call()
+        armyContract.methods.getMinionInfo(pid).call()
             .then((result) => {
-                this.setState({ crhpInfo: result })
+                this.setState({ minionInfo: Object.values(result) })
             })
             .catch((err) => {
                 console.log(err)
-                this.setState({ crhpInfo: ["not exists"] })
+                this.setState({ minionInfo: ["not exists"] })
             })
     }
 
-    crhpSeed = async (e) => {
-        const { accounts, crhpContract, quote, base } = this.state
+    armyRecruit = async (e) => {
+        const { accounts, armyContract, quote, base } = this.state
         e.preventDefault()
         const pairNode = namehash.hash(`${quote}-${base}.data.eth`)
 
-        crhpContract.methods.seed(pairNode).send({ from: accounts[0] })
+        armyContract.methods.recruit(pairNode).send({ from: accounts[0] })
             .on("receipt", () => {
-                this.crhpGetList()
+                this.armyGetList()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    crhpRest = async (e) => {
-        const { accounts, crhpContract } = this.state
+    armyTrain = async(e) => {
+        const { accounts, armyContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        crhpContract.methods.rest(pid).send({ from: accounts[0] })
+        armyContract.methods.train(pid).send({ from: accounts[0] })
             .on("receipt", () => {
-                this.crhpGetList()
+                this.armyGetList()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    crhpWake = async (e) => {
-        const { accounts, crhpContract } = this.state
+    armyArm = async (e) => {
+        const { accounts, armyContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        crhpContract.methods.wake(pid).send({ from: accounts[0] })
+        armyContract.methods.arm(pid).send({ from: accounts[0] })
             .on("receipt", () => {
-                this.crhpGetList()
+                this.armyGetList()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    crhpExtract = async (e) => {
-        const { accounts, crhpContract } = this.state
+    armySacrifice = async (e) => {
+        const { accounts, armyContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        crhpContract.methods.extract(pid).send({ from:accounts[0] })
+        armyContract.methods.sacrifice(pid).send({ from:accounts[0] })
             .on("receipt", () => {
-                this.crhpGetList()
-                this.ctykGetBalance()
+                this.armyGetList()
+                this.prtnGetBalance()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    crhpStimulate = async (e) => {
-        const { accounts, crhpContract } = this.state
+    armyReinforce = async (e) => {
+        const { accounts, armyContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        crhpContract.methods.stimulate(pid).send({ from: accounts[0] })
+        armyContract.methods.reinforce(pid).send({ from: accounts[0] })
             .on("receipt", () => {
-                this.crhpGetList()
-                this.ctykGetBalance()
+                this.armyGetList()
+                this.prtnGetBalance()
+            })
+            .on("error", (err) => {
+                console.log(err)
+            })
+    }
+
+    armyRecover = async (e) => {
+        const { accounts, armyContract } = this.state
+        e.preventDefault()
+        const pid = parseInt(e.target.value)
+        armyContract.methods.recover(pid).send({ from: accounts[0] })
+            .on("receipt", () => {
+                this.armyGetList()
+                this.prtnGetBalance()
             })
             .on("error", (err) => {
                 console.log(err)
@@ -214,9 +228,9 @@ class App extends React.Component {
     render() {
         const {
             ethereum, accounts, chainid,
-            cytkContract, crhpContract,
-            cytkBalance, crhpList, crhpInfo,
-            quote, base, crhpID
+            prtnContract, armyContract,
+            prtnBalance, minionList, minionInfo,
+            quote, base, minionID
         } = this.state
 
         if (!ethereum) {
@@ -227,12 +241,12 @@ class App extends React.Component {
             return <div>Wrong Network!</div>
         }
 
-        if (!cytkContract || !crhpContract) {
+        if (!prtnContract || !armyContract) {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
-        const plantList = Object.keys(crhpList).map((id) => this.crhpDisplay(id))
+        const mList = Object.keys(minionList).map((id) => this.armyDisplay(id))
 
         return (<div className="App">
             {
@@ -241,14 +255,13 @@ class App extends React.Component {
                     </p>
                     : null
             }
-            <h1>Crypiranha Plant</h1>
-            <img src="https://i.imgur.com/aZKE2Ve.jpeg" alt="Plant on Link" width="500" height="250"/>
-            <div> <h3>cytokenin</h3>{cytkBalance}</div>
-            <div> <h3>garden</h3>{plantList}</div>
+            <h1>Green Army</h1>
+            <div> <h3>Green Protein</h3>{prtnBalance}</div>
+            <div> <h3>Barrack</h3>{mList}</div>
             <br/>
-            <form onSubmit={(e) => this.crhpSeed(e)}>
+            <form onSubmit={(e) => this.armyRecruit(e)}>
                 <div>
-                    <h3>plant a seed</h3>
+                    <h3>Recruit a minion</h3>
                     <input name="quote" type="text" value={quote}
                         onChange={(e) => this.setState({ quote: e.target.value })}/>
                     {" / "}
@@ -265,19 +278,19 @@ class App extends React.Component {
                 </div>
             </form>
             <br/>
-            <form onSubmit={(e) => this.crhpShow(e)}>
+            <form onSubmit={(e) => this.armyShow(e)}>
                 <div>
-                    <h3>check a plant</h3>
+                    <h3>Check a minion</h3>
                     <input
-                        name="crhpID"
+                        name="minionID"
                         type="text"
-                        value={crhpID}
-                        onChange={(e) => this.setState({crhpID: e.target.value})}
+                        value={minionID}
+                        onChange={(e) => this.setState({minionID: e.target.value})}
                     />
                     <br/>
                     <button type="submit" disabled={!isAccountsUnlocked}>check</button>
                 </div>
-            <div> <br/>{crhpInfo.join(" | ")}</div>
+            <div> <br/>{minionInfo.join(" | ")}</div>
             </form>
         </div>)
     }
