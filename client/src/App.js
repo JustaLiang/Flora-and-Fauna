@@ -117,9 +117,9 @@ class App extends React.Component {
                 <button type="submit" value={id} onClick={(e) => this.setState({ minionID: e.target.value })}>check</button>
                 <button value={id} onClick={(e) => this.armyArm(e)}>arm</button>
                 <button value={id} onClick={(e) => this.armyTrain(e)}>train</button>
-                <button value={id} onClick={(e) => this.armySacrifice(e)}>sacrifice</button>
-                <button value={id} onClick={(e) => this.armyReinforce(e)}>reinforce</button>
                 <button value={id} onClick={(e) => this.armyRecover(e)}>recover</button>
+                <button value={id} onClick={(e) => this.armyReinforce(e)}>reinforce</button>
+                <button value={id} onClick={(e) => this.armySacrifice(e)}>sacrifice</button>
             </div>
         </form>
     }
@@ -257,7 +257,7 @@ class App extends React.Component {
             }
             <h1>Green Army</h1>
             <div> <h3>Green Protein</h3>{prtnBalance}</div>
-            <div> <h3>Barrack</h3>{mList}</div>
+            <div> <h3>Your Troop</h3>{mList}</div>
             <br/>
             <form onSubmit={(e) => this.armyRecruit(e)}>
                 <div>
@@ -274,7 +274,7 @@ class App extends React.Component {
                         Check valid pairs
                     </a>
                     <br/>
-                    <button type="submit" disabled={!isAccountsUnlocked}>seed</button>
+                    <button type="submit" disabled={!isAccountsUnlocked}>recruit</button>
                 </div>
             </form>
             <br/>

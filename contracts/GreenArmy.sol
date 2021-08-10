@@ -61,7 +61,7 @@ contract GreenArmy is BaseArmy {
         (,int currPrice,,,) = pricefeed.latestRoundData();
 
         // update on-chain data
-        target.strength = ((currPrice << 10)/target.envFactor*target.strength) >> 10;
+        target.strength = ((currPrice << 16)/target.envFactor*target.strength) >> 16;
         target.envFactor = currPrice;
         target.armed = true;
 
@@ -86,7 +86,7 @@ contract GreenArmy is BaseArmy {
 
         // change state
         if (currPrice > target.envFactor) {
-             _prtn.consume(msg.sender, uint(((currPrice << 10)/target.envFactor*target.strength) >> 10));
+             _prtn.consume(msg.sender, uint(((currPrice << 16)/target.envFactor*target.strength) >> 16));
         }
         target.armed = false;
 
@@ -111,7 +111,7 @@ contract GreenArmy is BaseArmy {
 
         // change state
         if (currPrice < target.envFactor) {
-            _prtn.consume(msg.sender, uint(((target.envFactor << 10)/currPrice*target.strength) >> 10));
+            _prtn.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.strength) >> 16));
         }
         target.armed = true;
 
