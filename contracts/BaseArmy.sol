@@ -32,8 +32,8 @@ abstract contract BaseArmy is ERC721, ArmyInterface {
     /// @notice Serial Number of minions, imply how many minions have been created
     uint public serialNumber;
 
-    /// @dev Inital minion's strength
-    int internal _initStrength;
+    /// @notice Inital minion's strength
+    int public initStrength;
 
     /// @dev ENS interface (fixed address)
     ENS internal _ens;
@@ -127,9 +127,9 @@ abstract contract BaseArmy is ERC721, ArmyInterface {
 
         // mint minion and store its data on chain
         _mint(msg.sender, serialNumber);
-        _minions.push(Minion(barrackAddr, false, currPrice, _initStrength));
+        _minions.push(Minion(barrackAddr, false, currPrice, initStrength));
 
-        emit MinionState(serialNumber, barrackAddr, false, currPrice, _initStrength);
+        emit MinionState(serialNumber, barrackAddr, false, currPrice, initStrength);
         serialNumber++;
     }
 
@@ -144,10 +144,10 @@ abstract contract BaseArmy is ERC721, ArmyInterface {
             target.armed,
             "ARMY: can only liberate armed minion");
         require(
-            target.strength > _initStrength,
+            target.strength > initStrength,
             "ARMY: can only liberate healthy minion");
 
         _burn(minionID);
-        _prtn.produce(msg.sender, uint(target.strength - _initStrength));
+        _prtn.produce(msg.sender, uint(target.strength - initStrength));
     }
 }
