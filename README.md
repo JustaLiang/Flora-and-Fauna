@@ -55,7 +55,7 @@ Train minions (dynamic NFTs) by predicting market.
     ```
 
 4. Connect Metamask to the local network. In the upper right corner, click the network dropdown menu.  
-   Select `Localhost` and refresh the page.
+   Select `Localhost 8545` and refresh the page.
 
 <img src="./assets/SelectLocal.png" alt="Select Local" width="250" height="400"/>  
 
@@ -88,3 +88,20 @@ Train minions (dynamic NFTs) by predicting market.
 <img src="./assets/SelectRinkeby.png" alt="Select Rinkeby" width="250" height="400"/>  
 
 3. Interact with the smart contracts using the web interface.
+
+## How to play
+
+1. Choose a valid [Chainlink price feed](https://docs.chain.link/docs/ethereum-addresses/), for example: ETH/USD  
+2. Recruit a green or red minion from this ETH/USD barrack, with initial strength 1000.  
+3. Train the minion under market environment.  
+   Green minions become stronger in bullish market, weaker in bearish.  
+   Red minions become stronger in bearish market, weaker in bullish.  
+4. Arm the minion when it's about to set off.  
+   Armed minions are unaffected by market change.  
+5. You can recover a minion who is suffering negative training, but it cost some extra Protein.
+6. You can reinforce a armed minion to catch up training, but still it cost some extra Protein.
+7. Liberate a minion and get some Protein to help other allies.  
+   Seems bloody and cruel? Well it's just a game, don't take it too serious >.^
+8. After recruiting some minions to form a troop, time to go on a expedition.
+   
+ 

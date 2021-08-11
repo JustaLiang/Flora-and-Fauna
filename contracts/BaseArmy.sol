@@ -134,18 +134,18 @@ abstract contract BaseArmy is ERC721, ArmyInterface {
     }
 
     /**
-     * @notice Sacrifice a minion and get some protein
+     * @notice Liberate a minion and get some protein
      * @dev Commander get protein
      * @param minionID ID of the minion
     */
-    function sacrifice(uint minionID) external override checkCommander(minionID){
+    function liberate(uint minionID) external override checkCommander(minionID){
         Minion storage target = _minions[minionID];
         require(
             target.armed,
-            "ARMY: can only sacrifice armed minion");
+            "ARMY: can only liberate armed minion");
         require(
             target.strength > _initStrength,
-            "ARMY: can only sacrifice healthy minion");
+            "ARMY: can only liberate healthy minion");
 
         _burn(minionID);
         _prtn.produce(msg.sender, uint(target.strength - _initStrength));

@@ -15,13 +15,13 @@ contract GreenArmy is BaseArmy {
      * @dev Set name, symbol, and addresses of interactive contracts
      * @param ensRegistryAddr Address of ENS Registry
     */
-    constructor(address ensRegistryAddr) ERC721("Green Army", "gARMY") {
+    constructor(address ensRegistryAddr, uint initProtein) ERC721("Green Army", "gARMY") {
         serialNumber = 0;
         _initStrength = 1000;
         _ens = ENS(ensRegistryAddr);
         prtnAddress = address(new GreenProtein(address(this)));
         _prtn = PRTN(prtnAddress);
-        _prtn.produce(msg.sender, 7777777777);
+        _prtn.produce(msg.sender, initProtein);
     }
 
     /**

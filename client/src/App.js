@@ -119,7 +119,7 @@ class App extends React.Component {
                 <button value={id} onClick={(e) => this.armyTrain(e)}>train</button>
                 <button value={id} onClick={(e) => this.armyRecover(e)}>recover</button>
                 <button value={id} onClick={(e) => this.armyReinforce(e)}>reinforce</button>
-                <button value={id} onClick={(e) => this.armySacrifice(e)}>sacrifice</button>
+                <button value={id} onClick={(e) => this.armyLiberate(e)}>liberate</button>
             </div>
         </form>
     }
@@ -183,11 +183,11 @@ class App extends React.Component {
             })
     }
 
-    armySacrifice = async (e) => {
+    armyLiberate = async (e) => {
         const { accounts, armyContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        armyContract.methods.sacrifice(pid).send({ from:accounts[0] })
+        armyContract.methods.liberate(pid).send({ from:accounts[0] })
             .on("receipt", () => {
                 this.armyGetList()
                 this.prtnGetBalance()

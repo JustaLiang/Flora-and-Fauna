@@ -15,7 +15,7 @@ interface ArmyInterface is IERC721 {
 
     // basic command
     function recruit(bytes32) virtual external;
-    function sacrifice(uint) virtual external;
+    function liberate(uint) virtual external;
 
     // command with different implementations between green and red
     function train(uint) virtual external;
