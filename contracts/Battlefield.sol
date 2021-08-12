@@ -4,81 +4,83 @@ pragma solidity ^0.8.0;
 import "../interfaces/ArmyInterface.sol";
 
 contract Battlefield {
-    uint public fieldSize;
-    mapping (uint => uint[]) public field;
+    uint public fieldRange;
+    mapping (uint => uint[]) public fieldDefender;
     mapping (uint => bool) public fieldIsGreen;
+    mapping (address => bool) commanderHaveField;
     ArmyInterface public greenArmy;
     ArmyInterface public redArmy;
     int public refStrength;
 
-    constructor(address greenAddr, address redAddr) {
-        fieldSize = 100;
+    event Conquest( address indexed conqueror,  
+                    uint indexed fieldID,
+                    uint[] team);
+
+    constructor(address greenArmyAddr, address redArmyAddr) {
+        fieldRange = 100;
         refStrength = 1000;
-        greenArmy = ArmyInterface(greenAddr);
-        redArmy = ArmyInterface(redAddr);
+        greenArmy = ArmyInterface(greenArmyAddr);
+        redArmy = ArmyInterface(redArmyAddr);
     }
 
-    function greenConquer(uint fieldID, uint[] calldata squad) external {
-        require(fieldID < fieldSize);
-        for(uint i = 0; i < squad.length; i++) {
-            require(greenArmy.ownerOf(squad[i]) == msg.sender);
+    function greenConquer(uint fieldID, uint[] calldata attackerTeam) external {
+        require(fieldID < fieldRange && !commanderHaveField[msg.sender]);
+        for(uint i = 0; i < attackerTeam.length; i++) {
+            require(greenArmy.ownerOf(attackerTeam[i]) == msg.sender);
         }
-        uint[] memory quater;
-        require(squad.length == quater.length ||
-                squad.length == quater.length + 1);
-        if (quater.length != 0) {
+        uint[] memory defenderTeam = fieldDefender[fieldID];
+        if (defenderTeam.length > 0) {
             require(!fieldIsGreen[fieldID]);
-            if (squad.length == quater.length) {
-                for (uint i = 0; i < quater.length; i++) {
-                    (address gAddr,bool gArmed,,int gStrength) = greenArmy.getMinionInfo(squad[i]);
-                    (address rAddr,bool rArmed,,int rStrength) = redArmy.getMinionInfo(squad[i]);
-                    require(!rArmed || (gArmed && gAddr == rAddr && gStrength > rStrength));
-                }
-            }
-            else {
-                (address extraAddr,bool extraArmed,,int extraStrength) = greenArmy.getMinionInfo(squad[squad.length-1]);
-                require(extraArmed);
-                for (uint i = 0; i < quater.length; i++) {
-                    (address gAddr,bool gArmed,,int gStrength) = greenArmy.getMinionInfo(squad[i]);
-                    (address rAddr,bool rArmed,,int rStrength) = redArmy.getMinionInfo(squad[i]);                    
-                    require(!rArmed || (gArmed && gAddr == rAddr && extraAddr != rAddr &&
-                        gStrength*extraStrength/refStrength > rStrength));
-                }
-            }
+            _fight(greenArmy, attackerTeam, redArmy, defenderTeam);
+            commanderHaveField[redArmy.ownerOf(defenderTeam[0])] = false;
         }
-        field[fieldID] = squad;
+        fieldDefender[fieldID] = attackerTeam;
         fieldIsGreen[fieldID] = true;
+        commanderHaveField[msg.sender] = true;
+
+        emit Conquest(msg.sender, fieldID, attackerTeam);
     }
 
-    function redConquer(uint fieldID, uint[] calldata squad) external {
-        require(fieldID < fieldSize);
-        for(uint i = 0; i < squad.length; i++) {
-            require(redArmy.ownerOf(squad[i]) == msg.sender);
+    function redConquer(uint fieldID, uint[] calldata attackerTeam) external {
+        require(fieldID < fieldRange && !commanderHaveField[msg.sender]);
+        for(uint i = 0; i < attackerTeam.length; i++) {
+            require(redArmy.ownerOf(attackerTeam[i]) == msg.sender);
         }
-        uint[] memory quater;
-        require(squad.length == quater.length ||
-                squad.length == quater.length + 1);
-        if (quater.length != 0) {
+        uint[] memory defenderTeam = fieldDefender[fieldID];
+        if (defenderTeam.length > 0) {
             require(fieldIsGreen[fieldID]);
-            if (squad.length == quater.length) {
-                for (uint i = 0; i < quater.length; i++) {
-                    (address rAddr,bool rArmed,,int rStrength) = redArmy.getMinionInfo(squad[i]);
-                    (address gAddr,bool gArmed,,int gStrength) = greenArmy.getMinionInfo(squad[i]);
-                    require(!gArmed || (rArmed && rAddr == gAddr && rStrength > gStrength));
-                }
-            }
-            else {
-                (address extraAddr,bool extraArmed,,int extraStrength) = redArmy.getMinionInfo(squad[squad.length-1]);
-                require(extraArmed);
-                for (uint i = 0; i < quater.length; i++) {
-                    (address rAddr,bool rArmed,,int rStrength) = redArmy.getMinionInfo(squad[i]);
-                    (address gAddr,bool gArmed,,int gStrength) = greenArmy.getMinionInfo(squad[i]);                    
-                    require(!gArmed || (rArmed && rAddr == gAddr && extraAddr != gAddr &&
-                        rStrength*extraStrength/refStrength > gStrength));
-                }
+            _fight(redArmy, attackerTeam, greenArmy, defenderTeam);
+            commanderHaveField[greenArmy.ownerOf(defenderTeam[0])] = false;
+        }
+        fieldDefender[fieldID] = attackerTeam;
+        fieldIsGreen[fieldID] = false;
+        commanderHaveField[msg.sender] = true;
+
+        emit Conquest(msg.sender, fieldID, attackerTeam);
+    }
+
+    function _fight(ArmyInterface attacker, uint[] memory attackerTeam,
+                    ArmyInterface defender, uint[] memory defenderTeam
+                    ) private view {
+        if (attackerTeam.length == defenderTeam.length) {
+            for (uint i = 0; i < defenderTeam.length; i++) {
+                (address aType,bool aArmed,,int aStrength) = attacker.getMinionInfo(attackerTeam[i]);
+                (address dType,bool dArmed,,int dStrength) = defender.getMinionInfo(defenderTeam[i]);
+                require(aArmed && (!dArmed || (aType == dType && aStrength > dStrength)));
             }
         }
-        field[fieldID] = squad;
-        fieldIsGreen[fieldID] = false;
+        else if (attackerTeam.length == defenderTeam.length+1) {
+            (address eType,bool eArmed,,int eStrength) = attacker.getMinionInfo(attackerTeam[defenderTeam.length]);
+            require(eArmed);
+            for (uint i = 0; i < defenderTeam.length; i++) {
+                (address aType,bool aArmed,,int aStrength) = attacker.getMinionInfo(attackerTeam[i]);
+                (address dType,bool dArmed,,int dStrength) = defender.getMinionInfo(defenderTeam[i]);                    
+                require(aArmed && (!dArmed || (aType == dType && eType != dType &&
+                                               aStrength*eStrength/refStrength > dStrength)));
+            }
+        }
+        else {
+            require(false);
+        }
     }
 }
