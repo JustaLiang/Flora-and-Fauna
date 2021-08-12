@@ -17,7 +17,7 @@ contract GreenArmy is BaseArmy {
     */
     constructor(address ensRegistryAddr, uint initProtein) ERC721("Green Army", "gARMY") {
         serialNumber = 0;
-        initStrength = 1000;
+        _initStrength = 1000;
         _ens = ENS(ensRegistryAddr);
         prtnAddress = address(new GreenProtein(address(this)));
         _prtn = PRTN(prtnAddress);

@@ -1,26 +1,36 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/ArmyInterface.sol";
 
-contract Battlefield {
+contract Battlefield is Ownable {
+
     uint public fieldRange;
     mapping (uint => uint[]) public fieldDefender;
     mapping (uint => bool) public fieldIsGreen;
-    mapping (address => bool) commanderHaveField;
+    mapping (address => bool) public commanderHaveField;
     ArmyInterface public greenArmy;
     ArmyInterface public redArmy;
-    int public refStrength;
+    int private _refStrength;
 
-    event Conquest( address indexed conqueror,  
-                    uint indexed fieldID,
-                    uint[] team);
+    event GreenConquest(address indexed conqueror,  
+                        uint indexed fieldID,
+                        uint[] team);
+
+    event RedConquest(  address indexed conqueror,  
+                        uint indexed fieldID,
+                        uint[] team);
 
     constructor(address greenArmyAddr, address redArmyAddr) {
         fieldRange = 100;
-        refStrength = 1000;
+        _refStrength = 1000;
         greenArmy = ArmyInterface(greenArmyAddr);
         redArmy = ArmyInterface(redArmyAddr);
+    }
+
+    function expandBattlefield(uint fieldCount) external onlyOwner {
+        fieldRange += fieldCount;
     }
 
     function greenConquer(uint fieldID, uint[] calldata attackerTeam) external {
@@ -38,7 +48,7 @@ contract Battlefield {
         fieldIsGreen[fieldID] = true;
         commanderHaveField[msg.sender] = true;
 
-        emit Conquest(msg.sender, fieldID, attackerTeam);
+        emit GreenConquest(msg.sender, fieldID, attackerTeam);
     }
 
     function redConquer(uint fieldID, uint[] calldata attackerTeam) external {
@@ -56,7 +66,7 @@ contract Battlefield {
         fieldIsGreen[fieldID] = false;
         commanderHaveField[msg.sender] = true;
 
-        emit Conquest(msg.sender, fieldID, attackerTeam);
+        emit RedConquest(msg.sender, fieldID, attackerTeam);
     }
 
     function _fight(ArmyInterface attacker, uint[] memory attackerTeam,
@@ -76,7 +86,7 @@ contract Battlefield {
                 (address aType,bool aArmed,,int aStrength) = attacker.getMinionInfo(attackerTeam[i]);
                 (address dType,bool dArmed,,int dStrength) = defender.getMinionInfo(defenderTeam[i]);                    
                 require(aArmed && (!dArmed || (aType == dType && eType != dType &&
-                                               aStrength*eStrength/refStrength > dStrength)));
+                                               aStrength*eStrength/_refStrength > dStrength)));
             }
         }
         else {
