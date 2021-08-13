@@ -49,7 +49,7 @@ class App extends React.Component {
         if (chainid <= 42) {
             chain = chainid.toString()
         }
-        const prtnContract = await this.loadContract(chain, "Protein", 1)
+        const prtnContract = await this.loadContract(chain, "ArmyProtein", 1)
         const armyContract = await this.loadContract(chain, "GreenArmy", 0)
         if (!prtnContract || !armyContract) {
             return
