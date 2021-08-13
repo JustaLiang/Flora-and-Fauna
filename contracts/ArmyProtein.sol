@@ -17,7 +17,7 @@ interface PRTN {
  * @notice ERC20 token minted or burnt by Army contract
  * @author Justa Liang
  */
-contract Protein is ERC20, Ownable {
+contract ArmyProtein is ERC20, Ownable {
 
     /**
      * @dev ERC20 constructor

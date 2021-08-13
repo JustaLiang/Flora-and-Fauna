@@ -2,9 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "../interfaces/ArmyInterface.sol";
-import "./Protein.sol";
+import "./ArmyProtein.sol";
+import "./ArmyRank.sol";
 
 /**
  * @notice ENS registry to get chainlink resolver
@@ -24,10 +25,13 @@ interface Resolver {
  * @title Army contract with basic command
  * @author Justa Liang
  */
-abstract contract ArmyBase is ERC721, ArmyInterface {
+abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
 
-    /// @notice Address of corresponding PRTN contract
-    address public prtnAddress;
+    /// @notice Corresponding Protein contract
+    PRTN public proteinContract;
+
+    /// @notice Corresponding Rank contract
+    RANK public rankContract;
 
     /// @notice Serial number of minions, imply how many minions have been created
     uint public serialNumber;
@@ -37,9 +41,6 @@ abstract contract ArmyBase is ERC721, ArmyInterface {
 
     /// @dev ENS interface (fixed address)
     ENS internal _ens;
-
-    /// @dev Cytokenin interface (fixed address)
-    PRTN internal _prtn;
 
     /// @dev Minion data structure
     struct Minion {
@@ -69,6 +70,8 @@ abstract contract ArmyBase is ERC721, ArmyInterface {
         serialNumber = 0;
         _initStrength = 1000;
         _ens = ENS(ensRegistryAddr);
+        rankContract = RANK(address(new ArmyRank()));
+        rankContract.transferOwnership(msg.sender);
     }
 
     /**
@@ -122,6 +125,7 @@ abstract contract ArmyBase is ERC721, ArmyInterface {
         uint newID = serialNumber;
         _mint(msg.sender, newID);
         _minions.push(Minion(branchAddr, false, currPrice, _initStrength));
+        _setTokenURI(newID, rankContract.query(branchAddr, _initStrength));
 
         emit MinionState(newID, branchAddr, false, currPrice, _initStrength);
         serialNumber++;
@@ -133,7 +137,7 @@ abstract contract ArmyBase is ERC721, ArmyInterface {
      * @dev Commander get protein
      * @param minionID ID of the minion
     */
-    function liberate(uint minionID) external override checkCommander(minionID){
+    function liberate(uint minionID) external override checkCommander(minionID) {
         Minion storage target = _minions[minionID];
         require(
             target.armed,
@@ -143,7 +147,14 @@ abstract contract ArmyBase is ERC721, ArmyInterface {
             "ARMY: can only liberate healthy minion");
 
         _burn(minionID);
-        _prtn.produce(msg.sender, uint(target.strength - _initStrength));
+        proteinContract.produce(msg.sender, uint(target.strength - _initStrength));
+    }
+
+    function grant(uint minionID) external override checkCommander(minionID) {
+        Minion storage target = _minions[minionID];
+        string memory newURI = rankContract.query(target.branchAddr, target.strength);
+        require(keccak256(abi.encodePacked(newURI)) != keccak256(abi.encodePacked(tokenURI(minionID))));
+        _setTokenURI(minionID, newURI);
     }
 
     /// @dev Check if commander can command the minion

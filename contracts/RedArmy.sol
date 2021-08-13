@@ -18,9 +18,8 @@ contract RedArmy is ArmyBase {
         ArmyBase(ensRegistryAddr)
         ERC721("Red Army", "rARMY")
     {
-        prtnAddress = address(new Protein("Red Protein", "rPRTN"));
-        _prtn = PRTN(prtnAddress);
-        _prtn.produce(msg.sender, initProtein);
+        proteinContract = PRTN(address(new ArmyProtein("Red Army Protein", "rPRTN")));
+        proteinContract.produce(msg.sender, initProtein);
     }
 
     /**
@@ -85,7 +84,7 @@ contract RedArmy is ArmyBase {
 
         // change state
         if (currPrice < target.envFactor) {
-             _prtn.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.strength) >> 16));
+             proteinContract.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.strength) >> 16));
         }
         target.armed = false;
 
@@ -110,7 +109,7 @@ contract RedArmy is ArmyBase {
 
         // change state
         if (currPrice > target.envFactor) {
-            _prtn.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.strength) >> 16));
+            proteinContract.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.strength) >> 16));
         }
         target.armed = true;
 

@@ -3,14 +3,18 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/ArmyInterface.sol";
 
+interface ARMY is ArmyInterface {
+    function serialNumber() external view returns (uint);
+}
+
 contract Battlefield {
 
     uint public fieldRange;
     mapping (uint => uint[]) public fieldToDefender;
     mapping (uint => bool) public fieldIsGreen;
     mapping (address => bool) public commanderHaveField;
-    ArmyInterface public greenArmy;
-    ArmyInterface public redArmy;
+    ARMY public greenArmy;
+    ARMY public redArmy;
     int private _refStrength;
 
     event FieldState(uint indexed fieldID,
@@ -18,16 +22,22 @@ contract Battlefield {
                      uint[] team,
                      bool isGreen);
 
+    event FieldRange(uint fieldRange);
+
     constructor(address greenArmyAddr, address redArmyAddr) {
         fieldRange = 20;
         _refStrength = 1000;
-        greenArmy = ArmyInterface(greenArmyAddr);
-        redArmy = ArmyInterface(redArmyAddr);
+        greenArmy = ARMY(greenArmyAddr);
+        redArmy = ARMY(redArmyAddr);
+
+        emit FieldRange(fieldRange);
     }
 
     function expand() external {
         require(greenArmy.serialNumber() + redArmy.serialNumber() > fieldRange*50);
         fieldRange += 20;
+
+        emit FieldRange(fieldRange);
     }
 
     function getFieldDefender(uint fieldID) external view returns (uint[] memory) {
