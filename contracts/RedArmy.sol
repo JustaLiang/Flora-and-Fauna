@@ -1,25 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./BaseArmy.sol";
-import "./RedProtein.sol";
+import "./ArmyBase.sol";
 
 /**
  * @title Red Army, which grows in bearish market
  * @notice ERC721 token cultivated by predicting market price (using Chainlink oracle)
  * @author Justa Liang
  */
-contract RedArmy is BaseArmy {
+contract RedArmy is ArmyBase {
 
     /**
      * @dev Set name, symbol, and addresses of interactive contracts
      * @param ensRegistryAddr Address of ENS Registry
     */
-    constructor(address ensRegistryAddr, uint initProtein) ERC721("Red Army", "rARMY") {
-        serialNumber = 0;
-        _initStrength = 1000;
-        _ens = ENS(ensRegistryAddr);
-        prtnAddress = address(new RedProtein(address(this)));
+    constructor(address ensRegistryAddr, uint initProtein) 
+        ArmyBase(ensRegistryAddr)
+        ERC721("Red Army", "rARMY")
+    {
+        prtnAddress = address(new Protein("Red Protein", "rPRTN"));
         _prtn = PRTN(prtnAddress);
         _prtn.produce(msg.sender, initProtein);
     }
@@ -35,7 +34,7 @@ contract RedArmy is BaseArmy {
             "ARMY: minion is already in training state");
 
         // get current price
-        AggregatorV3Interface pricefeed = AggregatorV3Interface(target.barrackAddr);
+        AggregatorV3Interface pricefeed = AggregatorV3Interface(target.branchAddr);
         (,int currPrice,,,) = pricefeed.latestRoundData();
 
         // update on-chain data
@@ -43,7 +42,7 @@ contract RedArmy is BaseArmy {
         target.armed = false;
 
         // emit minion state
-        emit MinionState(minionID, target.barrackAddr, false, currPrice, target.strength);
+        emit MinionState(minionID, target.branchAddr, false, currPrice, target.strength);
     }
 
     /**
@@ -57,7 +56,7 @@ contract RedArmy is BaseArmy {
             "ARMY: minion is already armed");
 
         // get current price
-        AggregatorV3Interface pricefeed = AggregatorV3Interface(target.barrackAddr);
+        AggregatorV3Interface pricefeed = AggregatorV3Interface(target.branchAddr);
         (,int currPrice,,,) = pricefeed.latestRoundData();
 
         // update on-chain data
@@ -66,7 +65,7 @@ contract RedArmy is BaseArmy {
         target.armed = true;
 
         // emit minion state
-        emit MinionState(minionID, target.barrackAddr, true, currPrice, target.strength);
+        emit MinionState(minionID, target.branchAddr, true, currPrice, target.strength);
     }
 
     /**
@@ -81,7 +80,7 @@ contract RedArmy is BaseArmy {
             "ARMY: minion is already in training state");
 
         // get current price
-        AggregatorV3Interface pricefeed = AggregatorV3Interface(target.barrackAddr);
+        AggregatorV3Interface pricefeed = AggregatorV3Interface(target.branchAddr);
         (,int currPrice,,,) = pricefeed.latestRoundData();
 
         // change state
@@ -91,7 +90,7 @@ contract RedArmy is BaseArmy {
         target.armed = false;
 
         // emit minion state
-        emit MinionState(minionID, target.barrackAddr, false, target.envFactor, target.strength);
+        emit MinionState(minionID, target.branchAddr, false, target.envFactor, target.strength);
     }
 
     /**
@@ -106,7 +105,7 @@ contract RedArmy is BaseArmy {
             "ARMY: minion is not in training state");
 
         // get current price
-        AggregatorV3Interface pricefeed = AggregatorV3Interface(target.barrackAddr);
+        AggregatorV3Interface pricefeed = AggregatorV3Interface(target.branchAddr);
         (,int currPrice,,,) = pricefeed.latestRoundData();
 
         // change state
@@ -116,6 +115,6 @@ contract RedArmy is BaseArmy {
         target.armed = true;
 
         // emit minion state
-        emit MinionState(minionID, target.barrackAddr, true, target.envFactor, target.strength);
+        emit MinionState(minionID, target.branchAddr, true, target.envFactor, target.strength);
     }
 }

@@ -49,8 +49,8 @@ class App extends React.Component {
         if (chainid <= 42) {
             chain = chainid.toString()
         }
-        const prtnContract = await this.loadContract(chain, "GreenProtein")
-        const armyContract = await this.loadContract(chain, "GreenArmy")
+        const prtnContract = await this.loadContract(chain, "Protein", 1)
+        const armyContract = await this.loadContract(chain, "GreenArmy", 0)
         if (!prtnContract || !armyContract) {
             return
         }
@@ -62,14 +62,14 @@ class App extends React.Component {
         await this.armyGetList()
     }
 
-    loadContract = async (chain, contractName) => {
+    loadContract = async (chain, contractName, which) => {
         // Load a deployed contract instance into a web3 contract object
         const { web3 } = this.state
 
         // Get the address of the most recent deployment from the deployment map
         let address
         try {
-            address = map[chain][contractName][0]
+            address = map[chain][contractName][which]
         } catch (e) {
             console.log(`Couldn't find any deployed contract "${contractName}" on the chain (ID: "${chain}").`)
             return undefined
@@ -257,7 +257,7 @@ class App extends React.Component {
             }
             <h1>Green Army</h1>
             <div> <h3>Green Protein</h3>{prtnBalance}</div>
-            <div> <h3>Your Troop</h3>{mList}</div>
+            <div> <h3>Your Barrack</h3>{mList}</div>
             <br/>
             <form onSubmit={(e) => this.armyRecruit(e)}>
                 <div>

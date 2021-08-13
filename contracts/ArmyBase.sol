@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "../interfaces/ArmyInterface.sol";
-import "./BaseProtein.sol";
+import "./Protein.sol";
 
 /**
  * @notice ENS registry to get chainlink resolver
@@ -24,12 +24,12 @@ interface Resolver {
  * @title Army contract with basic command
  * @author Justa Liang
  */
-abstract contract BaseArmy is ERC721, ArmyInterface {
+abstract contract ArmyBase is ERC721, ArmyInterface {
 
     /// @notice Address of corresponding PRTN contract
     address public prtnAddress;
 
-    /// @notice Serial Number of minions, imply how many minions have been created
+    /// @notice Serial number of minions, imply how many minions have been created
     uint public serialNumber;
 
     /// @dev Inital minion's strength
@@ -43,7 +43,7 @@ abstract contract BaseArmy is ERC721, ArmyInterface {
 
     /// @dev Minion data structure
     struct Minion {
-        address     barrackAddr;  // barrack address (which proxy of Chainlink price feed)
+        address     branchAddr;   // branch address (which proxy of Chainlink price feed)
         bool        armed;        // armed or not
         int         envFactor;    // environment factor (latest updated price from Chainlink)
         int         strength;     // strength of the minion
@@ -55,28 +55,20 @@ abstract contract BaseArmy is ERC721, ArmyInterface {
     /// @notice Emit when minion's state changes 
     event MinionState(
         uint indexed minionID,
-        address indexed barrackAddress,
+        address indexed branchAddress,
         bool indexed armed,
         int environmentFactor,
         int strength
     );
 
-    /// @dev Check if commander can command the minion
-    modifier checkCommander(uint minionID) {
-        require(
-            _isApprovedOrOwner(msg.sender, minionID),
-            "ARMY: commander can't command the minion");
-        _;
-    }
-
     /**
-     * @dev Resolve ENS-namehash to Chainlink price feed proxy
-     * @param node ENS-namehash of given pair
-     * @return Chainlink price feed proxy
+     * @dev Set name, symbol, and addresses of interactive contracts
+     * @param ensRegistryAddr Address of ENS Registry
     */
-    function _resolve(bytes32 node) internal view returns (address) {
-        Resolver resolver = _ens.resolver(node);
-        return resolver.addr(node);
+    constructor(address ensRegistryAddr) {
+        serialNumber = 0;
+        _initStrength = 1000;
+        _ens = ENS(ensRegistryAddr);
     }
 
     /**
@@ -90,7 +82,7 @@ abstract contract BaseArmy is ERC721, ArmyInterface {
             _exists(minionID),
             "ARMY: commander query for nonexistent minion");
         Minion memory target = _minions[minionID];
-        return (target.barrackAddr, target.armed, target.envFactor, target.strength);
+        return (target.branchAddr, target.armed, target.envFactor, target.strength);
     }
 
     /**
@@ -113,24 +105,27 @@ abstract contract BaseArmy is ERC721, ArmyInterface {
 
     /**
      * @notice Recruit a minion
-     * @param barrackType ENS-namehash of given pair (ex: eth-usd.data.eth)
+     * @param branchHash ENS-namehash of given pair (ex: eth-usd.data.eth)
+     * @return ID of the newly recruited minion
     */
-    function recruit(bytes32 barrackType) external override {
-        address barrackAddr = _resolve(barrackType);
+    function recruit(bytes32 branchHash) external override returns (uint) {
+        address branchAddr = _resolve(branchHash);
         require(
-            barrackAddr != address(0),
-            "ARMY: invalid barrack type");
+            branchAddr != address(0),
+            "ARMY: invalid branch");
 
         // get current price
-        AggregatorV3Interface pricefeed = AggregatorV3Interface(barrackAddr);
+        AggregatorV3Interface pricefeed = AggregatorV3Interface(branchAddr);
         (,int currPrice,,,) = pricefeed.latestRoundData();
 
         // mint minion and store its data on chain
-        _mint(msg.sender, serialNumber);
-        _minions.push(Minion(barrackAddr, false, currPrice, _initStrength));
+        uint newID = serialNumber;
+        _mint(msg.sender, newID);
+        _minions.push(Minion(branchAddr, false, currPrice, _initStrength));
 
-        emit MinionState(serialNumber, barrackAddr, false, currPrice, _initStrength);
+        emit MinionState(newID, branchAddr, false, currPrice, _initStrength);
         serialNumber++;
+        return newID;
     }
 
     /**
@@ -149,5 +144,23 @@ abstract contract BaseArmy is ERC721, ArmyInterface {
 
         _burn(minionID);
         _prtn.produce(msg.sender, uint(target.strength - _initStrength));
+    }
+
+    /// @dev Check if commander can command the minion
+    modifier checkCommander(uint minionID) {
+        require(
+            _isApprovedOrOwner(msg.sender, minionID),
+            "ARMY: commander can't command the minion");
+        _;
+    }
+
+    /**
+     * @dev Resolve ENS-namehash to Chainlink price feed proxy
+     * @param node ENS-namehash of given pair
+     * @return Chainlink price feed proxy
+    */
+    function _resolve(bytes32 node) internal view returns (address) {
+        Resolver resolver = _ens.resolver(node);
+        return resolver.addr(node);
     }
 }
