@@ -16,9 +16,9 @@ contract RedArmy is ArmyBase {
     */
     constructor(address ensRegistryAddr, uint initProtein) 
         ArmyBase(ensRegistryAddr)
-        ERC721("Red Army", "rARMY")
+        ERC721("Fauna Army", "FaunA")
     {
-        proteinContract = PRTN(address(new ArmyProtein("Red Army Protein", "rPRTN")));
+        proteinContract = PRTN(address(new ArmyProtein("Hemoglobin", "HGB")));
         proteinContract.produce(msg.sender, initProtein);
     }
 

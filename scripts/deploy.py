@@ -7,7 +7,7 @@ init_protein = 7777777
 
 def main():
     if network.show_active() != "development":
-        check = input("It's not development mode, continue to deploy? y/N")
+        check = input("It's not development mode, continue to deploy? (y/N) ")
         if check != 'y':
             return
     dev = run("dev_account")

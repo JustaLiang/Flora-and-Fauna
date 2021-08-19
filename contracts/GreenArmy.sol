@@ -16,9 +16,9 @@ contract GreenArmy is ArmyBase {
     */
     constructor(address ensRegistryAddr, uint initProtein) 
         ArmyBase(ensRegistryAddr)
-        ERC721("Green Army", "gARMY")
+        ERC721("Flora Army", "FlorA")
     {
-        proteinContract = PRTN(address(new ArmyProtein("Green Army Protein", "gPRTN")));
+        proteinContract = PRTN(address(new ArmyProtein("Chlorophyll", "CHL")));
         proteinContract.produce(msg.sender, initProtein);
     }
 

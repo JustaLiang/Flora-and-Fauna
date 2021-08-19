@@ -11,8 +11,8 @@ interface RANK {
 contract ArmyRank is Ownable {
     mapping (address => mapping(uint => string)) public branchRankURI;
     mapping (address => uint) public branchUpdateTime;
-    uint defaultUpdateTime;
     string public defaultURI;
+    uint defaultUpdateTime;
     int[5] public strengthLevels;
 
     constructor() {
