@@ -1,4 +1,4 @@
-# Green vs Red
+# Flora & Fauna
 Train minions (dynamic NFTs) by predicting market. 
 
 ## Installation
@@ -62,8 +62,8 @@ Train minions (dynamic NFTs) by predicting market.
 5. Interact with the smart contracts using the web interface or via the Brownie console.
 
     ```python
-    # get the newest GreenArmy contract
-    >>> g_army = GreenArmy[-1]
+    # get the newest FloraArmy contract
+    >>> g_army = FloraArmy[-1]
 
     # recruit a minion at ETH/USD barrack
     # 0xf599f... is the ens-namehash of "eth-usd.data.eth"
@@ -92,15 +92,15 @@ Train minions (dynamic NFTs) by predicting market.
 ## How to play
 
 1. Choose a valid [Chainlink price feed](https://docs.chain.link/docs/ethereum-addresses/), for example: ETH/USD  
-2. Recruit a green or red minion from this ETH/USD barrack, with initial strength 1000.  
+2. Recruit a flora or fauna minion from this ETH/USD barrack, with initial power 1000.  
 3. Train the minion under market environment.  
-   Green minions become stronger in bullish market, weaker in bearish.  
-   Red minions become stronger in bearish market, weaker in bullish.  
+   Flora minions become stronger in bullish market, weaker in bearish.  
+   Fauna minions become stronger in bearish market, weaker in bullish.  
 4. Arm the minion when it's about to set off.  
    Armed minions are unaffected by market change.  
-5. You can recover a minion who is suffering negative training, but it cost some extra Protein.
-6. You can reinforce a armed minion to catch up training, but still it cost some extra Protein.
-7. Liberate a minion and get some Protein to help other allies.  
+5. You can recover a minion who is suffering negative training, but it cost some extra enhancer.
+6. You can reinforce a armed minion to catch up training, but still it cost some extra enhancer.
+7. Liberate a minion and get some enhancer to help other allies.  
    Seems bloody and cruel? Well it's just a game, don't take it too serious >.^
 8. After recruiting some minions to form a troop, time to go on a expedition.
    

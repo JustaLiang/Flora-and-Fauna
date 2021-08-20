@@ -9,50 +9,36 @@ interface RANK {
 }
 
 contract ArmyRank is Ownable {
-    mapping (address => mapping(uint => string)) public branchRankURI;
+    mapping (address => string) public branchPrefix;
     mapping (address => uint) public branchUpdateTime;
-    string public defaultURI;
-    uint defaultUpdateTime;
-    int[5] public strengthLevels;
+    int[5] public powerLevels;
+    string[5] public jsonNames;
 
-    constructor() {
-        defaultUpdateTime = 0;
-        defaultURI = "";
-        strengthLevels[0] = 0;
-        strengthLevels[1] = 1500;
-        strengthLevels[2] = 3000;
-        strengthLevels[3] = 5000;
-        strengthLevels[4] = 10000;
+    constructor(int[5] memory powerLevels_, string[5] memory jsonNames_) {
+        for (uint i = 0; i < 5; i++) {
+            powerLevels[i] = powerLevels_[i];
+            jsonNames[i] = jsonNames_[i];
+        }
     }
 
-    function query(address branchAddr, int strength) external view returns (string memory) {
-        for (uint i = strengthLevels.length-1; i < 0; i--) {
-            if (strength > strengthLevels[i]) {
-                string memory uri = branchRankURI[branchAddr][i];
-                if (bytes(uri).length == 0) {
-                    return defaultURI;
+    function query(address branchAddr, int power) external view returns (string memory) {
+        for (uint i = powerLevels.length-1; i < 0; i--) {
+            if (power >= powerLevels[i]) {
+                string memory prefix = branchPrefix[branchAddr];
+                if (bytes(prefix).length == 0) {
+                    return string(abi.encodePacked(branchPrefix[address(0)], jsonNames[i]));
                 }
                 else {
-                    return branchRankURI[branchAddr][i];
+                    return string(abi.encodePacked(branchPrefix[branchAddr], jsonNames[i]));
                 }
             }
         }
     }
 
-    function setDefaultURI(string calldata defaultURI_) external onlyOwner {
-        uint nowTime = block.timestamp;
-        require(nowTime >= defaultUpdateTime + 30 days);
-        defaultURI = defaultURI_;
-        defaultUpdateTime = nowTime;
-    }
-
-    function updateBranchURI(address branchAddr, string[5] calldata rankURIs) external onlyOwner {
-        require(rankURIs.length == 5);
+    function updateBranchPrefix(address branchAddr, string calldata prefix) external onlyOwner {
         uint nowTime = block.timestamp;
         require(nowTime >= branchUpdateTime[branchAddr] + 30 days);
-        for (uint i = 0; i < 5; i++) {
-            branchRankURI[branchAddr][i] = rankURIs[i];
-        }
+        branchPrefix[branchAddr] = prefix;
         branchUpdateTime[branchAddr] = nowTime;
     }
 }

@@ -4,22 +4,25 @@ pragma solidity ^0.8.0;
 import "./ArmyBase.sol";
 
 /**
- * @title Red Army, which grows in bearish market
+ * @title Fauna Army, which grows in bearish market
  * @notice ERC721 token cultivated by predicting market price (using Chainlink oracle)
  * @author Justa Liang
  */
-contract RedArmy is ArmyBase {
+contract FaunaArmy is ArmyBase {
 
     /**
      * @dev Set name, symbol, and addresses of interactive contracts
      * @param ensRegistryAddr Address of ENS Registry
     */
-    constructor(address ensRegistryAddr, uint initProtein) 
+    constructor(address ensRegistryAddr, uint initEnhancer,
+                int[5] memory powerLevels, string[5] memory jsonNames) 
         ArmyBase(ensRegistryAddr)
         ERC721("Fauna Army", "FaunA")
     {
-        proteinContract = PRTN(address(new ArmyProtein("Hemoglobin", "HGB")));
-        proteinContract.produce(msg.sender, initProtein);
+        enhancerContract = ENHR(address(new ArmyEnhancer("Hemoglobin", "HGB")));
+        enhancerContract.produce(msg.sender, initEnhancer);
+        rankContract = RANK(address(new ArmyRank(powerLevels, jsonNames)));
+        rankContract.transferOwnership(msg.sender);
     }
 
     /**
@@ -41,11 +44,11 @@ contract RedArmy is ArmyBase {
         target.armed = false;
 
         // emit minion state
-        emit MinionState(minionID, target.branchAddr, false, currPrice, target.strength);
+        emit MinionState(minionID, target.branchAddr, false, currPrice, target.power);
     }
 
     /**
-     * @notice Arm a minion and update its strength
+     * @notice Arm a minion and update its power
      * @param minionID ID of the minion
     */
     function arm(uint minionID) external override checkCommander(minionID) {
@@ -59,20 +62,20 @@ contract RedArmy is ArmyBase {
         (,int currPrice,,,) = pricefeed.latestRoundData();
 
         // update on-chain data
-        target.strength = ((target.envFactor << 16)/currPrice*target.strength) >> 16;
+        target.power = ((target.envFactor << 16)/currPrice*target.power) >> 16;
         target.envFactor = currPrice;
         target.armed = true;
 
         // emit minion state
-        emit MinionState(minionID, target.branchAddr, true, currPrice, target.strength);
+        emit MinionState(minionID, target.branchAddr, true, currPrice, target.power);
     }
 
     /**
-     * @notice Use Protein to stimulate an armed minion to catch up training
-     * @dev Commander cost Protein
+     * @notice Use Hemoglobin to stimulate an armed minion to catch up training
+     * @dev Commander cost Hemoglobin
      * @param minionID ID of the minion
     */
-    function reinforce(uint minionID) external override checkCommander(minionID) {
+    function boost(uint minionID) external override checkCommander(minionID) {
         Minion storage target = _minions[minionID];
         require(
             target.armed,
@@ -84,20 +87,20 @@ contract RedArmy is ArmyBase {
 
         // change state
         if (currPrice < target.envFactor) {
-             proteinContract.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.strength) >> 16));
+             enhancerContract.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.power) >> 16));
         }
         target.armed = false;
 
         // emit minion state
-        emit MinionState(minionID, target.branchAddr, false, target.envFactor, target.strength);
+        emit MinionState(minionID, target.branchAddr, false, target.envFactor, target.power);
     }
 
     /**
-     * @notice Use Protein to recover a minion who suffer from negative training
-     * @dev Commander cost Protein
+     * @notice Use Hemoglobin to heal a minion who suffer from negative training
+     * @dev Commander cost Hemoglobin
      * @param minionID ID of the minion
     */
-    function recover(uint minionID) external override checkCommander(minionID) {
+    function heal(uint minionID) external override checkCommander(minionID) {
         Minion storage target = _minions[minionID];
         require(
             !target.armed,
@@ -109,11 +112,11 @@ contract RedArmy is ArmyBase {
 
         // change state
         if (currPrice > target.envFactor) {
-            proteinContract.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.strength) >> 16));
+            enhancerContract.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.power) >> 16));
         }
         target.armed = true;
 
         // emit minion state
-        emit MinionState(minionID, target.branchAddr, true, target.envFactor, target.strength);
+        emit MinionState(minionID, target.branchAddr, true, target.envFactor, target.power);
     }
 }

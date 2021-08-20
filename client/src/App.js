@@ -14,11 +14,11 @@ class App extends React.Component {
         ethereum: null,
         accounts: null,
         chainid: null,
-        prtnContract: null,
+        enhrContract: null,
         armyContract: null,
-        prtnDecimals: 0,
+        enhrDecimals: 0,
         //--- display
-        prtnBalance: 0,
+        enhrBalance: 0,
         minionList: {},
         minionInfo: [],
         //--- input
@@ -49,16 +49,16 @@ class App extends React.Component {
         if (chainid <= 42) {
             chain = chainid.toString()
         }
-        const prtnContract = await this.loadContract(chain, "ArmyProtein", 1)
-        const armyContract = await this.loadContract(chain, "GreenArmy", 0)
-        if (!prtnContract || !armyContract) {
+        const enhrContract = await this.loadContract(chain, "ArmyEnhancer", 1)
+        const armyContract = await this.loadContract(chain, "FloraArmy", 0)
+        if (!enhrContract || !armyContract) {
             return
         }
-        const prtnDecimals = await prtnContract.methods.decimals().call()
+        const enhrDecimals = await enhrContract.methods.decimals().call()
 
-        this.setState({ prtnContract, armyContract, prtnDecimals })
+        this.setState({ enhrContract, armyContract, enhrDecimals })
     
-        await this.prtnGetBalance()
+        await this.enhrGetBalance()
         await this.armyGetList()
     }
 
@@ -87,12 +87,12 @@ class App extends React.Component {
         return new web3.eth.Contract(contractArtifact.abi, address)
     }
 
-    prtnGetBalance = async () => {
-        const {accounts, prtnContract, prtnDecimals} = this.state
+    enhrGetBalance = async () => {
+        const {accounts, enhrContract, enhrDecimals} = this.state
         if (accounts.length === 0) {
             return
         }
-        this.setState({ prtnBalance: ((await prtnContract.methods.balanceOf(accounts[0]).call())/10**prtnDecimals).toFixed(2) })
+        this.setState({ enhrBalance: ((await enhrContract.methods.balanceOf(accounts[0]).call())/10**enhrDecimals).toFixed(2) })
     }
 
     armyGetList = async () => {
@@ -117,8 +117,8 @@ class App extends React.Component {
                 <button type="submit" value={id} onClick={(e) => this.setState({ minionID: e.target.value })}>check</button>
                 <button value={id} onClick={(e) => this.armyArm(e)}>arm</button>
                 <button value={id} onClick={(e) => this.armyTrain(e)}>train</button>
-                <button value={id} onClick={(e) => this.armyRecover(e)}>recover</button>
-                <button value={id} onClick={(e) => this.armyReinforce(e)}>reinforce</button>
+                <button value={id} onClick={(e) => this.armyHeal(e)}>heal</button>
+                <button value={id} onClick={(e) => this.armyBoost(e)}>boost</button>
                 <button value={id} onClick={(e) => this.armyLiberate(e)}>liberate</button>
             </div>
         </form>
@@ -190,35 +190,35 @@ class App extends React.Component {
         armyContract.methods.liberate(pid).send({ from:accounts[0] })
             .on("receipt", () => {
                 this.armyGetList()
-                this.prtnGetBalance()
+                this.enhrGetBalance()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    armyReinforce = async (e) => {
+    armyBoost = async (e) => {
         const { accounts, armyContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        armyContract.methods.reinforce(pid).send({ from: accounts[0] })
+        armyContract.methods.boost(pid).send({ from: accounts[0] })
             .on("receipt", () => {
                 this.armyGetList()
-                this.prtnGetBalance()
+                this.enhrGetBalance()
             })
             .on("error", (err) => {
                 console.log(err)
             })
     }
 
-    armyRecover = async (e) => {
+    armyHeal = async (e) => {
         const { accounts, armyContract } = this.state
         e.preventDefault()
         const pid = parseInt(e.target.value)
-        armyContract.methods.recover(pid).send({ from: accounts[0] })
+        armyContract.methods.heal(pid).send({ from: accounts[0] })
             .on("receipt", () => {
                 this.armyGetList()
-                this.prtnGetBalance()
+                this.enhrGetBalance()
             })
             .on("error", (err) => {
                 console.log(err)
@@ -228,8 +228,8 @@ class App extends React.Component {
     render() {
         const {
             ethereum, accounts, chainid,
-            prtnContract, armyContract,
-            prtnBalance, minionList, minionInfo,
+            enhrContract, armyContract,
+            enhrBalance, minionList, minionInfo,
             quote, base, minionID
         } = this.state
 
@@ -241,7 +241,7 @@ class App extends React.Component {
             return <div>Wrong Network!</div>
         }
 
-        if (!prtnContract || !armyContract) {
+        if (!enhrContract || !armyContract) {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
@@ -255,8 +255,8 @@ class App extends React.Component {
                     </p>
                     : null
             }
-            <h1>Green Army</h1>
-            <div> <h3>Green Protein</h3>{prtnBalance}</div>
+            <h1>Flora Army</h1>
+            <div> <h3>Chlorophyll</h3>{enhrBalance}</div>
             <div> <h3>Your Barrack</h3>{mList}</div>
             <br/>
             <form onSubmit={(e) => this.armyRecruit(e)}>

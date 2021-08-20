@@ -18,9 +18,9 @@ interface ArmyInterface is IERC721 {
     function liberate(uint) virtual external;
     function grant(uint) virtual external;
 
-    // command with different implementations between green and red
+    // command with different implementations between flora and fauna
     function train(uint) virtual external;
     function arm(uint) virtual external;
-    function reinforce(uint) virtual external;
-    function recover(uint) virtual external;
+    function boost(uint) virtual external;
+    function heal(uint) virtual external;
 }

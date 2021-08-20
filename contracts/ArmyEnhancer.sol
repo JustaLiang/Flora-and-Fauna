@@ -7,17 +7,17 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /**
  * @notice Unique operations only for Army contract
  */
-interface PRTN {
+interface ENHR {
     function produce(address, uint) external;
     function consume(address, uint) external;
 }
 
 /**
- * @title Protein
+ * @title Organic Enhancer
  * @notice ERC20 token minted or burnt by Army contract
  * @author Justa Liang
  */
-contract ArmyProtein is ERC20, Ownable {
+contract ArmyEnhancer is ERC20, Ownable {
 
     /**
      * @dev ERC20 constructor
@@ -29,18 +29,18 @@ contract ArmyProtein is ERC20, Ownable {
     }
 
     /**
-     * @dev Produce protein for commander
+     * @dev Produce enhancer for commander
      * @param commander Player of Army
-     * @param amount Amount of protein (no decimal concerned)
+     * @param amount Amount of enhancer (no decimal concerned)
     */
     function produce(address commander, uint amount) external onlyOwner {
         _mint(commander, amount*10**decimals());
     }
 
     /**
-     * @dev Consume protein from commander
+     * @dev Consume enhancer from commander
      * @param commander Player of Army
-     * @param amount Amount of protein (no decimal concerned)
+     * @param amount Amount of enhancer (no decimal concerned)
     */
     function consume(address commander, uint amount) external onlyOwner {
         _burn(commander, amount*10**decimals());

@@ -13,9 +13,9 @@ contract Battlefield {
     mapping (uint => uint[]) public fieldToDefender;
     mapping (uint => bool) public fieldIsGreen;
     mapping (address => bool) public commanderHaveField;
-    ARMY public greenArmy;
-    ARMY public redArmy;
-    int private _refStrength;
+    ARMY public floraArmy;
+    ARMY public faunaArmy;
+    int private _refPower;
 
     event FieldState(uint indexed fieldID,
                      address indexed conqueror,
@@ -24,17 +24,17 @@ contract Battlefield {
 
     event FieldRange(uint fieldRange);
 
-    constructor(address greenArmyAddr, address redArmyAddr) {
+    constructor(address floraArmyAddr, address faunaArmyAddr) {
         fieldRange = 20;
-        _refStrength = 1000;
-        greenArmy = ARMY(greenArmyAddr);
-        redArmy = ARMY(redArmyAddr);
+        _refPower = 1000;
+        floraArmy = ARMY(floraArmyAddr);
+        faunaArmy = ARMY(faunaArmyAddr);
 
         emit FieldRange(fieldRange);
     }
 
     function expand() external {
-        require(greenArmy.serialNumber() + redArmy.serialNumber() > fieldRange*50);
+        require(floraArmy.serialNumber() + faunaArmy.serialNumber() > fieldRange*50);
         fieldRange += 20;
 
         emit FieldRange(fieldRange);
@@ -45,16 +45,16 @@ contract Battlefield {
         return defender;
     }
 
-    function greenConquer(uint fieldID, uint[] calldata attackerTeam) external {
+    function floraConquer(uint fieldID, uint[] calldata attackerTeam) external {
         require(fieldID < fieldRange && !commanderHaveField[msg.sender]);
         for(uint i = 0; i < attackerTeam.length; i++) {
-            require(greenArmy.ownerOf(attackerTeam[i]) == msg.sender);
+            require(floraArmy.ownerOf(attackerTeam[i]) == msg.sender);
         }
         uint[] memory defenderTeam = fieldToDefender[fieldID];
         if (defenderTeam.length > 0) {
             require(!fieldIsGreen[fieldID]);
-            _fight(greenArmy, attackerTeam, redArmy, defenderTeam);
-            commanderHaveField[redArmy.ownerOf(defenderTeam[0])] = false;
+            _fight(floraArmy, attackerTeam, faunaArmy, defenderTeam);
+            commanderHaveField[faunaArmy.ownerOf(defenderTeam[0])] = false;
         }
         else {
             require(attackerTeam.length == 1);
@@ -66,16 +66,16 @@ contract Battlefield {
         emit FieldState(fieldID, msg.sender, attackerTeam, true);
     }
 
-    function redConquer(uint fieldID, uint[] calldata attackerTeam) external {
+    function faunaConquer(uint fieldID, uint[] calldata attackerTeam) external {
         require(fieldID < fieldRange && !commanderHaveField[msg.sender]);
         for(uint i = 0; i < attackerTeam.length; i++) {
-            require(redArmy.ownerOf(attackerTeam[i]) == msg.sender);
+            require(faunaArmy.ownerOf(attackerTeam[i]) == msg.sender);
         }
         uint[] memory defenderTeam = fieldToDefender[fieldID];
         if (defenderTeam.length > 0) {
             require(fieldIsGreen[fieldID]);
-            _fight(redArmy, attackerTeam, greenArmy, defenderTeam);
-            commanderHaveField[greenArmy.ownerOf(defenderTeam[0])] = false;
+            _fight(faunaArmy, attackerTeam, floraArmy, defenderTeam);
+            commanderHaveField[floraArmy.ownerOf(defenderTeam[0])] = false;
         }
         else {
             require(attackerTeam.length == 1);
@@ -87,22 +87,22 @@ contract Battlefield {
         emit FieldState(fieldID, msg.sender, attackerTeam, false);
     }
 
-    function greenRetreat(uint fieldID) external {
+    function floraRetreat(uint fieldID) external {
         uint[] memory defender = fieldToDefender[fieldID];
         require(defender.length > 0);
         require(fieldIsGreen[fieldID]);
-        require(greenArmy.ownerOf(defender[0]) == msg.sender);
+        require(floraArmy.ownerOf(defender[0]) == msg.sender);
         fieldToDefender[fieldID] = new uint[](0);
         commanderHaveField[msg.sender] = false;
 
         emit FieldState(fieldID, address(0), fieldToDefender[fieldID], true);
     }
 
-    function redRetreat(uint fieldID) external {
+    function faunaRetreat(uint fieldID) external {
         uint[] memory defender = fieldToDefender[fieldID];
         require(defender.length > 0);
         require(!fieldIsGreen[fieldID]);
-        require(redArmy.ownerOf(defender[0]) == msg.sender);
+        require(faunaArmy.ownerOf(defender[0]) == msg.sender);
         fieldToDefender[fieldID] = new uint[](0);
         commanderHaveField[msg.sender] = false;
 
@@ -113,38 +113,38 @@ contract Battlefield {
                     ArmyInterface defender, uint[] memory defenderTeam
                     ) private view {
         if (attackerTeam.length == defenderTeam.length-1) {
-            (address eBranch,bool eArmed,,int eStrength) = defender.getMinionInfo(defenderTeam[0]);
+            (address eBranch,bool eArmed,,int ePower) = defender.getMinionInfo(defenderTeam[0]);
             int dBuff;
             if (!eArmed) {
                 dBuff = 0;
             }
             else {
-                dBuff = eStrength - _refStrength;
+                dBuff = ePower - _refPower;
             }
             for (uint i = 0; i < attackerTeam.length; i++) {
-                (address aBranch,bool aArmed,,int aStrength) = attacker.getMinionInfo(attackerTeam[i]);
-                (address dBranch,bool dArmed,,int dStrength) = defender.getMinionInfo(defenderTeam[i+1]);                    
+                (address aBranch,bool aArmed,,int aPower) = attacker.getMinionInfo(attackerTeam[i]);
+                (address dBranch,bool dArmed,,int dPower) = defender.getMinionInfo(defenderTeam[i+1]);                    
                 require(aArmed && aBranch == dBranch); 
-                require(!dArmed || aStrength > dStrength + dBuff);
+                require(!dArmed || aPower > dPower + dBuff);
             }            
         }
         else if (attackerTeam.length == defenderTeam.length) {
             for (uint i = 0; i < defenderTeam.length; i++) {
-                (address aBranch,bool aArmed,,int aStrength) = attacker.getMinionInfo(attackerTeam[i]);
-                (address dBranch,bool dArmed,,int dStrength) = defender.getMinionInfo(defenderTeam[i]);
+                (address aBranch,bool aArmed,,int aPower) = attacker.getMinionInfo(attackerTeam[i]);
+                (address dBranch,bool dArmed,,int dPower) = defender.getMinionInfo(defenderTeam[i]);
                 require(aArmed && aBranch == dBranch);
-                require(!dArmed || aStrength > dStrength);
+                require(!dArmed || aPower > dPower);
             }
         }
         else if (attackerTeam.length == defenderTeam.length+1) {
-            (address eBranch,bool eArmed,,int eStrength) = attacker.getMinionInfo(attackerTeam[defenderTeam.length]);
+            (address eBranch,bool eArmed,,int ePower) = attacker.getMinionInfo(attackerTeam[defenderTeam.length]);
             require(eArmed);
-            int aBuff = eStrength - _refStrength;
+            int aBuff = ePower - _refPower;
             for (uint i = 0; i < defenderTeam.length; i++) {
-                (address aBranch,bool aArmed,,int aStrength) = attacker.getMinionInfo(attackerTeam[i]);
-                (address dBranch,bool dArmed,,int dStrength) = defender.getMinionInfo(defenderTeam[i]);                    
+                (address aBranch,bool aArmed,,int aPower) = attacker.getMinionInfo(attackerTeam[i]);
+                (address dBranch,bool dArmed,,int dPower) = defender.getMinionInfo(defenderTeam[i]);                    
                 require(aArmed && aBranch == dBranch && eBranch != dBranch);
-                require(!dArmed || aStrength + aBuff > dStrength);
+                require(!dArmed || aPower + aBuff > dPower);
             }
         }
         else {

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "../interfaces/ArmyInterface.sol";
-import "./ArmyProtein.sol";
+import "./ArmyEnhancer.sol";
 import "./ArmyRank.sol";
 
 /**
@@ -27,8 +27,8 @@ interface Resolver {
  */
 abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
 
-    /// @notice Corresponding Protein contract
-    PRTN public proteinContract;
+    /// @notice Corresponding Enhancer contract
+    ENHR public enhancerContract;
 
     /// @notice Corresponding Rank contract
     RANK public rankContract;
@@ -36,8 +36,8 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     /// @notice Serial number of minions, imply how many minions have been created
     uint public serialNumber;
 
-    /// @dev Inital minion's strength
-    int internal _initStrength;
+    /// @dev Inital minion's power
+    int internal _initPower;
 
     /// @dev ENS interface (fixed address)
     ENS internal _ens;
@@ -47,7 +47,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         address     branchAddr;   // branch address (which proxy of Chainlink price feed)
         bool        armed;        // armed or not
         int         envFactor;    // environment factor (latest updated price from Chainlink)
-        int         strength;     // strength of the minion
+        int         power;     // power of the minion
     }
 
     /// @dev Minion data storage
@@ -59,7 +59,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         address indexed branchAddress,
         bool indexed armed,
         int environmentFactor,
-        int strength
+        int power
     );
 
     /**
@@ -68,10 +68,8 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     */
     constructor(address ensRegistryAddr) {
         serialNumber = 0;
-        _initStrength = 1000;
+        _initPower = 1000;
         _ens = ENS(ensRegistryAddr);
-        rankContract = RANK(address(new ArmyRank()));
-        rankContract.transferOwnership(msg.sender);
     }
 
     /**
@@ -85,7 +83,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
             _exists(minionID),
             "ARMY: commander query for nonexistent minion");
         Minion memory target = _minions[minionID];
-        return (target.branchAddr, target.armed, target.envFactor, target.strength);
+        return (target.branchAddr, target.armed, target.envFactor, target.power);
     }
 
     /**
@@ -124,17 +122,17 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         // mint minion and store its data on chain
         uint newID = serialNumber;
         _mint(msg.sender, newID);
-        _minions.push(Minion(branchAddr, false, currPrice, _initStrength));
-        _setTokenURI(newID, rankContract.query(branchAddr, _initStrength));
+        _minions.push(Minion(branchAddr, false, currPrice, _initPower));
+        _setTokenURI(newID, rankContract.query(branchAddr, _initPower));
 
-        emit MinionState(newID, branchAddr, false, currPrice, _initStrength);
+        emit MinionState(newID, branchAddr, false, currPrice, _initPower);
         serialNumber++;
         return newID;
     }
 
     /**
-     * @notice Liberate a minion and get some protein
-     * @dev Commander get protein
+     * @notice Liberate a minion and get some enhancer
+     * @dev Commander get enhancer
      * @param minionID ID of the minion
     */
     function liberate(uint minionID) external override checkCommander(minionID) {
@@ -143,18 +141,21 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
             target.armed,
             "ARMY: can only liberate armed minion");
         require(
-            target.strength > _initStrength,
+            target.power > _initPower,
             "ARMY: can only liberate healthy minion");
 
         _burn(minionID);
-        proteinContract.produce(msg.sender, uint(target.strength - _initStrength));
+        enhancerContract.produce(msg.sender, uint(target.power - _initPower));
+    }
+
+    function tokenURI(uint minionID) public view override returns (string memory) {
+        require(_exists(minionID), "ERC721URIStorage: URI query for nonexistent token");
+        Minion storage target = _minions[minionID];
+        return rankContract.query(target.branchAddr, target.power);
     }
 
     function grant(uint minionID) external override checkCommander(minionID) {
-        Minion storage target = _minions[minionID];
-        string memory newURI = rankContract.query(target.branchAddr, target.strength);
-        require(keccak256(abi.encodePacked(newURI)) != keccak256(abi.encodePacked(tokenURI(minionID))));
-        _setTokenURI(minionID, newURI);
+        _setTokenURI(minionID, tokenURI(minionID));
     }
 
     /// @dev Check if commander can command the minion
