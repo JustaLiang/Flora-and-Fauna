@@ -149,7 +149,9 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     }
 
     function tokenURI(uint minionID) public view override returns (string memory) {
-        require(_exists(minionID), "ERC721URIStorage: URI query for nonexistent token");
+        require(
+            _exists(minionID),
+            "ARMY: commander query for nonexistent minion");
         Minion storage target = _minions[minionID];
         return rankContract.query(target.branchAddr, target.power);
     }

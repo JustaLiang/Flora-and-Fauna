@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 interface RANK {
     function transferOwnership(address) external;
     function query(address, int) external view returns (string memory);
+    function updateBranchPrefix(address, string calldata) external;
 }
 
 contract ArmyRank is Ownable {
@@ -22,7 +23,7 @@ contract ArmyRank is Ownable {
     }
 
     function query(address branchAddr, int power) external view returns (string memory) {
-        for (uint i = powerLevels.length-1; i < 0; i--) {
+        for (uint i = powerLevels.length-1; i >= 0; i--) {
             if (power >= powerLevels[i]) {
                 string memory prefix = branchPrefix[branchAddr];
                 if (bytes(prefix).length == 0) {
