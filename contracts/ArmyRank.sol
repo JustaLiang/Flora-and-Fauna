@@ -11,7 +11,6 @@ interface RANK {
 
 contract ArmyRank is Ownable {
     mapping (address => string) public branchPrefix;
-    mapping (address => uint) public branchUpdateTime;
     int[5] public powerLevels;
     string[5] public jsonNames;
 
@@ -37,9 +36,6 @@ contract ArmyRank is Ownable {
     }
 
     function updateBranchPrefix(address branchAddr, string calldata prefix) external onlyOwner {
-        uint nowTime = block.timestamp;
-        require(nowTime >= branchUpdateTime[branchAddr] + 30 days);
         branchPrefix[branchAddr] = prefix;
-        branchUpdateTime[branchAddr] = nowTime;
     }
 }

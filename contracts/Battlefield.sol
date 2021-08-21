@@ -2,19 +2,29 @@
 pragma solidity ^0.8.0;
 
 import "../interfaces/ArmyInterface.sol";
+import "./BattleProposal.sol";
 
 interface ARMY is ArmyInterface {
     function serialNumber() external view returns (uint);
+    function rankContract() external view returns (address);
 }
 
-contract Battlefield {
+interface RANK {
+    function updateBranchPrefix(address, string calldata) external;
+}
+
+contract Battlefield is BattleProposal {
 
     uint public fieldRange;
     mapping (uint => uint[]) public fieldToDefender;
     mapping (uint => bool) public fieldIsGreen;
-    mapping (address => bool) public commanderHaveField;
+    mapping (address => bool) public commanderHasField;
     ARMY public floraArmy;
     ARMY public faunaArmy;
+    RANK public floraRank;
+    RANK public faunaRank;
+    uint public floraFieldCount;
+    uint public faunaFieldCount;
     int private _refPower;
 
     event FieldState(uint indexed fieldID,
@@ -29,6 +39,10 @@ contract Battlefield {
         _refPower = 1000;
         floraArmy = ARMY(floraArmyAddr);
         faunaArmy = ARMY(faunaArmyAddr);
+        floraRank = RANK(floraArmy.rankContract());
+        faunaRank = RANK(faunaArmy.rankContract());
+        floraFieldCount = 0;
+        faunaFieldCount = 0;
 
         emit FieldRange(fieldRange);
     }
@@ -45,8 +59,9 @@ contract Battlefield {
         return defender;
     }
 
-    function floraConquer(uint fieldID, uint[] calldata attackerTeam) external {
-        require(fieldID < fieldRange && !commanderHaveField[msg.sender]);
+    function floraConquer(uint fieldID, uint[] calldata attackerTeam) external propState {
+        require(fieldID < fieldRange);
+        require(!commanderHasField[msg.sender]);
         for(uint i = 0; i < attackerTeam.length; i++) {
             require(floraArmy.ownerOf(attackerTeam[i]) == msg.sender);
         }
@@ -54,20 +69,24 @@ contract Battlefield {
         if (defenderTeam.length > 0) {
             require(!fieldIsGreen[fieldID]);
             _fight(floraArmy, attackerTeam, faunaArmy, defenderTeam);
-            commanderHaveField[faunaArmy.ownerOf(defenderTeam[0])] = false;
+            commanderHasField[faunaArmy.ownerOf(defenderTeam[0])] = false;
+            faunaFieldCount--;
         }
         else {
             require(attackerTeam.length == 1);
         }
         fieldToDefender[fieldID] = attackerTeam;
         fieldIsGreen[fieldID] = true;
-        commanderHaveField[msg.sender] = true;
+        fieldHasVoted[fieldID] = false;
+        commanderHasField[msg.sender] = true;
+        floraFieldCount++;
 
         emit FieldState(fieldID, msg.sender, attackerTeam, true);
     }
 
-    function faunaConquer(uint fieldID, uint[] calldata attackerTeam) external {
-        require(fieldID < fieldRange && !commanderHaveField[msg.sender]);
+    function faunaConquer(uint fieldID, uint[] calldata attackerTeam) external propState {
+        require(fieldID < fieldRange);
+        require(!commanderHasField[msg.sender]);
         for(uint i = 0; i < attackerTeam.length; i++) {
             require(faunaArmy.ownerOf(attackerTeam[i]) == msg.sender);
         }
@@ -75,38 +94,78 @@ contract Battlefield {
         if (defenderTeam.length > 0) {
             require(fieldIsGreen[fieldID]);
             _fight(faunaArmy, attackerTeam, floraArmy, defenderTeam);
-            commanderHaveField[floraArmy.ownerOf(defenderTeam[0])] = false;
+            commanderHasField[floraArmy.ownerOf(defenderTeam[0])] = false;
+            floraFieldCount--;
         }
         else {
             require(attackerTeam.length == 1);
         }
         fieldToDefender[fieldID] = attackerTeam;
         fieldIsGreen[fieldID] = false;
-        commanderHaveField[msg.sender] = true;
+        fieldHasVoted[fieldID] = false;
+        commanderHasField[msg.sender] = true;
+        faunaFieldCount++;
 
         emit FieldState(fieldID, msg.sender, attackerTeam, false);
     }
 
-    function floraRetreat(uint fieldID) external {
-        uint[] memory defender = fieldToDefender[fieldID];
-        require(defender.length > 0);
-        require(fieldIsGreen[fieldID]);
-        require(floraArmy.ownerOf(defender[0]) == msg.sender);
-        fieldToDefender[fieldID] = new uint[](0);
-        commanderHaveField[msg.sender] = false;
-
-        emit FieldState(fieldID, address(0), fieldToDefender[fieldID], true);
+    function startVote() external propState {
+        require(proposals.length > 0);
+        uint currentTime = block.timestamp;
+        require(currentTime >= updateTime + 28 days);
+        updateTime = currentTime;
+        enableProposal = false;
     }
 
-    function faunaRetreat(uint fieldID) external {
-        uint[] memory defender = fieldToDefender[fieldID];
-        require(defender.length > 0);
-        require(!fieldIsGreen[fieldID]);
-        require(faunaArmy.ownerOf(defender[0]) == msg.sender);
-        fieldToDefender[fieldID] = new uint[](0);
-        commanderHaveField[msg.sender] = false;
+    function floraVote(uint proposalID, uint fieldID) external voteState {
+        require(!fieldHasVoted[fieldID]);
+        require(floraArmy.ownerOf(fieldToDefender[fieldID][0]) == msg.sender);
+        votes[proposalID]++;
+        fieldHasVoted[fieldID] = true;
+    }
 
-        emit FieldState(fieldID, address(0), fieldToDefender[fieldID], false);
+    function faunaVote(uint proposalID, uint fieldID) external voteState {
+        require(!fieldHasVoted[fieldID]);
+        require(faunaArmy.ownerOf(fieldToDefender[fieldID][0]) == msg.sender);
+        votes[proposalID]++;        
+        fieldHasVoted[fieldID] = true;
+    }
+
+    function endVote() external voteState {
+        uint currentTime = block.timestamp;
+        require(currentTime >= updateTime + 7 days);
+        updateTime = currentTime;
+        uint maxVote = 0;
+        uint maxIdx = 0;
+        for (uint i = 0; i < votes.length; i++) {
+            if (votes[i] > maxVote) {
+                maxVote = votes[i];
+                maxIdx = i;
+            }
+        }
+
+        Proposal memory result = proposals[maxIdx];
+
+        if (floraFieldCount >= faunaFieldCount) {
+            floraRank.updateBranchPrefix(result.branchAddr, result.branchPrefix);
+        }
+        if (faunaFieldCount >= floraFieldCount) {
+            faunaRank.updateBranchPrefix(result.branchAddr, result.branchPrefix);
+        }
+
+        delete proposals;
+        delete votes;
+        enableProposal = true;
+    }
+
+    modifier propState() {
+        require(enableProposal);
+        _;
+    }
+
+    modifier voteState() {
+        require(!enableProposal);
+        _;
     }
 
     function _fight(ArmyInterface attacker, uint[] memory attackerTeam,
