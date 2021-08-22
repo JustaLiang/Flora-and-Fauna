@@ -59,7 +59,7 @@ contract Battlefield is BattleProposal {
         return defender;
     }
 
-    function floraConquer(uint fieldID, uint[] calldata attackerTeam) external propState {
+    function floraConquer(uint fieldID, uint[] calldata attackerTeam) external {
         require(fieldID < fieldRange);
         require(!commanderHasField[msg.sender]);
         for(uint i = 0; i < attackerTeam.length; i++) {
@@ -84,7 +84,7 @@ contract Battlefield is BattleProposal {
         emit FieldState(fieldID, msg.sender, attackerTeam, true);
     }
 
-    function faunaConquer(uint fieldID, uint[] calldata attackerTeam) external propState {
+    function faunaConquer(uint fieldID, uint[] calldata attackerTeam) external {
         require(fieldID < fieldRange);
         require(!commanderHasField[msg.sender]);
         for(uint i = 0; i < attackerTeam.length; i++) {
@@ -109,34 +109,30 @@ contract Battlefield is BattleProposal {
         emit FieldState(fieldID, msg.sender, attackerTeam, false);
     }
 
-    function startVote() external propState {
-        require(proposals.length > 0);
-        uint currentTime = block.timestamp;
-        require(currentTime >= updateTime + 28 days);
-        updateTime = currentTime;
-        enableProposal = false;
-    }
-
-    function floraVote(uint proposalID, uint fieldID) external voteState {
+    function floraVote(address branch, uint proposalID, uint fieldID)
+            external voteState(branch) {
         require(!fieldHasVoted[fieldID]);
         require(floraArmy.ownerOf(fieldToDefender[fieldID][0]) == msg.sender);
-        votes[proposalID]++;
+        branchVotes[branch][proposalID]++;
         fieldHasVoted[fieldID] = true;
     }
 
-    function faunaVote(uint proposalID, uint fieldID) external voteState {
+    function faunaVote(address branch, uint proposalID, uint fieldID)
+            external voteState(branch) {
         require(!fieldHasVoted[fieldID]);
         require(faunaArmy.ownerOf(fieldToDefender[fieldID][0]) == msg.sender);
-        votes[proposalID]++;        
+        branchVotes[branch][proposalID]++;        
         fieldHasVoted[fieldID] = true;
     }
 
-    function endVote() external voteState {
+    function endVote(address branch) external voteState(branch) {
         uint currentTime = block.timestamp;
-        require(currentTime >= updateTime + 7 days);
-        updateTime = currentTime;
+        require(currentTime >= branchUpdateTimes[branch] + 7 days);
+        branchUpdateTimes[branch] = currentTime;
+        
         uint maxVote = 0;
         uint maxIdx = 0;
+        uint[] memory votes = branchVotes[branch];
         for (uint i = 0; i < votes.length; i++) {
             if (votes[i] > maxVote) {
                 maxVote = votes[i];
@@ -144,28 +140,18 @@ contract Battlefield is BattleProposal {
             }
         }
 
-        Proposal memory result = proposals[maxIdx];
+        string memory resultPrefix = branchProposals[branch][maxIdx];
 
         if (floraFieldCount >= faunaFieldCount) {
-            floraRank.updateBranchPrefix(result.branchAddr, result.branchPrefix);
+            floraRank.updateBranchPrefix(branch, resultPrefix);
         }
         if (faunaFieldCount >= floraFieldCount) {
-            faunaRank.updateBranchPrefix(result.branchAddr, result.branchPrefix);
+            faunaRank.updateBranchPrefix(branch, resultPrefix);
         }
 
-        delete proposals;
-        delete votes;
-        enableProposal = true;
-    }
-
-    modifier propState() {
-        require(enableProposal);
-        _;
-    }
-
-    modifier voteState() {
-        require(!enableProposal);
-        _;
+        delete branchProposals[branch];
+        delete branchVotes[branch];
+        branchEnableVote[branch] = false;
     }
 
     function _fight(ArmyInterface attacker, uint[] memory attackerTeam,

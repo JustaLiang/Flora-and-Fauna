@@ -3,33 +3,41 @@ pragma solidity ^0.8.0;
 
 abstract contract BattleProposal {
 
-    struct Proposal {
-        address branchAddr;
-        string branchPrefix;
-    }
-
-    uint updateTime;
-    bool public enableProposal;
-    Proposal[] public proposals;
-    uint[] public votes;
-    mapping (uint =>  bool) fieldHasVoted;
+    mapping (uint => bool) fieldHasVoted;
+    mapping (address => string[]) branchProposals;
+    mapping (address => uint[]) branchVotes;
+    mapping (address => uint) branchUpdateTimes;
+    mapping (address => bool) branchEnableVote;
 
     event Propose(
         address indexed proposer,
-        address indexed branchAddr,
-        string branchPrefix  
+        address indexed branchAddress,
+        string branchPrefix
     );
 
-    constructor() {
-        updateTime = block.timestamp;
-        enableProposal = true;
+    function propose(address branch, string calldata prefix) external propState(branch) {
+        branchProposals[branch].push(prefix);
+        branchVotes[branch].push(0);
+
+        emit Propose(msg.sender, branch, prefix);
     }
 
-    function propose(address branchAddr, string calldata branchPrefix) external {
-        require(enableProposal);
-        proposals.push(Proposal(branchAddr, branchPrefix));
-        votes.push(0);
+    function startVote(address branch) external propState(branch) {
+        require(branchProposals[branch].length > 0);
+        uint currentTime = block.timestamp;
+        require(currentTime >= branchUpdateTimes[branch] + 28 days);
+        branchUpdateTimes[branch] = currentTime;
+        branchEnableVote[branch] = true;
+    }
 
-        emit Propose(msg.sender, branchAddr, branchPrefix);
+    modifier voteState(address branch) {
+        require(branchEnableVote[branch]);
+        require(branchProposals[branch].length > 0);
+        _;
+    }
+
+    modifier propState(address branch) {
+        require(!branchEnableVote[branch]);
+        _;
     }
 }
