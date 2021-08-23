@@ -4,7 +4,7 @@ from brownie import (
     FloraArmy, FaunaArmy, ArmyEnhancer, ArmyRank, Battlefield)
 
 init_enhancer = 7777777
-power_levels = [0, 1010, 1020, 1030, 1040]
+power_levels = [0, 1010, 1030, 1050, 1100]
 flora_images = ['flora_1.jpg','flora_2.jpg','flora_3.jpg','flora_4.jpg','flora_5.jpg']
 fauna_images = ['fauna_1.jpg','fauna_2.jpg','fauna_3.jpg','fauna_4.jpg','fauna_5.jpg']
 
