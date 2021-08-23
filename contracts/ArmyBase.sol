@@ -152,12 +152,19 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         require(
             _exists(minionID),
             "ARMY: commander query for nonexistent minion");
-        Minion storage target = _minions[minionID];
-        return rankContract.query(target.branchAddr, target.power);
+        Minion memory target = _minions[minionID];
+        string memory grantedURI = super.tokenURI(minionID);
+        if (bytes(grantedURI).length > 11) {
+            return grantedURI;
+        }
+        else {
+            return rankContract.query(target.branchAddr, target.power);
+        }
     }
 
     function grant(uint minionID) external override checkCommander(minionID) {
-        _setTokenURI(minionID, tokenURI(minionID));
+        Minion memory target = _minions[minionID];
+        _setTokenURI(minionID, rankContract.query(target.branchAddr, target.power));
     }
 
     /// @dev Check if commander can command the minion
