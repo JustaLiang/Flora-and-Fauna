@@ -123,7 +123,6 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         uint newID = serialNumber;
         _mint(msg.sender, newID);
         _minions.push(Minion(branchAddr, false, currPrice, _initPower));
-        _setTokenURI(newID, rankContract.query(branchAddr, _initPower));
 
         emit MinionState(newID, branchAddr, false, currPrice, _initPower);
         serialNumber++;

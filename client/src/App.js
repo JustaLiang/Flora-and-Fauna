@@ -105,6 +105,7 @@ class App extends React.Component {
         for (let id of minionIDs)
         {
             minionList[id] = Object.values(await armyContract.methods.getMinionInfo(id).call())
+            minionList[id].push(await armyContract.methods.tokenURI(id).call())
         }
         this.setState({ minionList })
     }
@@ -112,14 +113,18 @@ class App extends React.Component {
     armyDisplay = (id) => {
         const { minionList } = this.state
         return <form className="minion" key={id} onSubmit={(e) => this.armyShow(e)}>
+            <img src={minionList[id][4]} alt={id+"_img"}/>
             <div>
-                #{id} : | {minionList[id][0].substring(0,10)}... | {minionList[id].slice(1).join(" | ")} |
+                #{id} : | {minionList[id][0].substring(0,10)}... | {minionList[id].slice(1,4).join(" | ")} |
+                <br/>
                 <button type="submit" value={id} onClick={(e) => this.setState({ minionID: e.target.value })}>check</button>
                 <button value={id} onClick={(e) => this.armyArm(e)}>arm</button>
                 <button value={id} onClick={(e) => this.armyTrain(e)}>train</button>
                 <button value={id} onClick={(e) => this.armyHeal(e)}>heal</button>
                 <button value={id} onClick={(e) => this.armyBoost(e)}>boost</button>
                 <button value={id} onClick={(e) => this.armyLiberate(e)}>liberate</button>
+                <button value={id} onClick={(e) => this.armyGrant(e)}>grant</button>
+                <button value={id} onClick={(e) => this.armySend(e)}>send</button>
             </div>
         </form>
     }
@@ -225,6 +230,36 @@ class App extends React.Component {
             })
     }
 
+    armyGrant = async (e) => {
+        const { accounts, armyContract } = this.state
+        e.preventDefault()
+        const pid = parseInt(e.target.value)
+        armyContract.methods.grant(pid).send({ from: accounts[0] })
+            .on("receipt", () => {
+                this.armyGetList()
+            })
+            .on("error", (err) => {
+                console.log(err)
+            })
+    }
+
+    armySend = async (e) => {
+        const { accounts, armyContract } = this.state
+        e.preventDefault()
+        const pid = parseInt(e.target.value)
+        var receiverAddr = prompt("receiver address")
+        if (!receiverAddr) {
+            return
+        }
+        armyContract.methods.transferFrom(accounts[0], receiverAddr, pid).send({ from: accounts[0] })
+            .on("receipt", () => {
+                this.armyGetList()
+            })
+            .on("error", (err) => {
+                console.log(err)
+            })
+    }
+
     render() {
         const {
             ethereum, accounts, chainid,
@@ -245,9 +280,12 @@ class App extends React.Component {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
+        if (Object.keys(minionList).length === 0) {
+            return <div>Loading...</div>
+        }
+
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
         const mList = Object.keys(minionList).map((id) => this.armyDisplay(id))
-
         return (<div className="App">
             {
                 !isAccountsUnlocked ?
@@ -255,18 +293,18 @@ class App extends React.Component {
                     </p>
                     : null
             }
-            <h1>Flora Army</h1>
-            <div> <h3>Chlorophyll</h3>{enhrBalance}</div>
+            <h1>Army</h1>
+            <div> <h3>Enhancer</h3>{enhrBalance}</div>
             <div> <h3>Your Barrack</h3>{mList}</div>
             <br/>
             <form onSubmit={(e) => this.armyRecruit(e)}>
                 <div>
                     <h3>Recruit a minion</h3>
                     <input name="quote" type="text" value={quote}
-                        onChange={(e) => this.setState({ quote: e.target.value })}/>
+                        onChange={(e) => this.setState({ quote: e.target.value.trim() })}/>
                     {" / "}
                     <input name="base" type="text" value={base}
-                        onChange={(e) => this.setState({ base: e.target.value })}/>
+                        onChange={(e) => this.setState({ base: e.target.value.trim() })}/>
                     <br />
                     <a href="https://docs.chain.link/docs/ethereum-addresses/"
                        target="_blank"

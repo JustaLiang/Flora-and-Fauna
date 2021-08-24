@@ -38,4 +38,16 @@ contract ArmyRank is Ownable {
     function updateBranchPrefix(address branchAddr, string calldata prefix) external onlyOwner {
         branchPrefix[branchAddr] = prefix;
     }
+
+    function changeJsonNames(string[5] calldata jsonNames_) external onlyOwner {
+        for (uint i = 0; i < 5; i++) {
+            jsonNames[i] = jsonNames_[i];
+        }
+    }
+
+    function changePowerLeves(int[5] calldata powerLevels_) external onlyOwner {
+        for (uint i = 0; i < 5; i++) {
+            powerLevels[i] = powerLevels_[i];
+        }
+    }
 }
