@@ -131,7 +131,6 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
 
     /**
      * @notice Liberate a minion and get some enhancer
-     * @dev Commander get enhancer
      * @param minionID ID of the minion
     */
     function liberate(uint minionID) external override checkCommander(minionID) {
@@ -147,6 +146,10 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         enhancerContract.produce(msg.sender, uint(target.power - _initPower));
     }
 
+    /**
+     * @notice Get minion's metadata URI
+     * @param minionID ID of the minion
+    */
     function tokenURI(uint minionID) public view override returns (string memory) {
         require(
             _exists(minionID),
@@ -161,6 +164,10 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         }
     }
 
+    /**
+     * @notice Grant minion with current token URI
+     * @param minionID ID of the minion
+    */
     function grant(uint minionID) external override checkCommander(minionID) {
         Minion memory target = _minions[minionID];
         _setTokenURI(minionID, rankContract.query(target.branchAddr, target.power));

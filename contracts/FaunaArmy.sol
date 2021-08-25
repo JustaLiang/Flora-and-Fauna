@@ -71,7 +71,7 @@ contract FaunaArmy is ArmyBase {
     }
 
     /**
-     * @notice Use Hemoglobin to stimulate an armed minion to catch up training
+     * @notice Use Hemoglobin to stimulate an armed minion to catch up with training
      * @dev Commander cost Hemoglobin
      * @param minionID ID of the minion
     */
@@ -112,7 +112,7 @@ contract FaunaArmy is ArmyBase {
 
         // change state
         if (currPrice > target.envFactor) {
-            enhancerContract.consume(msg.sender, uint(((target.envFactor << 16)/currPrice*target.power) >> 16));
+            enhancerContract.consume(msg.sender, uint(((currPrice << 16)/target.envFactor*target.power) >> 16));
         }
         target.armed = true;
 

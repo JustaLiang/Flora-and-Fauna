@@ -71,7 +71,7 @@ contract FloraArmy is ArmyBase {
     }
 
     /**
-     * @notice Use Chlorophyll to stimulate an armed minion to catch up training
+     * @notice Use Chlorophyll to stimulate an armed minion to catch up with training
      * @dev Commander cost Chlorophyll
      * @param minionID ID of the minion
     */

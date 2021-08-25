@@ -280,10 +280,6 @@ class App extends React.Component {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
-        if (Object.keys(minionList).length === 0) {
-            return <div>Loading...</div>
-        }
-
         const isAccountsUnlocked = accounts ? accounts.length > 0 : false
         const mList = Object.keys(minionList).map((id) => this.armyDisplay(id))
         return (<div className="App">

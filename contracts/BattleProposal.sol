@@ -32,7 +32,7 @@ abstract contract BattleProposal {
 
     modifier voteState(address branch) {
         require(branchEnableVote[branch]);
-        require(branchProposals[branch].length > 0);
+        require(branchProposals[branch].length > 1);
         _;
     }
 
