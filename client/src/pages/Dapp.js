@@ -266,6 +266,7 @@ export default function Dapp() {
         setChecked(!checked)
     }
 
+    console.log(minionList)
 
     return (
         <>

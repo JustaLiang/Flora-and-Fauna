@@ -78,7 +78,7 @@ export default function CollectibleList(props) {
           tokenURI: list[key][4]
         })
       }
-      setData(temp);
+      if(!data.length) setData(temp);
     }
   }, [list])
   useEffect(() => {
@@ -91,7 +91,6 @@ export default function CollectibleList(props) {
         .then(res => res.json())
         .then((object) => {
           setTokenURI(oldArray => [...oldArray, object.image])
-          console.log('async', object.image)
         })
     }
 
