@@ -27,4 +27,12 @@ def main():
         flora_enhr.transfer(test_account, init_enhancer//100*10**18, {"from":dev})
         fauna_enhr.transfer(test_account, init_enhancer//150*10**18, {"from":dev})
         Battlefield.deploy(flora_army, fauna_army, {"from": dev}, publish_source=config["verify"])
+        flora_rank.updateBranchPrefix(
+            "0x0000000000000000000000000000000000000000",
+            "https://ipfs.io/ipfs/bafybeieh3wt7szwrdujfver5nfwbqfh7z6pcodk2h5k46m24oqmizolame/",
+            {"from":dev})
+        fauna_rank.updateBranchPrefix(
+            "0x0000000000000000000000000000000000000000",
+            "https://ipfs.io/ipfs/bafybeiabkfcgzksq766kjbwdtywi7e6k32kdlmz42ism4jkrkas2mtwqbm/",
+            {"from":dev})
     return flora_army, flora_enhr, flora_rank, fauna_army, fauna_enhr, fauna_rank
