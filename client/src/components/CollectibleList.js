@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import Recruit from './Recruit';
 import AddIcon from '@material-ui/icons/Add';
 import clsx from 'clsx';
-import RinkebyPairMap  from '../assets/map/index.js'
+import LocalPairMap from '../assets/map/index.js'
 import Loading from '../assets/image/Loading.gif'
 
 
@@ -71,7 +71,7 @@ export default function CollectibleList(props) {
       for (const key in list) {
         temp.push({
           _id: key,
-          address: RinkebyPairMap[list[key][0]],
+          address: LocalPairMap[list[key][0]],
           isArmed: list[key][1],
           price: list[key][2],
           power: list[key][3],

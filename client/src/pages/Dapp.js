@@ -267,7 +267,6 @@ export default function Dapp() {
     }
 
 
-    console.log()
     return (
         <>
             <div className={classes.root}>
