@@ -33,6 +33,6 @@ def main():
             {"from":dev})
         fauna_rank.updateBranchPrefix(
             "0x0000000000000000000000000000000000000000",
-            "https://ipfs.io/ipfs/bafybeiabkfcgzksq766kjbwdtywi7e6k32kdlmz42ism4jkrkas2mtwqbm/",
+            "https://ipfs.io/ipfs/bafybeigd7f3maglyvcyvxonmu4copfosxqocg5dpyetw7ozg22m44j27le/",
             {"from":dev})
     return flora_army, flora_enhr, flora_rank, fauna_army, fauna_enhr, fauna_rank
