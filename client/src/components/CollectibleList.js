@@ -59,9 +59,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function CollectibleList(props) {
-  const { checked, list, onArm, onTrain, onBoost, onHeal, onSell, onRecruit } = props
+  const { checked, list, tokenURI,onArm, onTrain, onBoost, onHeal, onSell, onRecruit } = props
   const [data, setData] = useState([])
-  const [tokenURI, setTokenURI] = useState([])
+  // const [tokenURI, setTokenURI] = useState([])
   const [open, setOpen] = useState(false)
 
   const classes = useStyles();
@@ -78,23 +78,23 @@ export default function CollectibleList(props) {
           tokenURI: list[key][4]
         })
       }
-      if(!data.length) setData(temp);
+      setData(temp);
     }
   }, [list])
-  useEffect(() => {
-    setTokenURI([]);
-  }, [checked])
+  // useEffect(() => {
+  //   setTokenURI([]);
+  // }, [checked])
 
-  useEffect(() => {
-    for (const idx in data) {
-      fetch(data[idx].tokenURI)
-        .then(res => res.json())
-        .then((object) => {
-          setTokenURI(oldArray => [...oldArray, object.image])
-        })
-    }
+  // useEffect(() => {
+  //   for (const idx in data) {
+  //     fetch(data[idx].tokenURI)
+  //       .then(res => res.json())
+  //       .then((object) => {
+  //         setTokenURI(oldArray => [...oldArray, object.image])
+  //       })
+  //   }
 
-  }, [data])
+  // }, [data])
   const handleClickOpen = () => {
     setOpen(true)
   }
@@ -162,6 +162,7 @@ export default function CollectibleList(props) {
 CollectibleList.propTypes = {
   checked: PropTypes.bool.isRequired,
   list: PropTypes.object.isRequired,
+  tokenURI:PropTypes.array.isRequired,
   onArm: PropTypes.func.isRequired,
   onTrain: PropTypes.func.isRequired,
   onBoost: PropTypes.func.isRequired,
