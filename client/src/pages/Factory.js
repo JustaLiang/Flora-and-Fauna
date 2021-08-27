@@ -118,16 +118,16 @@ export default function Dapp() {
         fetchData()
     }, [contractInfo])
 
-    useEffect(() => {
-        setTokenURI([])
-        for (const key in minionList) {
-            fetch(minionList[key][4])
-                .then(res => res.json())
-                .then((object) => {
-                    setTokenURI(oldArray => [...oldArray, object.image])
-                })
-        }
-    }, [minionList])
+    // useEffect(() => {
+    //     setTokenURI([])
+    //     for (const key in minionList) {
+    //         fetch(minionList[key][4])
+    //             .then(res => res.json())
+    //             .then((object) => {
+    //                 setTokenURI(oldArray => [...oldArray, object.image])
+    //             })
+    //     }
+    // }, [minionList])
     const loadContract = async (chain, contractName, which) => {
         // Load a deployed contract instance into a web3 contract object
         const { web3 } = setting
@@ -296,7 +296,7 @@ export default function Dapp() {
                             <CollectibleList
                                 checked={checked}
                                 list={minionList}
-                                tokenURI={tokenURI}
+                                // tokenURI={tokenURI}
                                 onArm={onArm}
                                 onTrain={onTrain}
                                 onBoost={onBoost}
