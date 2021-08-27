@@ -9,6 +9,14 @@ def update_mock():
         for agg,chg in zip(MockV3Aggregator,changes)]        
     return [agg.latestAnswer() for agg in MockV3Aggregator]        
 
+def rise_mock():
+    [agg.updateAnswer(int(agg.latestAnswer()*1.6)) for agg in MockV3Aggregator]
+    return [agg.latestAnswer() for agg in MockV3Aggregator]
+
+def drop_mock():
+    [agg.updateAnswer(int(agg.latestAnswer()*0.5)) for agg in MockV3Aggregator]
+    return [agg.latestAnswer() for agg in MockV3Aggregator]
+
 def flora_team(acc=accounts[0]):
     if len(FloraArmy) != 0:
         g_army = FloraArmy[-1]

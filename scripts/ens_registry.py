@@ -11,7 +11,7 @@ def main():
         resolver = MockPublicResolver.deploy({"from":accounts[2]})
         for pair,price in zip(config["networks"][net]["mock_pair"], config["networks"][net]["mock_price"]):
             hashID = ENS.namehash(pair+".data.eth")
-            aggAddr = MockV3Aggregator.deploy(1, price, {"from": accounts[2]})
+            aggAddr = MockV3Aggregator.deploy(1, price*10**8, {"from": accounts[2]})
             ens.setResolver(hashID, resolver)
             resolver.setAddr(hashID, aggAddr)
         return ens
