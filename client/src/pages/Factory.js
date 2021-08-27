@@ -116,6 +116,7 @@ export default function Dapp() {
             }
         }
         fetchData()
+        console.log('refetech')
     }, [contractInfo])
 
     // useEffect(() => {

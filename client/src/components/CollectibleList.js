@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function CollectibleList(props) {
-  const { checked, list, onArm, onTrain, onBoost, onHeal, onSell, onRecruit } = props
+  const { checked, list, tokenURI,onArm, onTrain, onBoost, onHeal, onSell, onRecruit } = props
   const [data, setData] = useState([])
   const [open, setOpen] = useState(false)
 
@@ -147,6 +147,7 @@ export default function CollectibleList(props) {
 CollectibleList.propTypes = {
   checked: PropTypes.bool.isRequired,
   list: PropTypes.object.isRequired,
+  tokenURI:PropTypes.array.isRequired,
   onArm: PropTypes.func.isRequired,
   onTrain: PropTypes.func.isRequired,
   onBoost: PropTypes.func.isRequired,
