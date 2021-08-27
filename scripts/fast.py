@@ -22,6 +22,7 @@ def flora_team(acc=config['wallets']['test_account']):
         g_army = FloraArmy[-1]
         pairs = config['networks']['development']['mock_pair']
         acc = accounts.at(acc, force=True)
+        accounts[9].transfer(acc, "2 ether")
         return [g_army.recruit(ENS.namehash(pair+".data.eth"), {"from":acc}).return_value for pair in pairs]
 
 def fauna_team(acc=config['wallets']['test_account']):
@@ -29,4 +30,5 @@ def fauna_team(acc=config['wallets']['test_account']):
         r_army = FaunaArmy[-1]
         pairs = config['networks']['development']['mock_pair']
         acc = accounts.at(acc, force=True)
+        accounts[9].transfer(acc, "2 ether")
         return [r_army.recruit(ENS.namehash(pair+".data.eth"), {"from":acc}).return_value for pair in pairs]

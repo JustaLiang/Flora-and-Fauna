@@ -214,7 +214,7 @@ export default function Battlefield() {
         if (!attackerStr) {
             return
         }
-        const attackers = attackerStr.split()
+        const attackers = attackerStr.split(' ')
         for (let minionID of attackers) {
             if (isNaN(parseInt(minionID))) {
                 return
@@ -237,7 +237,7 @@ export default function Battlefield() {
         if (!attackerStr) {
             return
         }
-        const attackers = attackerStr.split()
+        const attackers = attackerStr.split(' ')
         for (let minionID of attackers) {
             if (isNaN(parseInt(minionID))) {
                 return

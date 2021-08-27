@@ -24,7 +24,7 @@ def main():
     btfd = Battlefield.deploy(flora_army, fauna_army, {"from": dev}, publish_source=config["verify"])
     if network.show_active() == "development":
         test_account = config["wallets"]["test_account"]
-        dev.transfer(test_account, "50 ether")
+        dev.transfer(test_account, "2 ether")
         flora_enhr.transfer(test_account, init_enhancer//100*10**18, {"from":dev})
         fauna_enhr.transfer(test_account, init_enhancer//200*10**18, {"from":dev})
         flora_rank.updateBranchPrefix(
