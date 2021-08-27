@@ -113,7 +113,7 @@ export default function Home() {
                                     style={{
                                         marginTop: 10,
                                     }}
-                                    component={Link} to="/Dapp"
+                                    component={Link} to="/Factory"
                                 >
                                     Play Now
                                 </Button>
@@ -136,7 +136,7 @@ export default function Home() {
                             <Button
                                 variant='contained'
                                 className={classes.button}
-                                component={Link} to="/Dapp">
+                                component={Link} to="/Factory">
                                 Play Now
                             </Button>
                         </Box>

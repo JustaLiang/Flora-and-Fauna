@@ -52,7 +52,7 @@ return (
                     {_id}
                 </Avatar>
             }
-            title="Minion Warrier"
+            title="Minion"
             subheader={props.address}
             action={
                 <Button

@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 interface ArmyInterface is IERC721 {
 
     // basic view command
+    function minionExists(uint) virtual external view returns (bool);
     function getMinionInfo(uint) virtual external view returns (address, bool, int, int);
     function getMinionIDs(address) virtual external view returns (uint[] memory);
 

@@ -90,13 +90,31 @@ abstract contract BattleBase {
     }
 
     /**
-     * @notice Get minion ID on certain field
+     * @notice Get minion IDs on certain field
      * @param fieldID ID of the field
      * @return Array of minion IDs
     */ 
     function getFieldDefender(uint fieldID) external view returns (uint[] memory) {
         uint[] memory defender = fieldDefenders[fieldID];
         return defender;
+    }
+
+    /**
+     * @notice Get the leader on certain field
+     * @param fieldID ID of the field
+     * @return Owner of the first minion
+    */ 
+    function getFieldLeader(uint fieldID) external view returns (address) {
+        uint[] memory defender = fieldDefenders[fieldID];
+        if (defender.length == 0) {
+            return address(0);
+        }
+        else if (isFloraField[fieldID]) {
+            return floraArmy.ownerOf(defender[0]);
+        }
+        else {
+            return faunaArmy.ownerOf(defender[0]);
+        }
     }
 
     /**
@@ -186,11 +204,13 @@ abstract contract BattleBase {
             require(
                 floraArmy.ownerOf(defenders[0]) == msg.sender,
                 "Battlefield: not leader");
+            _removeFlora(defenders);
         }
         else {
             require(
                 faunaArmy.ownerOf(defenders[0]) == msg.sender,
                 "Battlefield: not leader");
+            _removeFauna(defenders);
         }
         delete fieldDefenders[fieldID];
 
@@ -221,6 +241,11 @@ abstract contract BattleBase {
     function _fight(ArmyInterface attacker, uint[] memory attackerTeam,
                     ArmyInterface defender, uint[] memory defenderTeam
                     ) private view {
+        for (uint i = 0; i < defenderTeam.length; i++) {
+            if (!defender.minionExists(defenderTeam[i])) {
+                return;
+            }
+        }
         if (attackerTeam.length == defenderTeam.length-1 && attackerTeam.length != 0) {
             (address eBranch,bool eArmed,,int ePower) = defender.getMinionInfo(defenderTeam[0]);
             int dBuff;

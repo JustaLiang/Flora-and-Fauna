@@ -73,6 +73,15 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     }
 
     /**
+     * @notice Get if minion exists
+     * @param minionID ID of the minion
+     * @return Exists or not
+    */
+    function minionExists(uint minionID) external view override returns (bool) {
+        return _exists(minionID);
+    }
+
+    /**
      * @notice Get minion's on-chain information
      * @param minionID ID of the minion
      * @return On-chain information of the minion

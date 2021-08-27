@@ -94,6 +94,14 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
     }
 
     /**
+     * @notice Get how much proposals
+     * @return Total number of proposals
+    */
+    function getProposalCount() external returns (uint) {
+        return proposals.length;
+    }
+
+    /**
      * @notice Propose for new style of medals
      * @param prefixURI Prefix of the URI
     */
@@ -180,7 +188,7 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
                 maxIdx = i;
             }
         }
-
+        
         Proposal memory winning = proposals[maxIdx];
 
         bool floraWin = false;
