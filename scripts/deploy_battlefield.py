@@ -2,14 +2,14 @@
 from brownie import (
     network, config, run, Battlefield)
 
-flora_addr = "0x9094E1bbCD0149751062136309D7E4102BC548C8"
-fauna_addr = "0xaF8fdBAA535CdC9898718106eb1fA9546e54eC54"
-
-def main():
-    if network.show_active() != "development":
-        check = input("It's not development mode, continue to deploy? (y/N) ")
-        if check != 'y':
-            return
-
+def rinkeby():
+    if network.show_active() != "rinkeby":
+        print("it's not on rinkeby testnet")
+        return
+    check = input("It's not development mode, continue to deploy? (y/N) ")
+    if check != 'y':
+        return
     dev = run("dev_account")
+    flora_addr = "0x938344BD845D4e56873E9e6321F602f6F0f503a2"
+    fauna_addr = "0xee4e348166e5730275b760fafff2107313A4e6F0"
     return Battlefield.deploy(flora_addr, fauna_addr, {"from": dev}, publish_source=config["verify"])

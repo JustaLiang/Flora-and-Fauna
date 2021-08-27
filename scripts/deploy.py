@@ -25,6 +25,6 @@ def main():
         test_account = config["wallets"]["test_account"]
         dev.transfer(test_account, "50 ether")
         flora_enhr.transfer(test_account, init_enhancer//100*10**18, {"from":dev})
-        fauna_enhr.transfer(test_account, init_enhancer//150*10**18, {"from":dev})
+        fauna_enhr.transfer(test_account, init_enhancer//200*10**18, {"from":dev})
         Battlefield.deploy(flora_army, fauna_army, {"from": dev}, publish_source=config["verify"])
     return flora_army, flora_enhr, flora_rank, fauna_army, fauna_enhr, fauna_rank
