@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import Recruit from './Recruit';
 import AddIcon from '@material-ui/icons/Add';
 import clsx from 'clsx';
-import RinkebyPairMap  from '../assets/map/index.js'
+import RinkebyPairMap from '../assets/map/index.js'
 import Loading from '../assets/image/Loading.gif'
 
 
@@ -61,7 +61,6 @@ const useStyles = makeStyles((theme) => ({
 export default function CollectibleList(props) {
   const { checked, list, onArm, onTrain, onBoost, onHeal, onSell, onRecruit } = props
   const [data, setData] = useState([])
-  const [tokenURI, setTokenURI] = useState([])
   const [open, setOpen] = useState(false)
 
   const classes = useStyles();
@@ -81,21 +80,6 @@ export default function CollectibleList(props) {
       setData(temp);
     }
   }, [list])
-  useEffect(() => {
-    setTokenURI([]);
-  }, [checked])
-
-  useEffect(() => {
-    for (const idx in data) {
-      fetch(data[idx].tokenURI)
-        .then(res => res.json())
-        .then((object) => {
-          setTokenURI(oldArray => [...oldArray, object.image])
-          console.log('async', object.image)
-        })
-    }
-
-  }, [data])
   const handleClickOpen = () => {
     setOpen(true)
   }
@@ -103,7 +87,6 @@ export default function CollectibleList(props) {
   const handleClose = () => {
     setOpen(false);
   };
-  console.log(tokenURI)
   return (
 
     <div>
@@ -127,16 +110,17 @@ export default function CollectibleList(props) {
           </Box>
         </Box>
         <Grid container spacing={5} className={classes.root} alignItems="center">
-          {(data.length) && (data.length == tokenURI.length) ?
+          {(data.length)?
             data.map((item, i) => (
               <Grid item lg={6} key={i} >
                 <Collectible checked={checked}
                   _id={item._id}
+                  checked={checked}
                   address={item.address}
                   isArmed={item.isArmed}
                   price={item.price}
                   power={item.power}
-                  tokenURI={tokenURI[i]}
+                  tokenURI={item.tokenURI}
                   onArm={onArm}
                   onTrain={onTrain}
                   onBoost={onBoost}

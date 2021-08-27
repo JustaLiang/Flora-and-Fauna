@@ -1,3 +1,4 @@
+
 import Header from '../components/Header'
 import PersonalInfo from '../components/PersonalInfo'
 import CollectibleList from '../components/CollectibleList'
@@ -16,7 +17,7 @@ const namehash = require("eth-ens-namehash")
 const useStyles = makeStyles((theme) => ({
     appBarSpacer: theme.mixins.toolbar,
     root: {
-        background:`url(${BackgroundDapp})`,
+        background: `url(${BackgroundDapp})`,
         backgroundRepeat: 'no-repeat',
         backgroundSize: "100% 100%",
 
@@ -39,6 +40,7 @@ export default function Dapp() {
     })
     const [balance, setBalance] = useState(0)
     const [minionList, setMinionList] = useState({})
+    const [tokenURI, setTokenURI] = useState([])
     const [checked, setChecked] = useState(false)
     const armyType = checked ? "FaunaArmy" : "FloraArmy";
 
@@ -115,6 +117,17 @@ export default function Dapp() {
         }
         fetchData()
     }, [contractInfo])
+
+    useEffect(() => {
+        setTokenURI([])
+        for (const key in minionList) {
+            fetch(minionList[key][4])
+                .then(res => res.json())
+                .then((object) => {
+                    setTokenURI(oldArray => [...oldArray, object.image])
+                })
+        }
+    }, [minionList])
     const loadContract = async (chain, contractName, which) => {
         // Load a deployed contract instance into a web3 contract object
         const { web3 } = setting
@@ -267,7 +280,7 @@ export default function Dapp() {
     }
 
 
-    console.log()
+
     return (
         <>
             <div className={classes.root}>
@@ -275,7 +288,7 @@ export default function Dapp() {
                 <Header checked={checked} toggleChecked={handleChecked} />
 
                 <div className={classes.appBarSpacer} />
-                <div style={{ height: 1000, padding: 30, paddingLeft: 200}}>
+                <div style={{ height: 1000, padding: 30, paddingLeft: 200 }}>
 
                     <Box>
                         <Box display='flex' flexDirection='column' style={{ gap: 25 }}>
@@ -283,6 +296,7 @@ export default function Dapp() {
                             <CollectibleList
                                 checked={checked}
                                 list={minionList}
+                                tokenURI={tokenURI}
                                 onArm={onArm}
                                 onTrain={onTrain}
                                 onBoost={onBoost}
