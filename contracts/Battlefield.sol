@@ -11,37 +11,51 @@ interface RANK {
 
 contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
 
-    //-- access ArmyRank
+    /// @notice Corresponding FloraRank contract
     RANK public floraRank;
+
+    /// @notice Corresponding FaunaRank contract
     RANK public faunaRank;
 
-    //-- vote
+    /// @dev Proposal contents
     struct Proposal {
         address proposer;
         string prefixURI;
         uint votes;
     }
 
+    /// @notice All the proposals
     Proposal[] public proposals;
+
+    /// @notice If field has voted
     mapping (uint => bool) public fieldHasVoted;
+
+    /// @notice Latest time updated for proposal or vote
     uint public updateTime;
+
+    /// @notice Time interval of proposal state
     uint public propInterval;
+
+    /// @notice Time interval of vote state
     uint public voteInterval;
 
-    //-- token
+    /// @notice One generation means going through proposal and vote
     uint public generation;
-    string public seriesName;
 
-    //-- profit
+    /// @notice Name of assembly metadata of the medal designs 
+    string public assemblyJson;
+
+    /// @notice Slotting fee for making a proposal
     uint public slottingFee;
 
-    //--- event
+    /// @notice Emit when someone propose
     event Propose(
         address indexed proposer,
         uint proposalID,
         string prefixURI
     );
 
+    /// @notice Emit when someone vote behalf of field
     event Vote(
         uint indexed fieldID,
         address indexed voter,
@@ -49,17 +63,23 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         uint voteCount
     );
 
+    /// @notice Emit the winning proposal's info
     event Winner(
         uint indexed generation,
         address indexed winner,
         string tokenURI,
         uint proposalCount,
         uint voteCount,
-        uint fieldRange,
+        uint totalArea,
         bool floraWin,
         bool faunaWin
     );
 
+    /**
+     * @dev Set addresses of interactive contracts
+     * @param floraArmyAddr Address of FloraArmy contract
+     * @param faunaArmyAddr Address of FaunaArmy contract
+    */
     constructor(address floraArmyAddr, address faunaArmyAddr)
         BattleBase(floraArmyAddr, faunaArmyAddr)
         ERC721("Flora&Fauna Medal Styles", "F&F")
@@ -69,10 +89,14 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         faunaRank = RANK(faunaArmy.rankContract());
         propInterval = 30 days;
         voteInterval = 5 days;
-        seriesName = "series.json";
+        assemblyJson = "series.json";
         slottingFee = 1e12 wei;
     }
 
+    /**
+     * @notice Propose for new style of medals
+     * @param prefixURI Prefix of the URI
+    */
     function propose(string calldata prefixURI) payable external propState {
         require(
             msg.value >= slottingFee,
@@ -82,13 +106,20 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         emit Propose(msg.sender, proposals.length-1, prefixURI);
     }
 
-    function regainRightToVote(uint fieldID) external propState {
+    /**
+     * @notice Regain the right to vote of certain field
+     * @param fieldID ID of the field
+    */
+    function regainVote(uint fieldID) external propState {
         require(
             fieldHasVoted[fieldID],
             "Battlefield: field already have the right to vote");
         fieldHasVoted[fieldID] = false;
     }
 
+    /**
+     * @notice Start the vote state
+    */
     function startVote() external propState {
         require(
             proposals.length > 1,
@@ -101,6 +132,11 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         fieldLocked = true;
     }
 
+    /**
+     * @notice Vote behalf of certain field
+     * @param fieldID ID of the field
+     * @param proposalID ID of the proposal
+    */
     function vote(uint fieldID, uint proposalID) external voteState {
         require(
             !fieldHasVoted[fieldID],
@@ -126,6 +162,9 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         emit Vote(fieldID, msg.sender, proposalID, target.votes);
     }
 
+    /**
+     * @notice End the vote state, change medal styles and mint an assembly metadata to winner
+    */
     function endVote() external voteState {
         uint currentTime = block.timestamp;
         require(
@@ -156,7 +195,7 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         }
 
         _mint(winning.proposer, generation);
-        _setTokenURI(generation, string(abi.encodePacked(winning.prefixURI, seriesName)));
+        _setTokenURI(generation, string(abi.encodePacked(winning.prefixURI, assemblyJson)));
 
         delete proposals;
         fieldLocked = false;
@@ -166,11 +205,32 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
                     tokenURI(generation),
                     proposals.length,
                     winning.votes,
-                    fieldRange,
+                    totalArea,
                     floraWin,
                     faunaWin);
         generation++;
     }
+
+    /// @dev Check if under vote state
+    modifier voteState() {
+        require(fieldLocked, "Battlefield: not in proposal state");
+        _;
+    }
+
+    /// @dev Check if under proposal state
+    modifier propState() {
+        require(!fieldLocked, "Battlefield: not in vote state");
+        _;
+    }
+
+    /**
+     * @dev Claim the funds from slotting fee
+     * @param amount Amount of Ether
+     * @param receiver Address of receiver
+    */    
+    function claimFunds(uint amount, address payable receiver) external onlyOwner {
+        receiver.transfer(amount);
+    } 
 
     function changePropInterval(uint propInterval_) external onlyOwner {
         propInterval = propInterval_;
@@ -184,17 +244,7 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         slottingFee = slottingFee_;
     }
 
-    function claimFunds(uint amount, address payable receiver) external onlyOwner {
-        receiver.transfer(amount);
-    }
-
-    modifier voteState() {
-        require(fieldLocked, "Battlefield: not in proposal state");
-        _;
-    }
-
-    modifier propState() {
-        require(!fieldLocked, "Battlefield: not in vote state");
-        _;
+    function changeAssemblyJson(string calldata assemblyJson_) external onlyOwner {
+        assemblyJson = assemblyJson_;
     }
 }

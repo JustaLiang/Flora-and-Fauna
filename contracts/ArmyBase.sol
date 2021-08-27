@@ -172,7 +172,10 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         _setTokenURI(minionID, rankContract.query(target.branchAddr, target.power));
     }
 
-    /// @dev Check if commander can command the minion
+    /**
+     * @dev Check if commander can command the minion
+     * @param minionID ID of the minion
+    */
     modifier checkCommander(uint minionID) {
         require(
             _isApprovedOrOwner(msg.sender, minionID),

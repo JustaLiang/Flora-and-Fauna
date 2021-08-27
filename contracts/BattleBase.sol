@@ -3,58 +3,107 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/ArmyInterface.sol";
 
+/**
+ * @notice Operations only for Army contract
+ */
 interface ARMY is ArmyInterface {
     function serialNumber() external view returns (uint);
     function rankContract() external view returns (address);
 }
 
+/**
+ * @title Battle mechanism
+ * @notice Define how to figh on battlefield
+ * @author Justa Liang
+ */
 abstract contract BattleBase {
 
+    /// @notice If Battlefield locked, lock for vote, unlock for proposal
     bool public fieldLocked;
-    uint public fieldRange;
+
+    /// @notice Total area of battlefield
+    uint public totalArea;
+
+    /// @notice Defenders on cetain field
     mapping (uint => uint[]) public fieldDefenders;
+
+    /// @notice If field be occupied by flora army 
     mapping (uint => bool) public isFloraField;
+
+    /// @notice If certain flora minion on field
     mapping (uint => bool) public floraOnField;
+
+    /// @notice If certain fauna minion on field
     mapping (uint => bool) public faunaOnField;
+
+    /// @notice Corresponding FloraArmy contract
     ARMY public floraArmy;
+
+    /// @notice Corresponding FaunaArmy contract
     ARMY public faunaArmy;
+
+    /// @notice Number of fields occupied by flora army
     uint public floraFieldCount;
+
+    /// @notice Number of fields occupied by fauna army
     uint public faunaFieldCount;
+
+    /// @dev Initial power of flora and fauna minions
     int private _refPower;
 
+    /// @notice Emit when field's state changes
     event FieldState(uint indexed fieldID,
                      address indexed conqueror,
                      bool indexed isGreen,
                      uint[] team);
 
-    event FieldRange(uint fieldRange);
+    /// @notice Emit when total area of battlefield changes
+    event TotalArea(uint totalArea);
 
+    /**
+     * @dev Set addresses of interactive contracts
+     * @param floraArmyAddr Address of FloraArmy contract
+     * @param faunaArmyAddr Address of FaunaArmy contract
+    */
     constructor(address floraArmyAddr, address faunaArmyAddr) {
         fieldLocked = false;
-        fieldRange = 20;
+        totalArea = 20;
         _refPower = 1000;
         floraArmy = ARMY(floraArmyAddr);
         faunaArmy = ARMY(faunaArmyAddr);
         floraFieldCount = 0;
         faunaFieldCount = 0;
 
-        emit FieldRange(fieldRange);
+        emit TotalArea(totalArea);
     }
 
+    /**
+     * @notice Expand the battlefield and increase it's total area
+    */
     function expand() external {
         require(
-            floraArmy.serialNumber() + faunaArmy.serialNumber() > fieldRange*5,
+            floraArmy.serialNumber() + faunaArmy.serialNumber() > totalArea*5,
             "Battlefield: not enough army");
-        fieldRange += 20;
+        totalArea += 20;
 
-        emit FieldRange(fieldRange);
+        emit TotalArea(totalArea);
     }
 
+    /**
+     * @notice Get minion ID on certain field
+     * @param fieldID ID of the field
+     * @return Array of minion IDs
+    */ 
     function getFieldDefender(uint fieldID) external view returns (uint[] memory) {
         uint[] memory defender = fieldDefenders[fieldID];
         return defender;
     }
 
+    /**
+     * @notice Send flora army to conquer certain field
+     * @param fieldID ID of the field
+     * @param attackerTeam Array of flora minion IDs to attack
+    */ 
     function floraConquer(uint fieldID, uint[] calldata attackerTeam) external preCheck(fieldID) {
         for(uint i = 0; i < attackerTeam.length; i++) {
             require(
@@ -69,29 +118,29 @@ abstract contract BattleBase {
             if (isFloraField[fieldID]) {
                 _fight(floraArmy, attackerTeam, floraArmy, defenderTeam);
                 _removeFlora(defenderTeam);
-                _addFlora(attackerTeam);
             }
             else {
                 _fight(floraArmy, attackerTeam, faunaArmy, defenderTeam);
                 _removeFauna(defenderTeam);
-                faunaFieldCount--;
-                _addFlora(attackerTeam);
-                floraFieldCount++;
             }
         }
         else {
             require(
                 attackerTeam.length == 1,
                 "Battlefield: must conquer empty field with only one flora minion");
-            _addFlora(attackerTeam);
-            floraFieldCount++;
         }
+        _addFlora(attackerTeam);
         fieldDefenders[fieldID] = attackerTeam;
         isFloraField[fieldID] = true;
 
         emit FieldState(fieldID, msg.sender, true, attackerTeam);
     }
 
+    /**
+     * @notice Send fauna army to conquer certain field
+     * @param fieldID ID of the field
+     * @param attackerTeam Array of fauna minion IDs to attack
+    */ 
     function faunaConquer(uint fieldID, uint[] calldata attackerTeam) external preCheck(fieldID) {
         for(uint i = 0; i < attackerTeam.length; i++) {
             require(
@@ -106,29 +155,28 @@ abstract contract BattleBase {
             if (isFloraField[fieldID]) {
                 _fight(faunaArmy, attackerTeam, floraArmy, defenderTeam);
                 _removeFlora(defenderTeam);
-                floraFieldCount--;
-                _addFauna(attackerTeam);
-                faunaFieldCount++;
             }
             else {
                 _fight(faunaArmy, attackerTeam, faunaArmy, defenderTeam);
                 _removeFauna(defenderTeam);
-                _addFauna(attackerTeam);
             } 
         }
         else {
             require(
                 attackerTeam.length == 1,
                 "Battlefield: must conquer empty field with only one fauna minion");
-            _addFauna(attackerTeam);
-            faunaFieldCount++;
         }
+        _addFauna(attackerTeam);
         fieldDefenders[fieldID] = attackerTeam;
         isFloraField[fieldID] = false;
 
         emit FieldState(fieldID, msg.sender, false, attackerTeam);
     }
 
+    /**
+     * @notice Retreat from certain field
+     * @param fieldID ID of the field
+    */    
     function retreat(uint fieldID) external {
         uint[] memory defenders = fieldDefenders[fieldID];
         require(
@@ -149,16 +197,27 @@ abstract contract BattleBase {
         emit FieldState(fieldID, address(0), isFloraField[fieldID], fieldDefenders[fieldID]);
     }
 
+    /**
+     * @dev Check if locked or out of range
+     * @param fieldID ID of the field
+    */
     modifier preCheck(uint fieldID) {
         require(
             !fieldLocked,
             "Battlefield: battlefield is locked now");
         require(
-            fieldID < fieldRange,
+            fieldID < totalArea,
             "Battlefield: field out of range");
         _;
     }
 
+    /**
+     * @dev Determine win or not, cancel tx if lose
+     * @param attacker Which side of attacker army
+     * @param attackerTeam Array of attacker IDs
+     * @param defender Which side of defender army
+     * @param defenderTeam Array of defender IDs
+    */
     function _fight(ArmyInterface attacker, uint[] memory attackerTeam,
                     ArmyInterface defender, uint[] memory defenderTeam
                     ) private view {
@@ -214,27 +273,47 @@ abstract contract BattleBase {
         }
     }
 
+    /**
+     * @dev Add flora minions to field
+     * @param newTeam Array of flora minion IDs to be added
+    */
     function _addFlora(uint[] memory newTeam) private {
         for (uint i = 0; i < newTeam.length; i++) {
             floraOnField[newTeam[i]] = true;
         }
+        floraFieldCount++;
     }
 
+    /**
+     * @dev Add fauna minions to field
+     * @param newTeam Array of fauna minion IDs to be added
+    */
     function _addFauna(uint[] memory newTeam) private {
         for (uint i = 0; i < newTeam.length; i++) {
             faunaOnField[newTeam[i]] = true;
         }
+        faunaFieldCount++;
     } 
 
+    /**
+     * @dev Remove flora minions from field
+     * @param oldTeam Array of flora minion IDs to be removed
+    */
     function _removeFlora(uint[] memory oldTeam) private {
         for (uint i = 0; i < oldTeam.length; i++) {
             floraOnField[oldTeam[i]] = false;
         }
+        floraFieldCount--;
     }
 
+    /**
+     * @dev Remove fauna minions from field
+     * @param oldTeam Array of fauna minion IDs to be removed
+    */
     function _removeFauna(uint[] memory oldTeam) private {
         for (uint i = 0; i < oldTeam.length; i++) {
             faunaOnField[oldTeam[i]] = false;
         }        
+        faunaFieldCount--;
     }
 }
