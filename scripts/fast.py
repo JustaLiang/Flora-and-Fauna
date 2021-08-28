@@ -1,7 +1,11 @@
 # fast.py
-from brownie import (accounts, config, MockV3Aggregator, FloraArmy, FaunaArmy)
+from brownie import (
+    accounts, config, 
+    MockV3Aggregator,
+    FloraArmy, FaunaArmy)
 import numpy as np
 from ens.main import ENS
+import time
 
 def update_price():
     changes = np.random.rand(len(MockV3Aggregator))-0.5
@@ -18,7 +22,7 @@ def drop_price():
     return [agg.latestAnswer() for agg in MockV3Aggregator]
 
 def flora_team(acc=config['wallets']['test_account']):
-    if len(FloraArmy) != 0:
+    if len(FloraArmy):
         g_army = FloraArmy[-1]
         pairs = config['networks']['development']['mock_pair']
         acc = accounts.at(acc, force=True)
@@ -26,9 +30,29 @@ def flora_team(acc=config['wallets']['test_account']):
         return [g_army.recruit(ENS.namehash(pair+".data.eth"), {"from":acc}).return_value for pair in pairs]
 
 def fauna_team(acc=config['wallets']['test_account']):
-    if len(FaunaArmy) != 0:
+    if len(FaunaArmy):
         r_army = FaunaArmy[-1]
         pairs = config['networks']['development']['mock_pair']
         acc = accounts.at(acc, force=True)
         accounts[9].transfer(acc, "2 ether")
         return [r_army.recruit(ENS.namehash(pair+".data.eth"), {"from":acc}).return_value for pair in pairs]
+
+def evolution(acc_list=[config['wallets']['test_account']]):
+    army_contracts = []
+    if len(FloraArmy):
+        army_contracts.append(FloraArmy[0])
+    else:
+        return
+    if len(FaunaArmy):
+        army_contracts.append(FaunaArmy[0])
+    else:
+        return
+    
+    [accounts.at(acc, force=True) for acc in acc_list]
+    mock_pairs = [ pair+".data.eth" for pair in config['networks']['development']['mock_pair']]
+    
+    for acc in accounts[7:]:
+        army = np.random.choice(army_contracts)
+        pair = np.random.choice(mock_pairs)
+        army.recruit(ENS.namehash(pair), {"from":acc})
+    

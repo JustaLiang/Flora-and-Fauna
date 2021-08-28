@@ -27,8 +27,8 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
     /// @notice All the proposals
     Proposal[] public proposals;
 
-    /// @notice If field has voted
-    mapping (uint => bool) public fieldHasVoted;
+    /// @notice Latest generation in which field has voted
+    mapping (uint => uint) public fieldGeneration;
 
     /// @notice Latest time updated for proposal or vote
     uint public updateTime;
@@ -115,17 +115,6 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
     }
 
     /**
-     * @notice Regain the right to vote of certain field
-     * @param fieldID ID of the field
-    */
-    function regainVote(uint fieldID) external propState {
-        require(
-            fieldHasVoted[fieldID],
-            "Battlefield: field already have the right to vote");
-        fieldHasVoted[fieldID] = false;
-    }
-
-    /**
      * @notice Start the vote state
     */
     function startVote() external propState {
@@ -147,8 +136,8 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
     */
     function vote(uint fieldID, uint proposalID) external voteState {
         require(
-            !fieldHasVoted[fieldID],
-            "Battlefield: field has voted");
+            fieldGeneration[fieldID ] < generation,
+            "Battlefield: field has voted in this generation");
         uint[] memory defenders = fieldDefenders[fieldID];
         require(
             defenders.length > 0,
@@ -165,7 +154,7 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         }
         Proposal storage target = proposals[proposalID];
         target.votes++;
-        fieldHasVoted[fieldID] = true;
+        fieldGeneration[fieldID] = generation;
 
         emit Vote(fieldID, msg.sender, proposalID, target.votes);
     }
