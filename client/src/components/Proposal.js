@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect,useRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
-import {CardHeader, Card, CardContent, CardActions, Box, Avatar, Typography, IconButton, Button, Snackbar } from '@material-ui/core';
+import { CardHeader, Card, CardContent, CardActions, Box, Avatar, Typography, IconButton, Button, Snackbar } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import FilterNoneIcon from '@material-ui/icons/FilterNone';
 import CardCarousel from './CardCarousel';
@@ -15,6 +15,7 @@ const useStyles = makeStyles((theme) => ({
     },
     button: {
         width: 250,
+        marginLeft:5,
         background: "#1CBA1C",
         color: "#FFFFFF",
         fontWeight: "bold",
@@ -32,13 +33,16 @@ const useStyles = makeStyles((theme) => ({
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
+const suffixURI = ["fauna_1.json", "fauna_2.json", "fauna_3.json", "fauna_4.json", "fauna_5.json",
+    "flora_1.json", "flora_2.json", "flora_3.json", "flora_4.json", "flora_5.json"]
 
-export default function Proposal() {
-    const address = "0x1BA85548aFFb8053b3520115fB2D1C437a5fbAaf"
+export default function Proposal({ _id, proposer, prefixURI, votes }) {
     const classes = useStyles()
     const [open, setOpen] = useState(false);
+    const [imageURL,setImageURL] = useState({});
+    const imageRef = useRef();
     const onCopy = () => {
-        navigator.clipboard.writeText(address);
+        navigator.clipboard.writeText(proposer);
         setOpen(true);
     }
     const handleClose = (event, reason) => {
@@ -48,21 +52,34 @@ export default function Proposal() {
 
         setOpen(false);
     };
+    useEffect(() => {
+        var imageList = []
+        suffixURI.forEach((suffix, index) => {
+            fetch(`${prefixURI}${suffix}`)
+                .then(res => res.json())
+                .then((object) => {
+                    imageList.push(object.image)
+                })
+        })
+        setImageURL(imageList);
+        imageRef.current = imageList
+    }, [])
+    console.log(imageURL)
     return (
         <div>
             <Card className={classes.card}>
-                <CardHeader title="📝  Proposal 1" style={{ textAlign: 'center' }} />
+                <CardHeader title={`📝  Proposal ${_id}`} style={{ textAlign: 'center' }} />
                 <Box className={classes.image}>
-                    <CardCarousel url={'hi'} />
+                    <CardCarousel urlList={imageURL} />
                 </Box>
                 <CardContent style={{ marginTop: 10 }}>
-                    <Typography style={{ wordWrap: 'break-word' }}> Proposer: {address.slice(0, 10)}... <IconButton onClick={onCopy}><FilterNoneIcon /></IconButton></Typography>
+                    <Typography style={{ wordWrap: 'break-word' }}> Proposer: {proposer.slice(0, 10)}... <IconButton onClick={onCopy}><FilterNoneIcon /></IconButton></Typography>
                 </CardContent>
                 <Snackbar open={open} autoHideDuration={1000} onClose={handleClose}>
-                        <Alert onClose={handleClose} severity="success">
-                            Copy!
-                        </Alert>
-                    </Snackbar>
+                    <Alert onClose={handleClose} severity="success">
+                        Copy!
+                    </Alert>
+                </Snackbar>
                 <CardActions>
                     <Button className={classes.button}>
                         Vote
@@ -70,7 +87,7 @@ export default function Proposal() {
 
                 </CardActions>
                 <Box className={classes.footer}>
-                    <Typography>Vote count: 1</Typography>
+                    <Typography>Vote count: {votes}</Typography>
                 </Box>
             </Card>
         </div>
@@ -78,8 +95,8 @@ export default function Proposal() {
 }
 
 Proposal.propTypes = {
-    proposalId: PropTypes.number.isRequired,
-    proposerAddress: PropTypes.string.isRequired,
+    _id: PropTypes.number.isRequired,
+    proposer: PropTypes.string.isRequired,
     prefixURI: PropTypes.string.isRequired,
     votes: PropTypes.number.isRequired
 }
