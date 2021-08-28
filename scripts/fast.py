@@ -5,7 +5,6 @@ from brownie import (
     FloraArmy, FaunaArmy)
 import numpy as np
 from ens.main import ENS
-import time
 
 def update_price():
     changes = np.random.rand(len(MockV3Aggregator))-0.5
@@ -49,10 +48,18 @@ def evolution(acc_list=[config['wallets']['test_account']]):
         return
     
     [accounts.at(acc, force=True) for acc in acc_list]
-    mock_pairs = [ pair+".data.eth" for pair in config['networks']['development']['mock_pair']]
-    
-    for acc in accounts[7:]:
-        army = np.random.choice(army_contracts)
-        pair = np.random.choice(mock_pairs)
-        army.recruit(ENS.namehash(pair), {"from":acc})
+    acc_list = accounts[-5:]
+    mock_pairs = [pair+".data.eth" for pair in config['networks']['development']['mock_pair']]
+
+    while True:
+        cmd = input("next step: ")
+        if cmd == 'q':
+            break
+        elif cmd == 'r':
+            for acc in accounts[-5:]:
+                army = np.random.choice(army_contracts)
+                pair = np.random.choice(mock_pairs)
+                army.recruit(ENS.namehash(pair), {"from":acc})
+
+        
     
