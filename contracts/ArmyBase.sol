@@ -42,6 +42,14 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     /// @notice ENS interface (fixed address)
     ENS public ens;
 
+    /// @dev Minion data structure
+    struct Minion {
+        address     branchAddr;   // branch address (which proxy of Chainlink price feed)
+        bool        armed;        // armed or not
+        int         envFactor;    // environment factor (latest updated price from Chainlink)
+        int         power;     // power of the minion
+    }
+
     /// @dev Minion data storage
     Minion[] public minions;
 
@@ -69,8 +77,8 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
      * @param minionID ID of the minion
      * @return Exists or not
     */
-    function minionExists(uint minionID)
-            external view override returns (bool) {
+    function minionExists(uint minionID) override
+            external view returns (bool) {
         return _exists(minionID);
     }
 
@@ -79,9 +87,8 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
      * @param minionID ID of the minion
      * @return On-chain information of the minion
     */
-    function getMinionInfo(uint minionID)
-            external view override
-            returns (address, bool, int, int) {
+    function getMinionInfo(uint minionID) override
+            external view returns (address, bool, int, int) {
         require(
             _exists(minionID),
             "ARMY: commander query for nonexistent minion");
@@ -108,6 +115,11 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         return minionIDs;
     }
 
+    /**
+     * @notice Get all minions' info given minion IDs
+     * @param minionIDs IDs of the minions
+     * @return teamInfo Array of minion info
+    */
     function getTeamInfo(uint[] calldata minionIDs)
             external view returns (Minion[] memory teamInfo) {
         teamInfo = new Minion[](minionIDs.length);
@@ -116,6 +128,11 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         }        
     }
 
+    /**
+     * @notice Get all minions' info given their commander
+     * @param commander Commander of these minions
+     * @return teamInfo Array of minion info
+    */
     function getCommanderTeamInfo(address commander)
             external view returns (Minion[] memory teamInfo) {
         uint minionCount = balanceOf(commander);

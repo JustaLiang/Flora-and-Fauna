@@ -3,14 +3,6 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-/// @dev Minion data structure
-struct Minion {
-    address     branchAddr;   // branch address (which proxy of Chainlink price feed)
-    bool        armed;        // armed or not
-    int         envFactor;    // environment factor (latest updated price from Chainlink)
-    int         power;     // power of the minion
-}
-
 /**
  * @title Army interface
  * @author Justa Liang
