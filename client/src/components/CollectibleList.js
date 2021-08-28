@@ -126,7 +126,7 @@ export default function CollectibleList(props) {
           </Box>
         </Box>
         <Grid container spacing={5} className={classes.root} alignItems="center">
-          {(data.length) && (data.length == tokenURI.length) ?
+          {(data.length) ?
             data.map((item, i) => (
               <Grid item lg={6} key={i} >
                 <Collectible checked={checked}

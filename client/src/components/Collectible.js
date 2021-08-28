@@ -59,7 +59,7 @@ export default function Collectible(props) {
             />
             <CardContent>
                 <Typography variant='h6' className={classes.info}>
-                    Status: {props.isArmed?"Armed":"Unarmed"}
+                    Status: {props.isArmed?"Armed":"Trained"}
                 </Typography>
                 <Typography variant='h6' className={classes.info}>
                     Price: {(props.price/10**8).toFixed(2)}
