@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import Recruit from './Recruit';
 import AddIcon from '@material-ui/icons/Add';
 import clsx from 'clsx';
-import LocalPairMap from '../assets/map/index.js'
+import RinkebyPairMap from '../assets/map/index.js'
 import Loading from '../assets/image/Loading.gif'
 
 
@@ -59,9 +59,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function CollectibleList(props) {
-  const { checked, list, tokenURI,onArm, onTrain, onBoost, onHeal, onSell, onRecruit } = props
+  const { checked, list, onArm, onTrain, onBoost, onHeal, onSell, onRecruit } = props
   const [data, setData] = useState([])
-  // const [tokenURI, setTokenURI] = useState([])
   const [open, setOpen] = useState(false)
 
   const classes = useStyles();
@@ -71,7 +70,7 @@ export default function CollectibleList(props) {
       for (const key in list) {
         temp.push({
           _id: key,
-          address: LocalPairMap[list[key][0]],
+          address: RinkebyPairMap[list[key][0]],
           isArmed: list[key][1],
           price: list[key][2],
           power: list[key][3],
@@ -81,20 +80,6 @@ export default function CollectibleList(props) {
       setData(temp);
     }
   }, [list])
-  // useEffect(() => {
-  //   setTokenURI([]);
-  // }, [checked])
-
-  // useEffect(() => {
-  //   for (const idx in data) {
-  //     fetch(data[idx].tokenURI)
-  //       .then(res => res.json())
-  //       .then((object) => {
-  //         setTokenURI(oldArray => [...oldArray, object.image])
-  //       })
-  //   }
-
-  // }, [data])
   const handleClickOpen = () => {
     setOpen(true)
   }
@@ -102,7 +87,6 @@ export default function CollectibleList(props) {
   const handleClose = () => {
     setOpen(false);
   };
-  console.log(tokenURI)
   return (
 
     <div>
@@ -121,7 +105,7 @@ export default function CollectibleList(props) {
             </Button>
             <Dialog open={open} style={{ textAlign: 'center' }} onClose={handleClose}>
               <DialogTitle id="form-dialog-title">Recruit Minion</DialogTitle>
-              <Recruit onRecruit={onRecruit} />
+              <Recruit onRecruit={onRecruit} onClose={handleClose} />
             </Dialog>
           </Box>
         </Box>
@@ -135,7 +119,7 @@ export default function CollectibleList(props) {
                   isArmed={item.isArmed}
                   price={item.price}
                   power={item.power}
-                  tokenURI={tokenURI[i]}
+                  tokenURI={item.tokenURI}
                   onArm={onArm}
                   onTrain={onTrain}
                   onBoost={onBoost}
@@ -160,7 +144,6 @@ export default function CollectibleList(props) {
 
 
 CollectibleList.propTypes = {
-  checked: PropTypes.bool.isRequired,
   list: PropTypes.object.isRequired,
   tokenURI:PropTypes.array.isRequired,
   onArm: PropTypes.func.isRequired,

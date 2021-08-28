@@ -6,7 +6,7 @@ function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 export default function Recruit(props) {
-    const { onRecruit } = props
+    const { onRecruit,onClose } = props
     const [state, setState] = useState({
         quote: "ETH",
         base: "USD"
@@ -22,6 +22,7 @@ export default function Recruit(props) {
         e.preventDefault()
         const success = await onRecruit(state.quote, state.base)
         if (!success) setOpen(true)
+        onClose(e)
     }
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {

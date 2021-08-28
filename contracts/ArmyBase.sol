@@ -73,6 +73,15 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     }
 
     /**
+     * @notice Get if minion exists
+     * @param minionID ID of the minion
+     * @return Exists or not
+    */
+    function minionExists(uint minionID) external view override returns (bool) {
+        return _exists(minionID);
+    }
+
+    /**
      * @notice Get minion's on-chain information
      * @param minionID ID of the minion
      * @return On-chain information of the minion
@@ -138,12 +147,11 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         require(
             target.armed,
             "ARMY: can only liberate armed minion");
-        require(
-            target.power > _initPower,
-            "ARMY: can only liberate healthy minion");
 
+        if (target.power > _initPower) {
+             enhancerContract.produce(msg.sender, uint(target.power - _initPower));
+        }
         _burn(minionID);
-        enhancerContract.produce(msg.sender, uint(target.power - _initPower));
     }
 
     /**
@@ -173,7 +181,10 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         _setTokenURI(minionID, rankContract.query(target.branchAddr, target.power));
     }
 
-    /// @dev Check if commander can command the minion
+    /**
+     * @dev Check if commander can command the minion
+     * @param minionID ID of the minion
+    */
     modifier checkCommander(uint minionID) {
         require(
             _isApprovedOrOwner(msg.sender, minionID),

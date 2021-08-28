@@ -1,199 +1,258 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../interfaces/ArmyInterface.sol";
-import "./BattleProposal.sol";
-
-interface ARMY is ArmyInterface {
-    function serialNumber() external view returns (uint);
-    function rankContract() external view returns (address);
-}
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./BattleBase.sol";
 
 interface RANK {
     function updateBranchPrefix(address, string calldata) external;
 }
 
-contract Battlefield is BattleProposal {
+contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
 
-    uint public fieldRange;
-    mapping (uint => uint[]) public fieldToDefender;
-    mapping (uint => bool) public fieldIsGreen;
-    mapping (address => bool) public commanderHasField;
-    ARMY public floraArmy;
-    ARMY public faunaArmy;
+    /// @notice Corresponding FloraRank contract
     RANK public floraRank;
+
+    /// @notice Corresponding FaunaRank contract
     RANK public faunaRank;
-    uint public floraFieldCount;
-    uint public faunaFieldCount;
-    int private _refPower;
 
-    event FieldState(uint indexed fieldID,
-                     address indexed conqueror,
-                     uint[] team,
-                     bool isGreen);
+    /// @dev Proposal contents
+    struct Proposal {
+        address proposer;
+        string prefixURI;
+        uint votes;
+    }
 
-    event FieldRange(uint fieldRange);
+    /// @notice All the proposals
+    Proposal[] public proposals;
 
-    constructor(address floraArmyAddr, address faunaArmyAddr) {
-        fieldRange = 20;
-        _refPower = 1000;
-        floraArmy = ARMY(floraArmyAddr);
-        faunaArmy = ARMY(faunaArmyAddr);
+    /// @notice If field has voted
+    mapping (uint => bool) public fieldHasVoted;
+
+    /// @notice Latest time updated for proposal or vote
+    uint public updateTime;
+
+    /// @notice Time interval of proposal state
+    uint public propInterval;
+
+    /// @notice Time interval of vote state
+    uint public voteInterval;
+
+    /// @notice One generation means going through proposal and vote
+    uint public generation;
+
+    /// @notice Name of assembly metadata of the medal designs 
+    string public assemblyJson;
+
+    /// @notice Slotting fee for making a proposal
+    uint public slottingFee;
+
+    /// @notice Emit when someone propose
+    event Propose(
+        address indexed proposer,
+        uint proposalID,
+        string prefixURI
+    );
+
+    /// @notice Emit when someone vote behalf of field
+    event Vote(
+        uint indexed fieldID,
+        address indexed voter,
+        uint indexed proposalID,
+        uint voteCount
+    );
+
+    /// @notice Emit the winning proposal's info
+    event Winner(
+        uint indexed generation,
+        address indexed winner,
+        string tokenURI,
+        uint proposalCount,
+        uint voteCount,
+        uint totalArea,
+        bool floraWin,
+        bool faunaWin
+    );
+
+    /**
+     * @dev Set addresses of interactive contracts
+     * @param floraArmyAddr Address of FloraArmy contract
+     * @param faunaArmyAddr Address of FaunaArmy contract
+    */
+    constructor(address floraArmyAddr, address faunaArmyAddr)
+        BattleBase(floraArmyAddr, faunaArmyAddr)
+        ERC721("Flora&Fauna Medal Styles", "F&F")
+    {
+        generation = 0;
         floraRank = RANK(floraArmy.rankContract());
         faunaRank = RANK(faunaArmy.rankContract());
-        floraFieldCount = 0;
-        faunaFieldCount = 0;
-
-        emit FieldRange(fieldRange);
+        propInterval = 30 days;
+        voteInterval = 5 days;
+        assemblyJson = "series.json";
+        slottingFee = 1e12 wei;
     }
 
-    function expand() external {
-        require(floraArmy.serialNumber() + faunaArmy.serialNumber() > fieldRange*50);
-        fieldRange += 20;
-
-        emit FieldRange(fieldRange);
+    /**
+     * @notice Get how much proposals
+     * @return Total number of proposals
+    */
+    function getProposalCount() external returns (uint) {
+        return proposals.length;
     }
 
-    function getFieldDefender(uint fieldID) external view returns (uint[] memory) {
-        uint[] memory defender = fieldToDefender[fieldID];
-        return defender;
+    /**
+     * @notice Propose for new style of medals
+     * @param prefixURI Prefix of the URI
+    */
+    function propose(string calldata prefixURI) payable external propState {
+        require(
+            msg.value >= slottingFee,
+            "Battlefield: not enough slotting fee");
+        proposals.push(Proposal(msg.sender, prefixURI, 0));
+
+        emit Propose(msg.sender, proposals.length-1, prefixURI);
     }
 
-    function floraConquer(uint fieldID, uint[] calldata attackerTeam) external {
-        require(fieldID < fieldRange);
-        require(!commanderHasField[msg.sender]);
-        for(uint i = 0; i < attackerTeam.length; i++) {
-            require(floraArmy.ownerOf(attackerTeam[i]) == msg.sender);
-        }
-        uint[] memory defenderTeam = fieldToDefender[fieldID];
-        if (defenderTeam.length > 0) {
-            require(!fieldIsGreen[fieldID]);
-            _fight(floraArmy, attackerTeam, faunaArmy, defenderTeam);
-            commanderHasField[faunaArmy.ownerOf(defenderTeam[0])] = false;
-            faunaFieldCount--;
-        }
-        else {
-            require(attackerTeam.length == 1);
-        }
-        fieldToDefender[fieldID] = attackerTeam;
-        fieldIsGreen[fieldID] = true;
+    /**
+     * @notice Regain the right to vote of certain field
+     * @param fieldID ID of the field
+    */
+    function regainVote(uint fieldID) external propState {
+        require(
+            fieldHasVoted[fieldID],
+            "Battlefield: field already have the right to vote");
         fieldHasVoted[fieldID] = false;
-        commanderHasField[msg.sender] = true;
-        floraFieldCount++;
-
-        emit FieldState(fieldID, msg.sender, attackerTeam, true);
     }
 
-    function faunaConquer(uint fieldID, uint[] calldata attackerTeam) external {
-        require(fieldID < fieldRange);
-        require(!commanderHasField[msg.sender]);
-        for(uint i = 0; i < attackerTeam.length; i++) {
-            require(faunaArmy.ownerOf(attackerTeam[i]) == msg.sender);
-        }
-        uint[] memory defenderTeam = fieldToDefender[fieldID];
-        if (defenderTeam.length > 0) {
-            require(fieldIsGreen[fieldID]);
-            _fight(faunaArmy, attackerTeam, floraArmy, defenderTeam);
-            commanderHasField[floraArmy.ownerOf(defenderTeam[0])] = false;
-            floraFieldCount--;
-        }
-        else {
-            require(attackerTeam.length == 1);
-        }
-        fieldToDefender[fieldID] = attackerTeam;
-        fieldIsGreen[fieldID] = false;
-        fieldHasVoted[fieldID] = false;
-        commanderHasField[msg.sender] = true;
-        faunaFieldCount++;
-
-        emit FieldState(fieldID, msg.sender, attackerTeam, false);
-    }
-
-    function floraVote(address branch, uint proposalID, uint fieldID)
-            external voteState(branch) {
-        require(!fieldHasVoted[fieldID]);
-        require(floraArmy.ownerOf(fieldToDefender[fieldID][0]) == msg.sender);
-        branchVotes[branch][proposalID]++;
-        fieldHasVoted[fieldID] = true;
-    }
-
-    function faunaVote(address branch, uint proposalID, uint fieldID)
-            external voteState(branch) {
-        require(!fieldHasVoted[fieldID]);
-        require(faunaArmy.ownerOf(fieldToDefender[fieldID][0]) == msg.sender);
-        branchVotes[branch][proposalID]++;        
-        fieldHasVoted[fieldID] = true;
-    }
-
-    function endVote(address branch) external voteState(branch) {
+    /**
+     * @notice Start the vote state
+    */
+    function startVote() external propState {
+        require(
+            proposals.length > 1,
+            "Battlefield: not enough proposals");
         uint currentTime = block.timestamp;
-        require(currentTime >= branchUpdateTimes[branch] + 7 days);
-        branchUpdateTimes[branch] = currentTime;
+        require(
+            currentTime >= updateTime + propInterval,
+            "Battlefield: not yet to start vote");
+        updateTime = currentTime;
+        fieldLocked = true;
+    }
+
+    /**
+     * @notice Vote behalf of certain field
+     * @param fieldID ID of the field
+     * @param proposalID ID of the proposal
+    */
+    function vote(uint fieldID, uint proposalID) external voteState {
+        require(
+            !fieldHasVoted[fieldID],
+            "Battlefield: field has voted");
+        uint[] memory defenders = fieldDefenders[fieldID];
+        require(
+            defenders.length > 0,
+            "Battlefield: empty field can't vote");
+        if (isFloraField[fieldID]) {
+            require(
+                floraArmy.ownerOf(defenders[0]) == msg.sender,
+                "Battlefield: not leader");
+        }
+        else {
+            require(
+                faunaArmy.ownerOf(defenders[0]) == msg.sender,
+                "Battlefield: not leader");
+        }
+        Proposal storage target = proposals[proposalID];
+        target.votes++;
+        fieldHasVoted[fieldID] = true;
+
+        emit Vote(fieldID, msg.sender, proposalID, target.votes);
+    }
+
+    /**
+     * @notice End the vote state, change medal styles and mint an assembly metadata to winner
+    */
+    function endVote() external voteState {
+        uint currentTime = block.timestamp;
+        require(
+            currentTime >= updateTime + propInterval,
+            "Battlefield: not yet to end vote");
+        updateTime = currentTime;
         
         uint maxVote = 0;
         uint maxIdx = 0;
-        uint[] memory votes = branchVotes[branch];
-        for (uint i = 0; i < votes.length; i++) {
-            if (votes[i] > maxVote) {
-                maxVote = votes[i];
+        for (uint i = 0; i < proposals.length; i++) {
+            if (proposals[i].votes > maxVote) {
+                maxVote = proposals[i].votes;
                 maxIdx = i;
             }
         }
+        
+        Proposal memory winning = proposals[maxIdx];
 
-        string memory resultPrefix = branchProposals[branch][maxIdx];
-
+        bool floraWin = false;
+        bool faunaWin = false;
         if (floraFieldCount >= faunaFieldCount) {
-            floraRank.updateBranchPrefix(branch, resultPrefix);
+            floraRank.updateBranchPrefix(address(0), winning.prefixURI);
+            floraWin = true;
         }
         if (faunaFieldCount >= floraFieldCount) {
-            faunaRank.updateBranchPrefix(branch, resultPrefix);
+            faunaRank.updateBranchPrefix(address(0), winning.prefixURI);
+            faunaWin = true;
         }
 
-        delete branchProposals[branch];
-        delete branchVotes[branch];
-        branchEnableVote[branch] = false;
+        _mint(winning.proposer, generation);
+        _setTokenURI(generation, string(abi.encodePacked(winning.prefixURI, assemblyJson)));
+
+        delete proposals;
+        fieldLocked = false;
+
+        emit Winner(generation,
+                    winning.proposer,
+                    tokenURI(generation),
+                    proposals.length,
+                    winning.votes,
+                    totalArea,
+                    floraWin,
+                    faunaWin);
+        generation++;
     }
 
-    function _fight(ArmyInterface attacker, uint[] memory attackerTeam,
-                    ArmyInterface defender, uint[] memory defenderTeam
-                    ) private view {
-        if (attackerTeam.length == defenderTeam.length-1) {
-            (address eBranch,bool eArmed,,int ePower) = defender.getMinionInfo(defenderTeam[0]);
-            int dBuff;
-            if (!eArmed) {
-                dBuff = 0;
-            }
-            else {
-                dBuff = ePower - _refPower;
-            }
-            for (uint i = 0; i < attackerTeam.length; i++) {
-                (address aBranch,bool aArmed,,int aPower) = attacker.getMinionInfo(attackerTeam[i]);
-                (address dBranch,bool dArmed,,int dPower) = defender.getMinionInfo(defenderTeam[i+1]);                    
-                require(aArmed && aBranch == dBranch); 
-                require(!dArmed || aPower > dPower + dBuff);
-            }            
-        }
-        else if (attackerTeam.length == defenderTeam.length) {
-            for (uint i = 0; i < defenderTeam.length; i++) {
-                (address aBranch,bool aArmed,,int aPower) = attacker.getMinionInfo(attackerTeam[i]);
-                (address dBranch,bool dArmed,,int dPower) = defender.getMinionInfo(defenderTeam[i]);
-                require(aArmed && aBranch == dBranch);
-                require(!dArmed || aPower > dPower);
-            }
-        }
-        else if (attackerTeam.length == defenderTeam.length+1) {
-            (address eBranch,bool eArmed,,int ePower) = attacker.getMinionInfo(attackerTeam[defenderTeam.length]);
-            require(eArmed);
-            int aBuff = ePower - _refPower;
-            for (uint i = 0; i < defenderTeam.length; i++) {
-                (address aBranch,bool aArmed,,int aPower) = attacker.getMinionInfo(attackerTeam[i]);
-                (address dBranch,bool dArmed,,int dPower) = defender.getMinionInfo(defenderTeam[i]);                    
-                require(aArmed && aBranch == dBranch && eBranch != dBranch);
-                require(!dArmed || aPower + aBuff > dPower);
-            }
-        }
-        else {
-            require(false);
-        }
+    /// @dev Check if under vote state
+    modifier voteState() {
+        require(fieldLocked, "Battlefield: not in proposal state");
+        _;
+    }
+
+    /// @dev Check if under proposal state
+    modifier propState() {
+        require(!fieldLocked, "Battlefield: not in vote state");
+        _;
+    }
+
+    /**
+     * @dev Claim the funds from slotting fee
+     * @param amount Amount of Ether
+     * @param receiver Address of receiver
+    */    
+    function claimFunds(uint amount, address payable receiver) external onlyOwner {
+        receiver.transfer(amount);
+    } 
+
+    function changePropInterval(uint propInterval_) external onlyOwner {
+        propInterval = propInterval_;
+    }
+
+    function changeVoteInterval(uint voteInterval_) external onlyOwner {
+        voteInterval = voteInterval_;
+    }
+
+    function changeSlottingFee(uint slottingFee_) external onlyOwner {
+        slottingFee = slottingFee_;
+    }
+
+    function changeAssemblyJson(string calldata assemblyJson_) external onlyOwner {
+        assemblyJson = assemblyJson_;
     }
 }

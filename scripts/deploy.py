@@ -21,12 +21,12 @@ def main():
     fauna_army = FaunaArmy.deploy(ens, init_enhancer, power_levels, fauna_images, {"from": dev}, publish_source=config["verify"])
     fauna_enhr = ArmyEnhancer.at(fauna_army.enhancerContract())
     fauna_rank = ArmyRank.at(fauna_army.rankContract())
+    btfd = Battlefield.deploy(flora_army, fauna_army, {"from": dev}, publish_source=config["verify"])
     if network.show_active() == "development":
         test_account = config["wallets"]["test_account"]
-        dev.transfer(test_account, "50 ether")
+        dev.transfer(test_account, "2 ether")
         flora_enhr.transfer(test_account, init_enhancer//100*10**18, {"from":dev})
-        fauna_enhr.transfer(test_account, init_enhancer//150*10**18, {"from":dev})
-        Battlefield.deploy(flora_army, fauna_army, {"from": dev}, publish_source=config["verify"])
+        fauna_enhr.transfer(test_account, init_enhancer//200*10**18, {"from":dev})
         flora_rank.updateBranchPrefix(
             "0x0000000000000000000000000000000000000000",
             "https://ipfs.io/ipfs/bafybeieh3wt7szwrdujfver5nfwbqfh7z6pcodk2h5k46m24oqmizolame/",
@@ -35,4 +35,8 @@ def main():
             "0x0000000000000000000000000000000000000000",
             "https://ipfs.io/ipfs/bafybeigd7f3maglyvcyvxonmu4copfosxqocg5dpyetw7ozg22m44j27le/",
             {"from":dev})
-    return flora_army, flora_enhr, flora_rank, fauna_army, fauna_enhr, fauna_rank
+        btfd.changePropInterval(0, {"from":dev})
+        btfd.changeVoteInterval(0, {"from":dev})
+        flora_rank.transferOwnership(btfd, {"from":dev})
+        fauna_rank.transferOwnership(btfd, {"from":dev})
+    return flora_army, flora_enhr, flora_rank, fauna_army, fauna_enhr, fauna_rank, btfd
