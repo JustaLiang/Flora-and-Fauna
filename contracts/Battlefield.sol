@@ -2,14 +2,13 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./BattleBase.sol";
 
 interface RANK {
     function updateBranchPrefix(address, string calldata) external;
 }
 
-contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
+contract Battlefield is BattleBase, ERC721URIStorage {
 
     /// @notice Corresponding FloraRank contract
     RANK public floraRank;
@@ -93,12 +92,11 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         slottingFee = 1e12 wei;
     }
 
-    /**
-     * @notice Get how much proposals
-     * @return Total number of proposals
-    */
-    function getProposalCount() external returns (uint) {
-        return proposals.length;
+
+
+    function getAllProposalInfo() external view
+                returns (Proposal[] memory) {
+        return proposals;
     }
 
     /**

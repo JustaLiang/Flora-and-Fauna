@@ -30,7 +30,7 @@ contract FloraArmy is ArmyBase {
      * @param minionID ID of the minion
     */
     function train(uint minionID) external override checkCommander(minionID) {
-        Minion storage target = _minions[minionID];
+        Minion storage target = minions[minionID];
         require(
             target.armed,
             "ARMY: minion is already in training state");
@@ -52,7 +52,7 @@ contract FloraArmy is ArmyBase {
      * @param minionID ID of the minion
     */
     function arm(uint minionID) external override checkCommander(minionID) {
-        Minion storage target = _minions[minionID];
+        Minion storage target = minions[minionID];
         require(
             !target.armed,
             "ARMY: minion is already armed");
@@ -76,7 +76,7 @@ contract FloraArmy is ArmyBase {
      * @param minionID ID of the minion
     */
     function boost(uint minionID) external override checkCommander(minionID) {
-        Minion storage target = _minions[minionID];
+        Minion storage target = minions[minionID];
         require(
             target.armed,
             "ARMY: minion is already in training state");
@@ -101,7 +101,7 @@ contract FloraArmy is ArmyBase {
      * @param minionID ID of the minion
     */
     function heal(uint minionID) external override checkCommander(minionID) {
-        Minion storage target = _minions[minionID];
+        Minion storage target = minions[minionID];
         require(
             !target.armed,
             "ARMY: minion is not in training state");

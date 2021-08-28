@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/ArmyInterface.sol";
 
 /**
@@ -16,7 +17,7 @@ interface ARMY is ArmyInterface {
  * @notice Define how to figh on battlefield
  * @author Justa Liang
  */
-abstract contract BattleBase {
+abstract contract BattleBase is Ownable {
 
     /// @notice If Battlefield locked, lock for vote, unlock for proposal
     bool public fieldLocked;
@@ -51,6 +52,12 @@ abstract contract BattleBase {
     /// @dev Initial power of flora and fauna minions
     int private _refPower;
 
+    struct FieldInfo {
+        address leader;
+        uint[] defenders;
+        bool isFlora;
+    }
+
     /// @notice Emit when field's state changes
     event FieldState(uint indexed fieldID,
                      address indexed conqueror,
@@ -80,11 +87,11 @@ abstract contract BattleBase {
     /**
      * @notice Expand the battlefield and increase it's total area
     */
-    function expand() external {
+    function expand(uint increaseSize) external onlyOwner {
+        totalArea += increaseSize;
         require(
-            floraArmy.serialNumber() + faunaArmy.serialNumber() > totalArea*5,
-            "Battlefield: not enough army");
-        totalArea += 20;
+            totalArea < floraArmy.serialNumber() + faunaArmy.serialNumber(),
+            "Battlefield: no need for expansion");
 
         emit TotalArea(totalArea);
     }
@@ -94,9 +101,8 @@ abstract contract BattleBase {
      * @param fieldID ID of the field
      * @return Array of minion IDs
     */ 
-    function getFieldDefender(uint fieldID) external view returns (uint[] memory) {
-        uint[] memory defender = fieldDefenders[fieldID];
-        return defender;
+    function getFieldDefenders(uint fieldID) public view returns (uint[] memory) {
+        return fieldDefenders[fieldID];
     }
 
     /**
@@ -104,7 +110,7 @@ abstract contract BattleBase {
      * @param fieldID ID of the field
      * @return Owner of the first minion
     */ 
-    function getFieldLeader(uint fieldID) external view returns (address) {
+    function getFieldLeader(uint fieldID) public view returns (address) {
         uint[] memory defender = fieldDefenders[fieldID];
         if (defender.length == 0) {
             return address(0);
@@ -114,6 +120,23 @@ abstract contract BattleBase {
         }
         else {
             return faunaArmy.ownerOf(defender[0]);
+        }
+    }
+
+    function getFieldInfo(uint fieldID) external view
+            returns (FieldInfo memory fieldInfo) {
+        fieldInfo.leader = getFieldLeader(fieldID);
+        fieldInfo.defenders = getFieldDefenders(fieldID);
+        fieldInfo.isFlora = isFloraField[fieldID];            
+    }
+
+    function getAllFieldInfo() external view
+            returns (FieldInfo[] memory allFieldInfo) {
+        allFieldInfo = new FieldInfo[](totalArea);
+        for (uint fid = 0; fid < totalArea; fid++) {
+            allFieldInfo[fid].leader = getFieldLeader(fid);
+            allFieldInfo[fid].defenders = getFieldDefenders(fid);
+            allFieldInfo[fid].isFlora = isFloraField[fid];
         }
     }
 
