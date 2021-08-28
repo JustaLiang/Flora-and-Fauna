@@ -1,12 +1,14 @@
 # deploy.py
 from brownie import (
-    network, config, run,
+    ZERO_ADDRESS, network, config, run,
     FloraArmy, FaunaArmy, ArmyEnhancer, ArmyRank, Battlefield)
 
-init_enhancer = 7777777
-power_levels = [0, 1500, 3000, 5000, 10000]
-flora_images = ['flora_1.json','flora_2.json','flora_3.json','flora_4.json','flora_5.json']
-fauna_images = ['fauna_1.json','fauna_2.json','fauna_3.json','fauna_4.json','fauna_5.json']
+INIT_ENHANCER = 7777777
+POWER_LEVELS = [0, 1500, 3000, 5000, 10000]
+FLORA_PREFIX = "https://ipfs.io/ipfs/bafybeieh3wt7szwrdujfver5nfwbqfh7z6pcodk2h5k46m24oqmizolame/"
+FLORA_NAMES = ['flora_1.json','flora_2.json','flora_3.json','flora_4.json','flora_5.json']
+FAUNA_PREFIX = "https://ipfs.io/ipfs/bafybeigd7f3maglyvcyvxonmu4copfosxqocg5dpyetw7ozg22m44j27le/"
+FAUNA_NAMES = ['fauna_1.json','fauna_2.json','fauna_3.json','fauna_4.json','fauna_5.json']
 
 def main():
     if network.show_active() != "development":
@@ -15,26 +17,20 @@ def main():
             return
     dev = run("dev_account")
     ens = run("ens_registry")
-    flora_army = FloraArmy.deploy(ens, init_enhancer, power_levels, flora_images, {"from": dev}, publish_source=config["verify"])
+    flora_army = FloraArmy.deploy(ens, INIT_ENHANCER, POWER_LEVELS, FLORA_NAMES, {"from": dev}, publish_source=config["verify"])
     flora_enhr = ArmyEnhancer.at(flora_army.enhancerContract())
     flora_rank = ArmyRank.at(flora_army.rankContract())
-    fauna_army = FaunaArmy.deploy(ens, init_enhancer, power_levels, fauna_images, {"from": dev}, publish_source=config["verify"])
+    fauna_army = FaunaArmy.deploy(ens, INIT_ENHANCER, POWER_LEVELS, FAUNA_NAMES, {"from": dev}, publish_source=config["verify"])
     fauna_enhr = ArmyEnhancer.at(fauna_army.enhancerContract())
     fauna_rank = ArmyRank.at(fauna_army.rankContract())
     btfd = Battlefield.deploy(flora_army, fauna_army, {"from": dev}, publish_source=config["verify"])
     if network.show_active() == "development":
         test_account = config["wallets"]["test_account"]
         dev.transfer(test_account, "2 ether")
-        flora_enhr.transfer(test_account, init_enhancer//100*10**18, {"from":dev})
-        fauna_enhr.transfer(test_account, init_enhancer//200*10**18, {"from":dev})
-        flora_rank.updateBranchPrefix(
-            "0x0000000000000000000000000000000000000000",
-            "https://ipfs.io/ipfs/bafybeieh3wt7szwrdujfver5nfwbqfh7z6pcodk2h5k46m24oqmizolame/",
-            {"from":dev})
-        fauna_rank.updateBranchPrefix(
-            "0x0000000000000000000000000000000000000000",
-            "https://ipfs.io/ipfs/bafybeigd7f3maglyvcyvxonmu4copfosxqocg5dpyetw7ozg22m44j27le/",
-            {"from":dev})
+        flora_enhr.transfer(test_account, INIT_ENHANCER//100*10**18, {"from":dev})
+        fauna_enhr.transfer(test_account, INIT_ENHANCER//200*10**18, {"from":dev})
+        flora_rank.updateBranchPrefix(ZERO_ADDRESS, FLORA_PREFIX, {"from":dev})
+        fauna_rank.updateBranchPrefix(ZERO_ADDRESS, FAUNA_PREFIX, {"from":dev})
         btfd.changePropInterval(0, {"from":dev})
         btfd.changeVoteInterval(0, {"from":dev})
         flora_rank.transferOwnership(btfd, {"from":dev})

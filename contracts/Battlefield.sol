@@ -2,14 +2,13 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./BattleBase.sol";
 
 interface RANK {
     function updateBranchPrefix(address, string calldata) external;
 }
 
-contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
+contract Battlefield is BattleBase, ERC721URIStorage {
 
     /// @notice Corresponding FloraRank contract
     RANK public floraRank;
@@ -27,8 +26,8 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
     /// @notice All the proposals
     Proposal[] public proposals;
 
-    /// @notice If field has voted
-    mapping (uint => bool) public fieldHasVoted;
+    /// @notice Latest generation in which field has voted
+    mapping (uint => uint) public fieldGeneration;
 
     /// @notice Latest time updated for proposal or vote
     uint public updateTime;
@@ -84,7 +83,7 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         BattleBase(floraArmyAddr, faunaArmyAddr)
         ERC721("Flora&Fauna Medal Styles", "F&F")
     {
-        generation = 0;
+        generation = 1;
         floraRank = RANK(floraArmy.rankContract());
         faunaRank = RANK(faunaArmy.rankContract());
         propInterval = 30 days;
@@ -94,11 +93,12 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
     }
 
     /**
-     * @notice Get how much proposals
-     * @return Total number of proposals
+     * @notice Get details of all proposals
+     * @return Details of all proposals
     */
-    function getProposalCount() external returns (uint) {
-        return proposals.length;
+    function getAllProposalInfo() external view
+                returns (Proposal[] memory) {
+        return proposals;
     }
 
     /**
@@ -112,17 +112,6 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         proposals.push(Proposal(msg.sender, prefixURI, 0));
 
         emit Propose(msg.sender, proposals.length-1, prefixURI);
-    }
-
-    /**
-     * @notice Regain the right to vote of certain field
-     * @param fieldID ID of the field
-    */
-    function regainVote(uint fieldID) external propState {
-        require(
-            fieldHasVoted[fieldID],
-            "Battlefield: field already have the right to vote");
-        fieldHasVoted[fieldID] = false;
     }
 
     /**
@@ -147,8 +136,8 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
     */
     function vote(uint fieldID, uint proposalID) external voteState {
         require(
-            !fieldHasVoted[fieldID],
-            "Battlefield: field has voted");
+            fieldGeneration[fieldID] < generation,
+            "Battlefield: field has voted in this generation");
         uint[] memory defenders = fieldDefenders[fieldID];
         require(
             defenders.length > 0,
@@ -165,7 +154,7 @@ contract Battlefield is BattleBase, ERC721URIStorage, Ownable {
         }
         Proposal storage target = proposals[proposalID];
         target.votes++;
-        fieldHasVoted[fieldID] = true;
+        fieldGeneration[fieldID] = generation;
 
         emit Vote(fieldID, msg.sender, proposalID, target.votes);
     }

@@ -36,22 +36,25 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     /// @notice Serial number of minions, imply how many minions have been created
     uint public serialNumber;
 
-    /// @dev Inital minion's power
-    int internal _initPower;
+    /// @notice Population of minions
+    uint public population;
 
-    /// @dev ENS interface (fixed address)
-    ENS internal _ens;
+    /// @notice Inital minion's power
+    int public initPower;
+
+    /// @notice ENS interface (fixed address)
+    ENS public ens;
 
     /// @dev Minion data structure
     struct Minion {
         address     branchAddr;   // branch address (which proxy of Chainlink price feed)
         bool        armed;        // armed or not
         int         envFactor;    // environment factor (latest updated price from Chainlink)
-        int         power;     // power of the minion
+        int         power;        // power of the minion
     }
 
     /// @dev Minion data storage
-    Minion[] internal _minions;
+    Minion[] public minions;
 
     /// @notice Emit when minion's state changes 
     event MinionState(
@@ -68,8 +71,9 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     */
     constructor(address ensRegistryAddr) {
         serialNumber = 0;
-        _initPower = 1000;
-        _ens = ENS(ensRegistryAddr);
+        population = 0;
+        initPower = 1000;
+        ens = ENS(ensRegistryAddr);
     }
 
     /**
@@ -77,7 +81,8 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
      * @param minionID ID of the minion
      * @return Exists or not
     */
-    function minionExists(uint minionID) external view override returns (bool) {
+    function minionExists(uint minionID) override
+            external view returns (bool) {
         return _exists(minionID);
     }
 
@@ -86,23 +91,24 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
      * @param minionID ID of the minion
      * @return On-chain information of the minion
     */
-    function getMinionInfo(uint minionID) external view override
-                                            returns (address, bool, int, int) {
+    function getMinionInfo(uint minionID) override
+            external view returns (address, bool, int, int) {
         require(
             _exists(minionID),
             "ARMY: commander query for nonexistent minion");
-        Minion memory target = _minions[minionID];
-        return (target.branchAddr, target.armed, target.envFactor, target.power);
+        Minion memory m = minions[minionID];
+        return (m.branchAddr, m.armed, m.envFactor, m.power);
     }
 
     /**
      * @notice Get minion IDs, like (2,6,9), given commander
      * @param commander Commander of these minions
-     * @return IDs of these minions
+     * @return minionIDs IDs of these minions
     */
-    function getMinionIDs(address commander) external view override returns(uint[] memory) {
+    function getMinionIDs(address commander)
+            external view returns(uint[] memory minionIDs) {
         uint minionCount = balanceOf(commander);
-        uint[] memory minionIDs = new uint[](minionCount);
+        minionIDs = new uint[](minionCount);
         uint listIdx = 0;
         for (uint minionID = 0; listIdx < minionCount; minionID++) {
             if (_exists(minionID) && ownerOf(minionID) == commander) {
@@ -111,6 +117,37 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
             }
         }
         return minionIDs;
+    }
+
+    /**
+     * @notice Get all minions' info given minion IDs
+     * @param minionIDs IDs of the minions
+     * @return teamInfo Array of minion info
+    */
+    function getTeamInfo(uint[] calldata minionIDs)
+            external view returns (Minion[] memory teamInfo) {
+        teamInfo = new Minion[](minionIDs.length);
+        for (uint i = 0; i < minionIDs.length; i++) {
+            teamInfo[i] = minions[minionIDs[i]];
+        }        
+    }
+
+    /**
+     * @notice Get all minions' info given their commander
+     * @param commander Commander of these minions
+     * @return teamInfo Array of minion info
+    */
+    function getCommanderTeamInfo(address commander)
+            external view returns (Minion[] memory teamInfo) {
+        uint minionCount = balanceOf(commander);
+        teamInfo = new Minion[](minionCount);
+        uint listIdx = 0;
+        for (uint minionID = 0; listIdx < minionCount; minionID++) {
+            if (_exists(minionID) && ownerOf(minionID) == commander) {
+                teamInfo[listIdx] = minions[minionID];
+                listIdx++;
+            }
+        }
     }
 
     /**
@@ -131,10 +168,11 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         // mint minion and store its data on chain
         uint newID = serialNumber;
         _mint(msg.sender, newID);
-        _minions.push(Minion(branchAddr, false, currPrice, _initPower));
+        minions.push(Minion(branchAddr, false, currPrice, initPower));
 
-        emit MinionState(newID, branchAddr, false, currPrice, _initPower);
+        emit MinionState(newID, branchAddr, false, currPrice, initPower);
         serialNumber++;
+        population++;
         return newID;
     }
 
@@ -143,15 +181,16 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
      * @param minionID ID of the minion
     */
     function liberate(uint minionID) external override checkCommander(minionID) {
-        Minion storage target = _minions[minionID];
+        Minion storage target = minions[minionID];
         require(
             target.armed,
             "ARMY: can only liberate armed minion");
 
-        if (target.power > _initPower) {
-             enhancerContract.produce(msg.sender, uint(target.power - _initPower));
+        if (target.power > initPower) {
+             enhancerContract.produce(msg.sender, uint(target.power - initPower));
         }
         _burn(minionID);
+        population--;
     }
 
     /**
@@ -162,7 +201,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         require(
             _exists(minionID),
             "ARMY: commander query for nonexistent minion");
-        Minion memory target = _minions[minionID];
+        Minion memory target = minions[minionID];
         string memory grantedURI = super.tokenURI(minionID);
         if (bytes(grantedURI).length > 11) {
             return grantedURI;
@@ -177,7 +216,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
      * @param minionID ID of the minion
     */
     function grant(uint minionID) external override checkCommander(minionID) {
-        Minion memory target = _minions[minionID];
+        Minion memory target = minions[minionID];
         _setTokenURI(minionID, rankContract.query(target.branchAddr, target.power));
     }
 
@@ -198,7 +237,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
      * @return Chainlink price feed proxy
     */
     function _resolve(bytes32 node) internal view returns (address) {
-        Resolver resolver = _ens.resolver(node);
+        Resolver resolver = ens.resolver(node);
         return resolver.addr(node);
     }
 }
