@@ -8,7 +8,7 @@ import "../interfaces/ArmyInterface.sol";
  * @notice Operations only for Army contract
  */
 interface ARMY is ArmyInterface {
-    function serialNumber() external view returns (uint);
+    function population() external view returns (uint);
     function rankContract() external view returns (address);
 }
 
@@ -90,7 +90,7 @@ abstract contract BattleBase is Ownable {
     function expand(uint increaseSize) external onlyOwner {
         totalArea += increaseSize;
         require(
-            totalArea < floraArmy.serialNumber() + faunaArmy.serialNumber(),
+            totalArea < floraArmy.population() + faunaArmy.population(),
             "Battlefield: no need for expansion");
 
         emit TotalArea(totalArea);
@@ -123,6 +123,11 @@ abstract contract BattleBase is Ownable {
         }
     }
 
+    /**
+     * @notice Get the field info
+     * @param fieldID ID of the field
+     * @return fieldInfo Leader, defenders and side
+    */ 
     function getFieldInfo(uint fieldID) external view
             returns (FieldInfo memory fieldInfo) {
         fieldInfo.leader = getFieldLeader(fieldID);
@@ -130,6 +135,10 @@ abstract contract BattleBase is Ownable {
         fieldInfo.isFlora = isFloraField[fieldID];            
     }
 
+    /**
+     * @notice Get the every field info 
+     * @return allFieldInfo Info of every field
+    */ 
     function getAllFieldInfo() external view
             returns (FieldInfo[] memory allFieldInfo) {
         allFieldInfo = new FieldInfo[](totalArea);

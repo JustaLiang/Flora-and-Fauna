@@ -83,7 +83,7 @@ contract Battlefield is BattleBase, ERC721URIStorage {
         BattleBase(floraArmyAddr, faunaArmyAddr)
         ERC721("Flora&Fauna Medal Styles", "F&F")
     {
-        generation = 0;
+        generation = 1;
         floraRank = RANK(floraArmy.rankContract());
         faunaRank = RANK(faunaArmy.rankContract());
         propInterval = 30 days;
@@ -92,8 +92,10 @@ contract Battlefield is BattleBase, ERC721URIStorage {
         slottingFee = 1e12 wei;
     }
 
-
-
+    /**
+     * @notice Get details of all proposals
+     * @return Details of all proposals
+    */
     function getAllProposalInfo() external view
                 returns (Proposal[] memory) {
         return proposals;
@@ -134,7 +136,7 @@ contract Battlefield is BattleBase, ERC721URIStorage {
     */
     function vote(uint fieldID, uint proposalID) external voteState {
         require(
-            fieldGeneration[fieldID ] < generation,
+            fieldGeneration[fieldID] < generation,
             "Battlefield: field has voted in this generation");
         uint[] memory defenders = fieldDefenders[fieldID];
         require(

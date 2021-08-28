@@ -36,6 +36,9 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     /// @notice Serial number of minions, imply how many minions have been created
     uint public serialNumber;
 
+    /// @notice Population of minions
+    uint public population;
+
     /// @notice Inital minion's power
     int public initPower;
 
@@ -47,7 +50,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         address     branchAddr;   // branch address (which proxy of Chainlink price feed)
         bool        armed;        // armed or not
         int         envFactor;    // environment factor (latest updated price from Chainlink)
-        int         power;     // power of the minion
+        int         power;        // power of the minion
     }
 
     /// @dev Minion data storage
@@ -68,6 +71,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     */
     constructor(address ensRegistryAddr) {
         serialNumber = 0;
+        population = 0;
         initPower = 1000;
         ens = ENS(ensRegistryAddr);
     }
@@ -168,6 +172,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
 
         emit MinionState(newID, branchAddr, false, currPrice, initPower);
         serialNumber++;
+        population++;
         return newID;
     }
 
@@ -185,6 +190,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
              enhancerContract.produce(msg.sender, uint(target.power - initPower));
         }
         _burn(minionID);
+        population--;
     }
 
     /**
