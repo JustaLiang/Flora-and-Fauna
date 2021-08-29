@@ -19,6 +19,8 @@ export default function BattlefieldNew() {
     const [fields, setFields] = useState([])
 
     const [proposals, setProposals] = useState([])
+    
+    const [checksumAcc, setChecksumAcc] = useState("")
 
     const [generation, setGeneration] = useState(0)
 
@@ -62,6 +64,7 @@ export default function BattlefieldNew() {
         }
         const { web3, ethereum, accounts, chainid } = setting
         if (web3 && ethereum && accounts && chainid) {
+            setChecksumAcc(web3.utils.toChecksumAddress(accounts[0]))
             loadInitialContracts()
         }
     }, [setting])
@@ -239,7 +242,27 @@ export default function BattlefieldNew() {
                 console.log(err)
             })
     }
-
+    const displayField = (fid) => {
+        const { web3, accounts } = setting
+        let style = {
+            backgroundColor: 'black',
+            color: 'white',
+        }
+        const fi = fields[fid]
+        const checksumAcc = web3.utils.toChecksumAddress(accounts[0])
+        if (fi.defenders.length) {
+            style.backgroundColor = fi.isFlora?'green':'red'
+        }
+        return <p key={fid} style={style}>
+            field#{fid} -- 
+            <button style={{color:'green'}} value={fid} onClick={(e) => onFloraConquer(e)}>conquer</button>
+            <button value={fid} onClick={(e) => onRetreat(e)}>retreat</button>
+            <button style={{color:'red'}} value={fid} onClick={(e) => onFaunaConquer(e)}>conquer</button>
+            -- ( {fi.defenders.join(', ')} )
+            -- { fi.leader === checksumAcc?'owned':'' }
+        </p>
+    }
+    console.log("fields: ",fields)
     return (
         <div style={{ paddingLeft: 100, paddingTop: 100 }}>
             <ProposalList
@@ -249,7 +272,7 @@ export default function BattlefieldNew() {
                 onEndVote={onEndVote}
                 proposals={proposals}
             />
-            <Battlefield />
+            <Battlefield fields={fields}/>
         </div>
     )
 }
