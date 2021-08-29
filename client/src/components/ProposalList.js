@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 }))
-export default function ProposalList({ locked, onPropose, onStartVote, onEndVote,proposals }) {
+export default function ProposalList({ locked, onPropose, onStartVote, onEndVote, onVote,proposals }) {
     const classes = useStyles()
     const [open, setOpen] = useState(false);
     const [URL,setURL] = useState("")
@@ -105,7 +105,8 @@ export default function ProposalList({ locked, onPropose, onStartVote, onEndVote
                                 _id={index}
                                 proposer={item.proposer}
                                 prefixURI={item.prefixURI}
-                                votes={parseInt(item.votes)} />
+                                votes={parseInt(item.votes)}
+                                onVote={onVote} />
                             </Box>
                         )):<><Typography>No proposal now submit proposol</Typography></>
                     }
@@ -119,5 +120,6 @@ ProposalList.propTypes = {
     onPropose: PropTypes.func.isRequired,
     onStartVote: PropTypes.func.isRequired,
     onEndVote: PropTypes.func.isRequired,
+    onVote:PropTypes.func.isRequired,
     proposals:PropTypes.func.isRequired
 }
