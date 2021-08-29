@@ -21,10 +21,10 @@ const useStyles = makeStyles((theme) => ({
 
     },
     green: { 
-        backgroundColor: '#1CBA1C'
+        backgroundColor: '#1e751e'
      },
     red: { 
-        backgroundColor: '#FF1F5E'
+        backgroundColor: '#d31406'
      },
 
 }))
@@ -117,7 +117,9 @@ export default function Field({ _id, field, getMinionInfo,onFloraConquer,onFauna
                     height: 200, width: 200, borderRadius: 20, display: 'flex',
                     alignItems: 'center', justifyContent: 'center'
                 }}>
-                {checksumAcc===leader?<EmojiFlagsIcon style={{ width: 75, height: 75 }} />:""}
+                {checksumAcc===leader?<EmojiFlagsIcon style={{ width: 75, height: 75,color:"#FFFFFF" }} />:
+                <Typography style={{fontWeight:'bold',fontSize:30,color:defenders.length?"#FFFFFF":"#000000"}} >{_id}</Typography>
+                }
             </Card>
             <Dialog open={open} style={{ textAlign: 'center' }} onClose={handleClose}>
                 <DialogTitle id="form-dialog-title" >
@@ -168,12 +170,18 @@ export default function Field({ _id, field, getMinionInfo,onFloraConquer,onFauna
                         <Box display='flex'
                             flexDirection='row'
                             style={{ marginLeft: 75, marginTop: 30, justifyContent: 'flex-start', gap: 20 }}>
-                            <Button onClick={handleActionClick} variant='outlined'>
+                            <Button onClick={handleActionClick} 
+                            style={{background:'#000000',color:'#FFFFFF' ,fontWeight:'bold'}}
+                            variant='outlined'>
                                 Conquer
                             </Button>
-                            <Button onClick={handleRetreat} variant='outlined'>
+                            {checksumAcc===leader?
+                            <Button onClick={handleRetreat} 
+                            style={{background:'#FFFFFF',color:'#000000' ,fontWeight:'bold'}}
+                            variant='outlined'>
                                 Retreat
-                            </Button>
+                            </Button>:<></>
+                            }
                         </Box>
                     </Box>
                 </Box>

@@ -3,6 +3,7 @@ import { Box, Button, Container, Dialog, DialogTitle, Typography, DialogContent,
 import Proposal from './Proposal'
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
+import clsx from 'clsx';
 
 const useStyles = makeStyles((theme) => ({
     proposalBox: {
@@ -24,6 +25,17 @@ const useStyles = makeStyles((theme) => ({
     topPaperScrollBody: {
         verticalAlign: 'top',
     },
+    buttonDisabled:{
+
+    },
+    buttonPropose:{
+        background:'#000000',
+        color:'#FFFFFF',
+    },
+    buttonVote:{
+        background:'#FFFFFF',
+        color:'#000000',
+    }
 
 
 }))
@@ -50,20 +62,30 @@ export default function ProposalList({ locked, onPropose, onStartVote, onEndVote
                 <Box display='flex'
                     flexDirection='row'
                     justifyContent='space-between'
-                    style={{ paddingLeft: 10, paddingRight: 30, marginBottom: 20 }}>
+                    style={{ paddingLeft: 10, paddingTop:20, paddingRight: 50, marginBottom: 20 }}>
                     <Box >
-                        <Typography variant='h6'>
+                        <Typography variant='h6' style={{fontWeight:'bold'}}>
                             Proposal List
                         </Typography>
                     </Box>
                     <Box display='flex' flexDirection='row' style={{ gap: 10 }}>
-                        <Button variant='outlined' disabled={locked} onClick={handleClickOpen}>
+                        <Button variant='contained' className={clsx({
+                            [classes.buttonPropose]:!locked,
+                            [classes.buttonDisabled]:locked
+                            })} disabled={locked} style={{fontWeight:!locked?'bold':""}} onClick={handleClickOpen}>
                             propose
                         </Button>
-                        <Button variant='outlined' disabled={locked} onClick={onStartVote}>
+                        <Button variant='contained' className={clsx({
+                            [classes.buttonVote]:locked,
+                            [classes.buttonDisabled]:!locked
+                            })} disabled={locked} style={{fontWeight:!locked?'bold':""}} onClick={onStartVote}>
                             start vote
                         </Button>
-                        <Button variant='outlined' disabled={!locked} onClick={onEndVote}>
+                        <Button className={clsx({
+                            [classes.buttonVote]:!locked,
+                            [classes.buttonDisabled]:locked
+                            })} 
+                            variant='contained' style={{fontWeight:locked?'bold':""}} disabled={!locked} onClick={onEndVote}>
                             end vote
                         </Button>
                     </Box>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { AppBar, Toolbar, Box, Button, Container, Typography, Grid, Divider,Link as MLink} from '@material-ui/core'
+import { AppBar, Toolbar, Box, Button, Container, Typography, Grid, Divider } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles';
 import Logo from '../assets/image/Logo.png'
 import Overlap from '../assets/image/Overlap.png'
@@ -21,19 +21,16 @@ import flora_4 from '../assets/image/flora_4.png'
 import flora_5 from '../assets/image/flora_5.png'
 
 // const card = [fauna_1, flora_1, fauna_2, flora_2, fauna_3, flora_3, fauna_4, flora_4, fauna_5, flora_5]
-const card = [flora_1, flora_2, flora_3, flora_4, flora_5,fauna_1, fauna_2, fauna_3, fauna_4, fauna_5, ]
+const card = [flora_1, flora_2, flora_3, flora_4, flora_5, fauna_1, fauna_2, fauna_3, fauna_4, fauna_5,]
 
 const useStyles = makeStyles((theme) => ({
-    header: {
-        maxWidth: 1600
-    },
+
     logo: {
         heigh: 40,
         width: 100,
     },
     bodyLeft: {
-        marginLeft: 150,
-        padding: "150px 88px 88px 152px"
+        padding: " 88px 152px"
     },
     main: {
         backgroundImage: `url(${BackgroundDapp})`,
@@ -43,33 +40,33 @@ const useStyles = makeStyles((theme) => ({
     title: {
         fontWeight: "bold",
         fontSize: 48,
-        maxWidth: 560,
+        width: 560,
     },
     subheading: {
         marginTop: 40,
         fontSize: 36,
         color: "#373737",
-        maxWidth: 560
+        width: 560
     },
     summary: {
         marginTop: 40,
         fontWeight: 500,
         fontSize: 24,
         color: "#575c61",
-        maxWidth: 560,
+        width: 560,
         marginBottom: 40
     },
     button: {
         textTransform: 'none',
-        background: "#5c1fa6",
         color: "#FFFFFF",
         boderRadius: 8,
         fontWeight: "bold",
         padding: "12px 24px"
     },
     overlap: {
-        height: 1000,
-        width: 1000
+        background:`url(${Overlap})`,
+        backgroundSize: "cover",
+        backgroundPosition:'50% '
     },
     h2: {
         fontWeight: "bold",
@@ -91,8 +88,8 @@ const useStyles = makeStyles((theme) => ({
         fontSize: 16,
         color: "#707a83"
     },
-    footer:{
-        color:'grey'
+    footer: {
+        color: 'grey'
     }
 
 }))
@@ -102,9 +99,9 @@ export default function Home() {
         <div>
             <AppBar style={{ background: "#FFFFFF", boxShadow: 'none', }}>
                 <Toolbar>
-                    <Container maxWidth="lg">
+                    <Container maxWidth="xl">
                         <Box display="flex" flexDirection="row" justifyContent="space-between" className={classes.header} >
-                            <Box flexGrow={1}>
+                            <Box >
                                 <img src={Logo} alt='logo' className={classes.logo} />
                             </Box>
                             <Box>
@@ -112,10 +109,38 @@ export default function Home() {
                                     className={classes.button}
                                     style={{
                                         marginTop: 10,
+                                        marginRight: 20,
+                                        background: "#3ea93e",
+
                                     }}
                                     component={Link} to="/Factory"
                                 >
-                                    Play Now
+                                    Factory
+                                </Button>
+                                <Button variant='contained'
+                                    className={classes.button}
+                                    style={{
+                                        marginTop: 10,
+                                        background: "#e31e55",
+                                        marginRight:20
+
+                                    }}
+                                    component={Link} to="/Playground"
+                                >
+                                    Playground
+                                </Button>
+                                <Button
+                                    style={{
+                                        marginTop: 10,
+                                        textTransform: 'none',
+                                        boderRadius: 8,
+                                        fontWeight: "bold",
+                                        padding: "12px 24px"
+
+                                    }}
+                                    variant='outlined'
+                                    href="https://docs.google.com/document/d/1AwX-eP3bZ_XL-YBK7c2zRt0PAFiJFwo-sstIe6dzVns/edit?usp=sharing" target="_blank"
+                                >Whitepaper
                                 </Button>
                             </Box>
                         </Box>
@@ -125,29 +150,44 @@ export default function Home() {
             </AppBar>
             <main>
                 <Toolbar />
-                <section className={classes.main} style={{ height: 830}}>
 
-                    <Box display='flex' flexDirection='row'>
+                    <Box display='flex' flexDirection='row' className={classes.main} style={{ height: 830 }}>
                         <Box className={classes.bodyLeft}>
                             <Typography className={classes.title}>People trade NFT</Typography>
                             <Typography className={classes.title}> We trade to mint NFT</Typography>
                             <Typography className={classes.subheading}>Welcome to a New World of Upgradable NFT</Typography>
                             <Typography className={classes.summary}>Over <span style={{ color: "#5c1fa6" }}>4 million transaction</span> happen every day, seizing these opportunities to become a trading artist. Find your potential. Have a meaningful trading journey. Change the ecosytem of NFT.</Typography>
-                            <Button
-                                variant='contained'
+                            <Button variant='contained'
                                 className={classes.button}
-                                component={Link} to="/Factory">
-                                Play Now
+                                style={{
+                                    marginTop: 10,
+                                    marginRight: 20,
+                                    background: "#3ea93e",
+
+                                }}
+                                component={Link} to="/Factory"
+                            >
+                                Factory
+                            </Button>
+                            <Button variant='contained'
+                                className={classes.button}
+                                style={{
+                                    marginTop: 10,
+                                    background: "#e31e55",
+
+                                }}
+                                component={Link} to="/Playground"
+                            >
+                                Playground
                             </Button>
                         </Box>
-                        <Box>
-                            <img src={Overlap} alt='overlap' className={classes.overlap} />
+                        <Box >
+                            <Box style={{width:730,height:610,marginTop:50}} className={classes.overlap} />
 
                         </Box>
                     </Box>
-                </section>
                 <Divider />
-                <div style={{ height: 430, marginTop: 100 }}>
+                <Box style={{ height: 430, marginTop: 100 }}>
                     <Container maxWidth="lg">
                         <Typography variant='h2' className={classes.h2} style={{ textAlign: "center" }}>Trade and mint your NFTs</Typography>
                         <Grid container justifyContent="center" spacing={3} style={{ marginTop: 50 }}>
@@ -181,9 +221,9 @@ export default function Home() {
                             </Grid> */}
                         </Grid>
                     </Container>
-                </div>
+                </Box>
                 <Divider />
-                <div style={{ height: 430, marginBottom: 50, marginTop: 50 }}>
+                <Box style={{ height: 430, marginBottom: 50, marginTop: 50 }}>
                     <Typography variant='h2' className={classes.h2} style={{ textAlign: "center", marginBottom: 50 }}>Explore Collectibles</Typography>
                     <Container maxWidth='lg'>
                         <Box display='flex' flexDirection='row' overflow="visible" style={{ flexWrap: 'no-wrap', overflowX: "scroll", gap: 5 }}>
@@ -193,16 +233,16 @@ export default function Home() {
 
                         </Box>
                     </Container>
-                </div>
+                </Box>
             </main>
-            <Divider/>
-            <div style={{textAlign:'center', marginTop:50,marginBottom:50}}>
+            <Divider />
+            <Box style={{ textAlign: 'center', marginTop: 50, marginBottom: 50 }}>
                 <Typography variant='h6' className={classes.footer}>Contact: jeffreylin0723@gmail.com</Typography>
-                <Typography variant='h6' className={classes.footer}>Github:  <MLink href="https://github.com/jeff0723/Flora-Fauna" target="_blank">Flora-Fauna</MLink></Typography>
+                <Typography variant='h6' className={classes.footer}>Github:  <a href="https://github.com/jeff0723/Flora-Fauna" target="_blank">Flora-Fauna</a></Typography>
 
-                <Typography variant='body' style={{color:'grey'}}>{"Copyright © "}</Typography>
+                <Typography variant='body' style={{ color: 'grey' }}>{"Copyright © "}</Typography>
 
-            </div>
+            </Box>
 
         </div>
     )

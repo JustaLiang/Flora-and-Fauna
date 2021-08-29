@@ -2,10 +2,32 @@ import React, { useState, useEffect } from 'react'
 import map from "../artifacts/deployments/map.json"
 import { getEthereum } from "../getEthereum"
 import Web3 from "web3"
+import { Container, Box, Button } from '@material-ui/core';
 import Battlefield from '../components/Battlefield'
-import ProposalList from '../components/ProposalList'
+import greenPlayground from '../assets/image/greenPlayground.png'
+import redPlayground from '../assets/image/redPlayground.png'
 
+import ProposalList from '../components/ProposalList'
+import { makeStyles } from '@material-ui/core/styles';
+import Logo from '../assets/image/Logo.png'
+import { Link } from "react-router-dom";
+
+import { AppBar, Toolbar, CssBaseline  } from '@material-ui/core'
+const useStyles = makeStyles((theme) => ({
+    root: {
+        background: `url(${redPlayground})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition:'50% 50%',
+        backgroundSize: "100% 100%",
+
+    },
+    logo: {
+        heigh: 40,
+        width: 100,
+    },
+}))
 export default function Playground() {
+    const classes = useStyles();
     const [setting, setSetting] = useState({
         web3: null,
         ethereum: null,
@@ -254,23 +276,62 @@ export default function Playground() {
         }
     }
     console.log('fields', fields)
-    return (
-        <div style={{ paddingLeft: 100, paddingTop: 100 }}>
-            <ProposalList
-                locked={locked}
-                onPropose={onPropose}
-                onStartVote={onStartVote}
-                onEndVote={onEndVote}
-                onVote={onVote}
-                proposals={proposals}
-            />
-            <Battlefield
-                fields={fields}
-                getMinionInfo={getMinionInfo}
-                onFloraConquer={onFloraConquer}
-                onFaunaConquer={onFaunaConquer}
-                onRetreat={onRetreat}
-                checksumAcc={checksumAcc} />
-        </div>
+    return ( 
+        <>
+            <div >
+                <AppBar style={{ background: "#FFFFFF", boxShadow: 'none',borderBottom:'1px solid rgba(0, 0, 0, 0.125)'}}>
+                    <Toolbar>
+                        <Container maxWidth='xl'>
+                        <Box display="flex" flexDirection="row" justifyContent="space-between" >
+                            <Box >
+                            <Button component={Link} to="/">
+                            <img src={Logo} className={classes.logo} />
+                        </Button>
+                            </Box>
+                            <Box >
+                                <Button 
+                                    variant='outlined'
+                                    className={classes.button}
+                                    style={{
+                                        marginTop:20,marginRight:30,textTransform:'none',fontSize:16,fontWeight:'bold'
+                                    }}
+                                    component={Link} to="/Factory"
+                                >
+                                    Factory
+                                </Button>
+                                <Button 
+                                    variant='outlined'
+                                    className={classes.button}
+                                    style={{
+                                        marginTop:20,textTransform:'none',fontSize:16,fontWeight:'bold'
+                                    }}
+                                    href="https://docs.google.com/document/d/1AwX-eP3bZ_XL-YBK7c2zRt0PAFiJFwo-sstIe6dzVns/edit?usp=sharing" target="_blank"
+                                >
+                                    WhitePaper
+                                </Button>
+                            </Box>
+                        </Box>
+                        </Container>
+                    </Toolbar>
+                </AppBar>
+            </div>
+            <div className={classes.root} style={{ paddingLeft: 100, paddingTop: 100, }}>
+                <ProposalList
+                    locked={locked}
+                    onPropose={onPropose}
+                    onStartVote={onStartVote}
+                    onEndVote={onEndVote}
+                    onVote={onVote}
+                    proposals={proposals}
+                />
+                <Battlefield
+                    fields={fields}
+                    getMinionInfo={getMinionInfo}
+                    onFloraConquer={onFloraConquer}
+                    onFaunaConquer={onFaunaConquer}
+                    onRetreat={onRetreat}
+                    checksumAcc={checksumAcc} />
+            </div>
+        </>
     )
 }
