@@ -20,7 +20,7 @@ export default function Battlefield({fields,getMinionInfo,onFloraConquer,onFauna
                     marginLeft: 10,
                     paddingBottom: 50,
                     border: '0.5px solid rgba(0, 0, 0, 0.125)',
-                    width: 1165, gap: 1
+                    width: 1100, gap: 1
                 }}
                     display='flex'
                     flexDirection='row'
