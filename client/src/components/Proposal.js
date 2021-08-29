@@ -1,6 +1,6 @@
 import React, { useState, useEffect,useRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
-import { CardHeader, Card, CardContent, CardActions, Box, Avatar, Typography, IconButton, Button, Snackbar } from '@material-ui/core';
+import { CardHeader, Card, CardContent, CardActions, Box, Typography, IconButton, Button, Snackbar } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import FilterNoneIcon from '@material-ui/icons/FilterNone';
 import CardCarousel from './CardCarousel';

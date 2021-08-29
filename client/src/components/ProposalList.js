@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Button, Container, Dialog, DialogTitle, Typography, Popper, DialogContent, TextField, DialogActions } from '@material-ui/core'
+import { Box, Button, Container, Dialog, DialogTitle, Typography, DialogContent, TextField, DialogActions } from '@material-ui/core'
 import Proposal from './Proposal'
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';

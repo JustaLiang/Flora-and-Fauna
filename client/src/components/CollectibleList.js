@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
-import { Container, Box, Grid, Typography, Paper, Button, Dialog, DialogTitle, DialogActions } from '@material-ui/core'
+import { Container, Box, Grid, Typography, Paper, Button, Dialog, DialogTitle} from '@material-ui/core'
 import Collectible from './Collectible';
 import PropTypes from 'prop-types';
 import Recruit from './Recruit';
 import AddIcon from '@material-ui/icons/Add';
 import clsx from 'clsx';
-import RinkebyPairMap from '../assets/map/index.js'
-import Loading from '../assets/image/Loading.gif'
+import PairMap from '../assets/map/index.js'
 
-
-
-const defaultProps = {
-  bgcolor: 'background.paper',
-  m: 1,
-  border: 1,
-  style: { width: '5rem', height: '5rem' },
-};
+// const defaultProps = {
+//   bgcolor: 'background.paper',
+//   m: 1,
+//   border: 1,
+//   style: { width: '5rem', height: '5rem' },
+// };
 const useStyles = makeStyles((theme) => ({
   root: {
     marginTop: 10,
@@ -70,7 +67,7 @@ export default function CollectibleList(props) {
       for (const key in list) {
         temp.push({
           _id: key,
-          address: RinkebyPairMap[list[key][0]],
+          address: PairMap[list[key][0]],
           isArmed: list[key][1],
           price: list[key][2],
           power: list[key][3],

@@ -58,21 +58,7 @@ export default function BattlefieldNew() {
             if (!btfdContract) {
                 return
             }
-
-            const locked = await btfdContract.methods.fieldLocked().call()
-            const generation = await btfdContract.methods.generation().call()
-            const totalArea = await btfdContract.methods.totalArea().call()
-            let fields = []
-            for (let fid = 0; fid < totalArea; fid++) {
-                fields.push({
-                    defenders: await btfdContract.methods.getFieldDefender(fid).call(),
-                    green: await btfdContract.methods.isFloraField(fid).call()
-                })
-            }
             setBtfdContract(btfdContract)
-            setLocked(locked)
-            setGeneration(generation)
-            setFields(fields)
         }
         const { web3, ethereum, accounts, chainid } = setting
         if (web3 && ethereum && accounts && chainid) {
@@ -85,8 +71,10 @@ export default function BattlefieldNew() {
             const { accounts } = setting
             if (accounts && btfdContract) {
                 console.log(accounts)
-
+                await updateLocked()
                 await updateProposals()
+                await updateGeneration() 
+                await updateFields()
             }
         }
         fetchData()
@@ -119,11 +107,7 @@ export default function BattlefieldNew() {
     }
 
     const updateProposals = async () => {
-        const propCount = await btfdContract.methods.getProposalCount().call()
-        let propList = []
-        for (let i = 0; i < propCount; i++) {
-            propList.push(await btfdContract.methods.proposals(i).call())
-        }
+        const propList = await btfdContract.methods.getAllProposalInfo().call()
         setProposals(propList)
     }
 
@@ -192,16 +176,9 @@ export default function BattlefieldNew() {
             })
     }
 
-    const updateField = async (fid) => {
-        const totalArea = await btfdContract.methods.totalArea().call()
-        let fields = []
-        for (let fid = 0; fid < totalArea; fid++) {
-            fields.push({
-                defenders: await btfdContract.methods.getFieldDefender(fid).call(),
-                green: await btfdContract.methods.isFloraField(fid).call()
-            })
-        }
-        setFields(fields)
+    const updateFields = async () => {
+        const allFieldInfo = await btfdContract.methods.getAllFieldInfo().call()
+        setFields(allFieldInfo)
     }
 
     const onFloraConquer = async (e) => {
@@ -220,7 +197,7 @@ export default function BattlefieldNew() {
         }
         btfdContract.methods.floraConquer(fid, attackers).send({ from: accounts[0] })
             .on("receipt", async () => {
-                await updateField(fid)
+                await updateFields()
             })
             .on("error", (err) => {
                 console.log(err)
@@ -243,7 +220,7 @@ export default function BattlefieldNew() {
         }
         btfdContract.methods.faunaConquer(fid, attackers).send({ from: accounts[0] })
             .on("receipt", async () => {
-                await updateField(fid)
+                await updateFields()
             })
             .on("error", (err) => {
                 console.log(err)
@@ -254,9 +231,9 @@ export default function BattlefieldNew() {
         const { accounts } = setting
         e.preventDefault()
         const fid = parseInt(e.currentTarget.value)
-        btfdContract.methods.retreat(fid).send({ from: accounts[0] })
+        btfdContract.methods.retreat().send({ from: accounts[0] })
             .on("receipt", async () => {
-                await updateField(fid)
+                await updateFields()
             })
             .on("error", (err) => {
                 console.log(err)

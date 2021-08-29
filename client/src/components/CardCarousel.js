@@ -1,5 +1,4 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles';
 import Carousel from 'react-material-ui-carousel'
 import PropTypes from 'prop-types';
 import {Box} from '@material-ui/core';

@@ -34,7 +34,7 @@ export default function Battlefield() {
                     web3: web3,
                     ethereum: ethereum,
                     accounts: accounts,
-                    chainid: chainid
+                    chainid: chainid,
                 })
             } catch (e) {
                 console.log(`Could not enable accounts. Interaction with contracts not available.
@@ -48,7 +48,7 @@ export default function Battlefield() {
 
     useEffect(() => {
         const loadInitialContracts = async () => {
-            const { chainid, accounts } = setting
+            const { chainid } = setting
             console.log("chainid:", chainid)
             let chain = "dev";
             if (chainid <= 42) {
@@ -59,21 +59,7 @@ export default function Battlefield() {
             if (!btfdContract) {
                 return
             }
-
-            const locked = await btfdContract.methods.fieldLocked().call()
-            const generation = await btfdContract.methods.generation().call()
-            const totalArea = await btfdContract.methods.totalArea().call()
-            let fields = []
-            for (let fid = 0; fid < totalArea; fid++) {
-                fields.push({
-                    defenders: await btfdContract.methods.getFieldDefender(fid).call(),
-                    green: await btfdContract.methods.isFloraField(fid).call()    
-                })
-            }
             setBtfdContract(btfdContract)
-            setLocked(locked)
-            setGeneration(generation)
-            setFields(fields)
         }
         const { web3, ethereum, accounts, chainid } = setting
         if (web3 && ethereum && accounts && chainid) {
@@ -86,8 +72,10 @@ export default function Battlefield() {
             const { accounts } = setting
             if (accounts && btfdContract) {
                 console.log(accounts)
-
+                await updateLocked()
                 await updateProposals()
+                await updateGeneration() 
+                await updateFields()
             }
         }
         fetchData()
@@ -120,11 +108,7 @@ export default function Battlefield() {
     }
     
     const updateProposals = async () => {
-        const propCount = await btfdContract.methods.getProposalCount().call()
-        let propList = []
-        for (let i = 0; i < propCount; i++) {
-            propList.push(await btfdContract.methods.proposals(i).call())
-        }
+        const propList = await btfdContract.methods.getAllProposalInfo().call()
         setProposals(propList)
     }
 
@@ -194,16 +178,9 @@ export default function Battlefield() {
         })
     }
 
-    const updateField = async (fid) => {
-        const totalArea = await btfdContract.methods.totalArea().call()
-        let fields = []
-        for (let fid = 0; fid < totalArea; fid++) {
-            fields.push({
-                defenders: await btfdContract.methods.getFieldDefender(fid).call(),
-                green: await btfdContract.methods.isFloraField(fid).call()    
-            })
-        }
-        setFields(fields)
+    const updateFields = async () => {
+        const allFieldInfo = await btfdContract.methods.getAllFieldInfo().call()
+        setFields(allFieldInfo)
     }
 
     const onFloraConquer = async (e) => {
@@ -222,7 +199,7 @@ export default function Battlefield() {
         }
         btfdContract.methods.floraConquer(fid, attackers).send({ from: accounts[0] })
         .on("receipt", async () => {
-            await updateField(fid)
+            await updateFields()
         })
         .on("error", (err) => {
             console.log(err)
@@ -245,7 +222,7 @@ export default function Battlefield() {
         }
         btfdContract.methods.faunaConquer(fid, attackers).send({ from: accounts[0] })
         .on("receipt", async () => {
-            await updateField(fid)
+            await updateFields()
         })
         .on("error", (err) => {
             console.log(err)
@@ -258,21 +235,11 @@ export default function Battlefield() {
         const fid = parseInt(e.currentTarget.value)
         btfdContract.methods.retreat(fid).send({ from: accounts[0] })
         .on("receipt", async () => {
-            await updateField(fid)
+            await updateFields()
         })
         .on("error", (err) => {
             console.log(err)
         })        
-    }
-
-    const onRegain = async (e) => {
-        const { accounts } = setting
-        e.preventDefault()
-        const fid = parseInt(e.currentTarget.value)
-        btfdContract.methods.regainVote(fid).send({ from: accounts[0] })
-        .on("error", (err) => {
-            console.log(err)
-        })
     }
 
     const displayProposal = (pid) => {
@@ -284,21 +251,23 @@ export default function Battlefield() {
     }
 
     const displayField = (fid) => {
+        const { web3, accounts } = setting
         let style = {
             backgroundColor: 'black',
             color: 'white',
         }
         const fi = fields[fid]
+        const checksumAcc = web3.utils.toChecksumAddress(accounts[0])
         if (fi.defenders.length) {
-            style.backgroundColor = fi.green?'green':'red'
+            style.backgroundColor = fi.isFlora?'green':'red'
         }
         return <p key={fid} style={style}>
             field#{fid} -- 
             <button style={{color:'green'}} value={fid} onClick={(e) => onFloraConquer(e)}>conquer</button>
-            <button style={{color:'red'}} value={fid} onClick={(e) => onFaunaConquer(e)}>conquer</button>
             <button value={fid} onClick={(e) => onRetreat(e)}>retreat</button>
-            <button value={fid} onClick={(e) => onRegain(e)}>regain</button>
+            <button style={{color:'red'}} value={fid} onClick={(e) => onFaunaConquer(e)}>conquer</button>
             -- ( {fi.defenders.join(', ')} )
+            -- { fi.leader === checksumAcc?'owned':'' }
         </p>
     }
 
