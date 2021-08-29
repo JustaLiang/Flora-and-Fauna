@@ -4,6 +4,7 @@ import { getEthereum } from "../getEthereum"
 import Web3 from "web3"
 import Battlefield from '../components/Battlefield'
 import ProposalList from '../components/ProposalList'
+
 export default function BattlefieldNew() {
     const [setting, setSetting] = useState({
         web3: null,
@@ -89,7 +90,7 @@ export default function BattlefieldNew() {
         }
         fetchData()
         console.log('refetech')
-    }, [])
+    }, [contracts])
 
     const loadContract = async (chain, contractName, which) => {
         // Load a deployed contract instance into a web3 contract object

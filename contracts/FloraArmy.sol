@@ -17,7 +17,7 @@ contract FloraArmy is ArmyBase {
     constructor(address ensRegistryAddr, uint initEnhancer,
                 int[5] memory powerLevels, string[5] memory jsonNames) 
         ArmyBase(ensRegistryAddr)
-        ERC721("Flora Army", "FlorA")
+        ERC721("FloraArmy", "FlorA")
     {
         enhancerContract = ENHR(address(new ArmyEnhancer("Chlorophyll", "CHL")));
         enhancerContract.produce(msg.sender, initEnhancer);

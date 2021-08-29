@@ -53,6 +53,14 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         int         power;        // power of the minion
     }
 
+    struct MinionProfile {
+        address     branch;
+        bool        armed;
+        int         price;
+        int         power;
+        string      uri;
+    }
+
     /// @dev Minion data storage
     Minion[] public minions;
 
@@ -98,6 +106,19 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
             "ARMY: commander query for nonexistent minion");
         Minion memory m = minions[minionID];
         return (m.branchAddr, m.armed, m.envFactor, m.power);
+    }
+
+    function getMinionProfile(uint minionID) external view
+            returns (MinionProfile memory profile) {
+        require(
+            _exists(minionID),
+            "ARMY: commander query for nonexistent minion");        
+        Minion memory m = minions[minionID];
+        profile.branch = m.branchAddr;
+        profile.armed = m.armed;
+        profile.price = m.envFactor;
+        profile.power = m.power;
+        profile.uri = tokenURI(minionID);
     }
 
     /**
