@@ -4,6 +4,7 @@ import { getEthereum } from "../getEthereum"
 import Web3 from "web3"
 import Battlefield from '../components/Battlefield'
 import ProposalList from '../components/ProposalList'
+
 export default function BattlefieldNew() {
     const [setting, setSetting] = useState({
         web3: null,
