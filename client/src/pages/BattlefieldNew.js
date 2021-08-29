@@ -262,7 +262,6 @@ export default function BattlefieldNew() {
             -- { fi.leader === checksumAcc?'owned':'' }
         </p>
     }
-    console.log("fields: ",fields)
     return (
         <div style={{ paddingLeft: 100, paddingTop: 100 }}>
             <ProposalList
