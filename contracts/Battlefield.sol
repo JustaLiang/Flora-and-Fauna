@@ -8,6 +8,11 @@ interface RANK {
     function updateBranchPrefix(address, string calldata) external;
 }
 
+/**
+ * @title Battlefield of fighting for next generation
+ * @notice Define voting system on battlefield
+ * @author Justa Liang
+ */
 contract Battlefield is BattleBase, ERC721URIStorage {
 
     /// @notice Corresponding FloraRank contract
@@ -20,7 +25,7 @@ contract Battlefield is BattleBase, ERC721URIStorage {
     struct Proposal {
         address proposer;
         string prefixURI;
-        uint votes;
+        uint voteCount;
     }
 
     /// @notice All the proposals
@@ -138,25 +143,32 @@ contract Battlefield is BattleBase, ERC721URIStorage {
         require(
             fieldGeneration[fieldID] < generation,
             "Battlefield: field has voted in this generation");
-        uint[] memory defenders = fieldDefenders[fieldID];
+        uint[] memory defender = fieldDefender[fieldID];
         require(
-            defenders.length > 0,
+            defender.length > 0,
             "Battlefield: empty field can't vote");
         if (isFloraField[fieldID]) {
             require(
-                floraArmy.ownerOf(defenders[0]) == msg.sender,
+                floraArmy.ownerOf(defender[0]) == msg.sender,
                 "Battlefield: not leader");
+            require(
+                floraFieldCount >= faunaFieldCount,
+                "Battlefield: you're loser side");
         }
         else {
             require(
-                faunaArmy.ownerOf(defenders[0]) == msg.sender,
+                faunaArmy.ownerOf(defender[0]) == msg.sender,
                 "Battlefield: not leader");
+            require(
+                faunaFieldCount >= floraFieldCount,
+                "Battlefield: you're loser side");
+
         }
         Proposal storage target = proposals[proposalID];
-        target.votes++;
+        target.voteCount++;
         fieldGeneration[fieldID] = generation;
 
-        emit Vote(fieldID, msg.sender, proposalID, target.votes);
+        emit Vote(fieldID, msg.sender, proposalID, target.voteCount);
     }
 
     /**
@@ -172,8 +184,8 @@ contract Battlefield is BattleBase, ERC721URIStorage {
         uint maxVote = 0;
         uint maxIdx = 0;
         for (uint i = 0; i < proposals.length; i++) {
-            if (proposals[i].votes > maxVote) {
-                maxVote = proposals[i].votes;
+            if (proposals[i].voteCount > maxVote) {
+                maxVote = proposals[i].voteCount;
                 maxIdx = i;
             }
         }
@@ -201,7 +213,7 @@ contract Battlefield is BattleBase, ERC721URIStorage {
                     winning.proposer,
                     tokenURI(generation),
                     proposals.length,
-                    winning.votes,
+                    winning.voteCount,
                     totalArea,
                     floraWin,
                     faunaWin);

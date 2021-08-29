@@ -26,7 +26,7 @@ abstract contract BattleBase is Ownable {
     uint public totalArea;
 
     /// @notice Defenders on cetain field
-    mapping (uint => uint[]) public fieldDefenders;
+    mapping (uint => uint[]) public fieldDefender;
 
     /// @notice If field be occupied by flora army 
     mapping (uint => bool) public isFloraField;
@@ -54,7 +54,7 @@ abstract contract BattleBase is Ownable {
 
     struct FieldInfo {
         address leader;
-        uint[] defenders;
+        uint[] defender;
         bool isFlora;
     }
 
@@ -62,7 +62,7 @@ abstract contract BattleBase is Ownable {
     event FieldState(uint indexed fieldID,
                      address indexed conqueror,
                      bool indexed isGreen,
-                     uint[] team);
+                     uint[] defender);
 
     /// @notice Emit when total area of battlefield changes
     event TotalArea(uint totalArea);
@@ -101,8 +101,8 @@ abstract contract BattleBase is Ownable {
      * @param fieldID ID of the field
      * @return Array of minion IDs
     */ 
-    function getFieldDefenders(uint fieldID) public view returns (uint[] memory) {
-        return fieldDefenders[fieldID];
+    function getFieldDefender(uint fieldID) public view returns (uint[] memory) {
+        return fieldDefender[fieldID];
     }
 
     /**
@@ -111,7 +111,7 @@ abstract contract BattleBase is Ownable {
      * @return Owner of the first minion
     */ 
     function getFieldLeader(uint fieldID) public view returns (address) {
-        uint[] memory defender = fieldDefenders[fieldID];
+        uint[] memory defender = fieldDefender[fieldID];
         if (defender.length == 0) {
             return address(0);
         }
@@ -126,12 +126,12 @@ abstract contract BattleBase is Ownable {
     /**
      * @notice Get the field info
      * @param fieldID ID of the field
-     * @return fieldInfo Leader, defenders and side
+     * @return fieldInfo Leader, defender and side
     */ 
     function getFieldInfo(uint fieldID) external view
             returns (FieldInfo memory fieldInfo) {
         fieldInfo.leader = getFieldLeader(fieldID);
-        fieldInfo.defenders = getFieldDefenders(fieldID);
+        fieldInfo.defender = getFieldDefender(fieldID);
         fieldInfo.isFlora = isFloraField[fieldID];            
     }
 
@@ -144,7 +144,7 @@ abstract contract BattleBase is Ownable {
         allFieldInfo = new FieldInfo[](totalArea);
         for (uint fid = 0; fid < totalArea; fid++) {
             allFieldInfo[fid].leader = getFieldLeader(fid);
-            allFieldInfo[fid].defenders = getFieldDefenders(fid);
+            allFieldInfo[fid].defender = getFieldDefender(fid);
             allFieldInfo[fid].isFlora = isFloraField[fid];
         }
     }
@@ -152,75 +152,75 @@ abstract contract BattleBase is Ownable {
     /**
      * @notice Send flora army to conquer certain field
      * @param fieldID ID of the field
-     * @param attackerTeam Array of flora minion IDs to attack
+     * @param attackerID ID of the flora attacker minion
     */ 
-    function floraConquer(uint fieldID, uint[] calldata attackerTeam) external preCheck(fieldID) {
-        for(uint i = 0; i < attackerTeam.length; i++) {
-            require(
-                !floraOnField[attackerTeam[i]],
-                "Battlefield: the flora minion already on field");
-            require(
-                floraArmy.ownerOf(attackerTeam[i]) == msg.sender,
-                "Battlefield: not the commander of the flora minion");
-        }
-        uint[] memory defenderTeam = fieldDefenders[fieldID];
-        if (defenderTeam.length > 0) {
+    function floraConquer(uint fieldID, uint attackerID) external preCheck(fieldID) {
+        require(
+            !floraOnField[attackerID],
+            "Battlefield: the flora minion already on field");
+        require(
+            floraArmy.ownerOf(attackerID) == msg.sender,
+            "Battlefield: not the commander of the flora minion");
+        uint[] memory defender = fieldDefender[fieldID];
+        if (defender.length > 0) {
+            uint defenderID = defender[0];
             if (isFloraField[fieldID]) {
-                _fight(floraArmy, attackerTeam, floraArmy, defenderTeam);
-                _removeFlora(defenderTeam);
+                _fight(floraArmy, attackerID, floraArmy, defenderID);
+                floraOnField[defenderID] = false;
             }
             else {
-                _fight(floraArmy, attackerTeam, faunaArmy, defenderTeam);
-                _removeFauna(defenderTeam);
+                _fight(floraArmy, attackerID, faunaArmy, defenderID);
+                faunaOnField[defenderID] = false;
+                faunaFieldCount--;
+                floraFieldCount++;
             }
+            fieldDefender[fieldID][0] = attackerID;
         }
         else {
-            require(
-                attackerTeam.length == 1,
-                "Battlefield: must conquer empty field with only one flora minion");
+            fieldDefender[fieldID].push(attackerID);
+            floraFieldCount++;
         }
-        _addFlora(attackerTeam);
-        fieldDefenders[fieldID] = attackerTeam;
+        floraOnField[attackerID] = true;
         isFloraField[fieldID] = true;
 
-        emit FieldState(fieldID, msg.sender, true, attackerTeam);
+        emit FieldState(fieldID, msg.sender, true, fieldDefender[fieldID]);
     }
 
     /**
      * @notice Send fauna army to conquer certain field
      * @param fieldID ID of the field
-     * @param attackerTeam Array of fauna minion IDs to attack
+     * @param attackerID ID of the fauna attacker minion
     */ 
-    function faunaConquer(uint fieldID, uint[] calldata attackerTeam) external preCheck(fieldID) {
-        for(uint i = 0; i < attackerTeam.length; i++) {
-            require(
-                !faunaOnField[attackerTeam[i]],
-                "Battlefield: the fauna minion already on field");
-            require(
-                faunaArmy.ownerOf(attackerTeam[i]) == msg.sender,
-                "Battlefield: not the commander of the fauna minion");
-        }
-        uint[] memory defenderTeam = fieldDefenders[fieldID];
-        if (defenderTeam.length > 0) {
+    function faunaConquer(uint fieldID, uint attackerID) external preCheck(fieldID) {
+        require(
+            !faunaOnField[attackerID],
+            "Battlefield: the fauna minion already on field");
+        require(
+            faunaArmy.ownerOf(attackerID) == msg.sender,
+            "Battlefield: not the commander of the fauna minion");
+        uint[] memory defender = fieldDefender[fieldID];
+        if (defender.length > 0) {
+            uint defenderID = defender[0];
             if (isFloraField[fieldID]) {
-                _fight(faunaArmy, attackerTeam, floraArmy, defenderTeam);
-                _removeFlora(defenderTeam);
+                _fight(faunaArmy, attackerID, floraArmy, defenderID);
+                floraOnField[defenderID] = false;
+                floraFieldCount--;
+                faunaFieldCount++;
             }
             else {
-                _fight(faunaArmy, attackerTeam, faunaArmy, defenderTeam);
-                _removeFauna(defenderTeam);
+                _fight(faunaArmy, attackerID, faunaArmy, defenderID);
+                faunaOnField[defenderID] = false;
             } 
+            fieldDefender[fieldID][0] = attackerID;
         }
         else {
-            require(
-                attackerTeam.length == 1,
-                "Battlefield: must conquer empty field with only one fauna minion");
+            fieldDefender[fieldID].push(attackerID);
+            faunaFieldCount++;            
         }
-        _addFauna(attackerTeam);
-        fieldDefenders[fieldID] = attackerTeam;
+        faunaOnField[attackerID] = true;
         isFloraField[fieldID] = false;
 
-        emit FieldState(fieldID, msg.sender, false, attackerTeam);
+        emit FieldState(fieldID, msg.sender, false, fieldDefender[fieldID]);
     }
 
     /**
@@ -228,25 +228,26 @@ abstract contract BattleBase is Ownable {
      * @param fieldID ID of the field
     */    
     function retreat(uint fieldID) external {
-        uint[] memory defenders = fieldDefenders[fieldID];
+        uint[] memory defender = fieldDefender[fieldID];
         require(
-            defenders.length > 0,
+            defender.length > 0,
             "Battlefield: retreat from empty field");
+        uint defenderID = defender[0];
         if (isFloraField[fieldID]) {
             require(
-                floraArmy.ownerOf(defenders[0]) == msg.sender,
+                floraArmy.ownerOf(defenderID) == msg.sender,
                 "Battlefield: not leader");
-            _removeFlora(defenders);
+            floraOnField[defenderID] = false;
         }
         else {
             require(
-                faunaArmy.ownerOf(defenders[0]) == msg.sender,
+                faunaArmy.ownerOf(defenderID) == msg.sender,
                 "Battlefield: not leader");
-            _removeFauna(defenders);
+            faunaOnField[defenderID] = false;
         }
-        delete fieldDefenders[fieldID];
+        delete fieldDefender[fieldID];
 
-        emit FieldState(fieldID, address(0), isFloraField[fieldID], fieldDefenders[fieldID]);
+        emit FieldState(fieldID, address(0), isFloraField[fieldID], fieldDefender[fieldID]);
     }
 
     /**
@@ -265,112 +266,19 @@ abstract contract BattleBase is Ownable {
 
     /**
      * @dev Determine win or not, cancel tx if lose
-     * @param attacker Which side of attacker army
-     * @param attackerTeam Array of attacker IDs
-     * @param defender Which side of defender army
-     * @param defenderTeam Array of defender IDs
+     * @param attackerSide Which side of attacker army
+     * @param attackerID ID of attacker minion
+     * @param defenderSide Which side of defender army
+     * @param defenderID ID of defender minion
     */
-    function _fight(ArmyInterface attacker, uint[] memory attackerTeam,
-                    ArmyInterface defender, uint[] memory defenderTeam
+    function _fight(ArmyInterface attackerSide, uint attackerID,
+                    ArmyInterface defenderSide, uint defenderID
                     ) private view {
-        for (uint i = 0; i < defenderTeam.length; i++) {
-            if (!defender.minionExists(defenderTeam[i])) {
-                return;
-            }
+        if (defenderSide.minionExists(defenderID)) {
+            (,bool aArmed,,int aPower) = attackerSide.getMinionInfo(attackerID);
+            (,bool dArmed,,int dPower) = defenderSide.getMinionInfo(defenderID);
+            require(aArmed, "Battlefield: attacker should be armed");
+            require(!dArmed || aPower > dPower, "Battlefield: defeated");
         }
-        if (attackerTeam.length == defenderTeam.length-1 && attackerTeam.length != 0) {
-            (address eBranch,bool eArmed,,int ePower) = defender.getMinionInfo(defenderTeam[0]);
-            int dBuff;
-            if (!eArmed) {
-                dBuff = 0;
-            }
-            else {
-                dBuff = ePower - _refPower;
-            }
-            for (uint i = 0; i < attackerTeam.length; i++) {
-                (address aBranch,bool aArmed,,int aPower) = attacker.getMinionInfo(attackerTeam[i]);
-                (address dBranch,bool dArmed,,int dPower) = defender.getMinionInfo(defenderTeam[i+1]);                    
-                require(
-                    aArmed && aBranch == dBranch,
-                    "Battlefield: minion not qualified"); 
-                require(
-                    !dArmed || aPower > dPower + dBuff,
-                    "Battlefield: defeated");
-            }            
-        }
-        else if (attackerTeam.length == defenderTeam.length) {
-            for (uint i = 0; i < defenderTeam.length; i++) {
-                (address aBranch,bool aArmed,,int aPower) = attacker.getMinionInfo(attackerTeam[i]);
-                (address dBranch,bool dArmed,,int dPower) = defender.getMinionInfo(defenderTeam[i]);
-                require(
-                    aArmed && aBranch == dBranch,
-                    "Battlefield: minion not qualified");
-                require(
-                    !dArmed || aPower > dPower,
-                    "Battlefield: defeated");
-            }
-        }
-        else if (attackerTeam.length == defenderTeam.length+1) {
-            (address eBranch,bool eArmed,,int ePower) = attacker.getMinionInfo(attackerTeam[defenderTeam.length]);
-            require(eArmed);
-            int aBuff = ePower - _refPower;
-            for (uint i = 0; i < defenderTeam.length; i++) {
-                (address aBranch,bool aArmed,,int aPower) = attacker.getMinionInfo(attackerTeam[i]);
-                (address dBranch,bool dArmed,,int dPower) = defender.getMinionInfo(defenderTeam[i]);                    
-                require(
-                    aArmed && aBranch == dBranch && eBranch != dBranch,
-                    "Battlefield: minion not qualified");
-                require(
-                    !dArmed || aPower + aBuff > dPower,
-                    "Battlefield: defeated");
-            }
-        }
-        else {
-            require(false, "Battlefield: number of minions not match");
-        }
-    }
-
-    /**
-     * @dev Add flora minions to field
-     * @param newTeam Array of flora minion IDs to be added
-    */
-    function _addFlora(uint[] memory newTeam) private {
-        for (uint i = 0; i < newTeam.length; i++) {
-            floraOnField[newTeam[i]] = true;
-        }
-        floraFieldCount++;
-    }
-
-    /**
-     * @dev Add fauna minions to field
-     * @param newTeam Array of fauna minion IDs to be added
-    */
-    function _addFauna(uint[] memory newTeam) private {
-        for (uint i = 0; i < newTeam.length; i++) {
-            faunaOnField[newTeam[i]] = true;
-        }
-        faunaFieldCount++;
-    } 
-
-    /**
-     * @dev Remove flora minions from field
-     * @param oldTeam Array of flora minion IDs to be removed
-    */
-    function _removeFlora(uint[] memory oldTeam) private {
-        for (uint i = 0; i < oldTeam.length; i++) {
-            floraOnField[oldTeam[i]] = false;
-        }
-        floraFieldCount--;
-    }
-
-    /**
-     * @dev Remove fauna minions from field
-     * @param oldTeam Array of fauna minion IDs to be removed
-    */
-    function _removeFauna(uint[] memory oldTeam) private {
-        for (uint i = 0; i < oldTeam.length; i++) {
-            faunaOnField[oldTeam[i]] = false;
-        }        
-        faunaFieldCount--;
     }
 }
