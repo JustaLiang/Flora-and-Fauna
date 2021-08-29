@@ -54,7 +54,7 @@ abstract contract BattleBase is Ownable {
 
     struct FieldInfo {
         address leader;
-        uint[] defender;
+        uint[] defenders;
         bool isFlora;
     }
 
@@ -131,7 +131,7 @@ abstract contract BattleBase is Ownable {
     function getFieldInfo(uint fieldID) external view
             returns (FieldInfo memory fieldInfo) {
         fieldInfo.leader = getFieldLeader(fieldID);
-        fieldInfo.defender = getFieldDefender(fieldID);
+        fieldInfo.defenders = getFieldDefender(fieldID);
         fieldInfo.isFlora = isFloraField[fieldID];            
     }
 
@@ -144,7 +144,7 @@ abstract contract BattleBase is Ownable {
         allFieldInfo = new FieldInfo[](totalArea);
         for (uint fid = 0; fid < totalArea; fid++) {
             allFieldInfo[fid].leader = getFieldLeader(fid);
-            allFieldInfo[fid].defender = getFieldDefender(fid);
+            allFieldInfo[fid].defenders = getFieldDefender(fid);
             allFieldInfo[fid].isFlora = isFloraField[fid];
         }
     }

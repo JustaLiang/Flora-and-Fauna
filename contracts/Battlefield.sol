@@ -177,7 +177,7 @@ contract Battlefield is BattleBase, ERC721URIStorage {
     function endVote() external voteState {
         uint currentTime = block.timestamp;
         require(
-            currentTime >= updateTime + propInterval,
+            currentTime >= updateTime + voteInterval,
             "Battlefield: not yet to end vote");
         updateTime = currentTime;
         
