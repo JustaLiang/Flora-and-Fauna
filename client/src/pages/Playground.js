@@ -5,7 +5,7 @@ import Web3 from "web3"
 import Battlefield from '../components/Battlefield'
 import ProposalList from '../components/ProposalList'
 
-export default function BattlefieldNew() {
+export default function Playground() {
     const [setting, setSetting] = useState({
         web3: null,
         ethereum: null,
@@ -205,7 +205,7 @@ export default function BattlefieldNew() {
 
     const onFaunaConquer = async (fid, attackerID) => {
         const { accounts } = setting
-        contracts.btfdContract.methods.faunaConquer(fid, attackerID).send({ from: accounts[0] })
+        contracts.btfdContract.methods.faunaConquer(fid, [attackerID]).send({ from: accounts[0] })
             .on("receipt", async () => {
                 await updateFields()
             })

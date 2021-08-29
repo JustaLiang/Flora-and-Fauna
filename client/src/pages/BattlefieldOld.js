@@ -4,7 +4,7 @@ import map from "../artifacts/deployments/map.json"
 import { getEthereum } from "../getEthereum"
 import Web3 from "web3"
 
-export default function Battlefield() {
+export default function BattlefieldOld() {
 
     const [setting, setSetting] = useState({
         web3: null,

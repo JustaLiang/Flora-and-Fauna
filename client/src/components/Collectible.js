@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
 import { CardMedia, CardHeader, Card, CardContent, CardActions, Box, Avatar, Typography, Button } from '@material-ui/core';
 import PropTypes from 'prop-types';
@@ -29,8 +29,8 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Collectible(props) {
     const classes = useStyles()
-    const { _id,tokenURI, onArm, onTrain, onBoost, onHeal, onSell } = props
-    const [loading,setLoading] = useState(true)
+    const { _id, tokenURI, onArm, onTrain, onBoost, onHeal, onSell } = props
+    const [loading, setLoading] = useState(true)
     const [imageURL, setImageURL] = useState("")
 
     useEffect(() => {
@@ -40,116 +40,116 @@ export default function Collectible(props) {
                 setImageURL(object.image)
                 setLoading(false)
             })
-    },[tokenURI])
+    }, [tokenURI])
 
-return (
-    <Card className={classes.root} style={{ borderRadius: 20 }} elevation={3}>
-        <CardHeader
-            avatar={
-                <Avatar className={clsx(classes.green, {
-                    [classes.red]: props.checked
-                })}>
-                    {_id}
-                </Avatar>
-            }
-            title="Minion"
-            subheader={props.address}
-            action={
-                <Button
-                    value={_id}
-                    variant='outlined'
-                    style={{ textTransform: "none", marginTop: 10, marginRight: 10 }}
-                    endIcon={<MonetizationOnIcon />}
-                    onClick={onSell}
-                >Liberate
-                </Button>
-            }
-        />
-        {!loading ?(
-        <CardMedia
-            className={classes.media}
-            component="img"
-            image={imageURL}
-            alt="none"
-        />):(
-            <Box className={classes.media} style={{textAlign:'center',paddingTop:150}} >
-            <CircularProgress />
-            </Box>
-        )}
-        <CardContent>
-            <Typography variant='h6' className={classes.info}>
-                Status: {props.isArmed ? "Armed" : "Trained"}
-            </Typography>
-            <Typography variant='h6' className={classes.info}>
-                Price: {(props.price / 10 ** 8).toFixed(2)}
-            </Typography>
-            <Typography variant='h6' className={classes.info}>
-                Power: {props.power}
-            </Typography>
-        </CardContent>
-        <CardActions>
-            <Box display="flex" flexDirection="row" flexWrap="wrap" style={{ marginLeft: 15, gap: 15 }}>
-                <Box >
+    return (
+        <Card className={classes.root} style={{ borderRadius: 20 }} elevation={3}>
+            <CardHeader
+                avatar={
+                    <Avatar className={clsx(classes.green, {
+                        [classes.red]: props.checked
+                    })}>
+                        {_id}
+                    </Avatar>
+                }
+                title="Minion"
+                subheader={props.address}
+                action={
                     <Button
-                        onClick={onArm}
                         value={_id}
-                        style={{
-                            color: "#4285F4",
-                            borderRadius: 10,
-                            fontSize: 12
-                        }}
                         variant='outlined'
-                        startIcon={<BuildIcon />}>
-                        Arm
+                        style={{ textTransform: "none", marginTop: 10, marginRight: 10 }}
+                        endIcon={<MonetizationOnIcon />}
+                        onClick={onSell}
+                    >Liberate
                     </Button>
+                }
+            />
+            {!loading ? (
+                <CardMedia
+                    className={classes.media}
+                    component="img"
+                    image={imageURL}
+                    alt="none"
+                />) : (
+                <Box className={classes.media} style={{ textAlign: 'center', paddingTop: 150 }} >
+                    <CircularProgress />
                 </Box>
-                <Box>
-                    <Button
-                        onClick={onTrain}
-                        value={_id}
-                        style={{
-                            color: "#DB4437",
-                            borderRadius: 10,
-                            fontSize: 12
-                        }}
-                        variant='outlined'
-                        startIcon={<SportsKabaddiIcon />}>
-                        Train
-                    </Button>
+            )}
+            <CardContent>
+                <Typography variant='h6' className={classes.info}>
+                    Status: {props.isArmed ? "Armed" : "Trained"}
+                </Typography>
+                <Typography variant='h6' className={classes.info}>
+                    Price: {(props.price / 10 ** 8).toFixed(2)}
+                </Typography>
+                <Typography variant='h6' className={classes.info}>
+                    Power: {props.power}
+                </Typography>
+            </CardContent>
+            <CardActions>
+                <Box display="flex" flexDirection="row" flexWrap="wrap" style={{ marginLeft: 15, gap: 15 }}>
+                    <Box >
+                        <Button
+                            onClick={onArm}
+                            value={_id}
+                            style={{
+                                color: "#4285F4",
+                                borderRadius: 10,
+                                fontSize: 12
+                            }}
+                            variant='outlined'
+                            startIcon={<BuildIcon />}>
+                            Arm
+                        </Button>
+                    </Box>
+                    <Box>
+                        <Button
+                            onClick={onTrain}
+                            value={_id}
+                            style={{
+                                color: "#DB4437",
+                                borderRadius: 10,
+                                fontSize: 12
+                            }}
+                            variant='outlined'
+                            startIcon={<SportsKabaddiIcon />}>
+                            Train
+                        </Button>
+                    </Box>
+                    <Box>
+                        <Button
+                            onClick={onBoost}
+                            value={_id}
+                            style={{
+                                color: "#F4B400",
+                                borderRadius: 10,
+                                fontSize: 12
+                            }}
+                            variant='outlined'
+                            startIcon={<FlashOnIcon />}>
+                            Boost
+                        </Button>
+                    </Box>
+                    <Box>
+                        <Button
+                            onClick={onHeal}
+                            value={_id}
+                            style={{
+                                color: "#0F9D58",
+                                borderRadius: 10,
+                                fontSize: 12
+                            }}
+                            variant='outlined'
+                            startIcon={<LocalHospitalIcon />}>
+                            Heal
+                        </Button>
+                    </Box>
                 </Box>
-                <Box>
-                    <Button
-                        onClick={onBoost}
-                        value={_id}
-                        style={{
-                            color: "#F4B400",
-                            borderRadius: 10,
-                            fontSize: 12
-                        }}
-                        variant='outlined'
-                        startIcon={<FlashOnIcon />}>
-                        Boost
-                    </Button>
-                </Box>
-                <Box>
-                    <Button
-                        onClick={onHeal}
-                        value={_id}
-                        style={{
-                            color: "#0F9D58",
-                            borderRadius: 10,
-                            fontSize: 12
-                        }}
-                        variant='outlined'
-                        startIcon={<LocalHospitalIcon />}>
-                        Heal
-                    </Button>
-                </Box>
-            </Box>
-        </CardActions>
+            </CardActions>
 
-    </Card>
-)
+        </Card>
+    )
 }
 
 Collectible.propTypes = {
