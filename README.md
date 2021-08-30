@@ -103,5 +103,9 @@ Train minions (dynamic NFTs) by predicting market.
 7. Liberate a minion and get some enhancer to help other allies.  
    Seems bloody and cruel? Well it's just a game, don't take it too serious >.^
 8. After recruiting some minions to form a troop, time to go on a expedition.
+9. Go to battlefield and fight for territories. Occupy some fields and you will able to decide  
+   the skins of minions of the next generation.
+
+More details in [whitepaper](https://docs.google.com/document/d/1AwX-eP3bZ_XL-YBK7c2zRt0PAFiJFwo-sstIe6dzVns/edit)
    
  

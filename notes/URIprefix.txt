@@ -1,0 +1,8 @@
+// Proposal
+https://ipfs.io/ipfs/bafybeihnqjnsltio43lqwc5uowzzlfipklbxxnvy4pa7mqn6pmhieiouam/
+
+// Only Flora
+https://ipfs.io/ipfs/bafybeieh3wt7szwrdujfver5nfwbqfh7z6pcodk2h5k46m24oqmizolame/
+
+// Only Fauna
+https://ipfs.io/ipfs/bafybeigd7f3maglyvcyvxonmu4copfosxqocg5dpyetw7ozg22m44j27le/
