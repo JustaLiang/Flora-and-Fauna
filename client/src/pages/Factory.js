@@ -173,8 +173,7 @@ export default function Dapp() {
         const minionIDs = await armyContract.methods.getMinionIDs(accounts[0]).call()
         let minionList = {}
         for (let id of minionIDs) {
-            minionList[id] = Object.values(await armyContract.methods.getMinionInfo(id).call())
-            minionList[id].push(await armyContract.methods.tokenURI(id).call())
+            minionList[id] = await armyContract.methods.getMinionProfile(id).call()
         }
         console.log(minionList)
         setMinionList(minionList)

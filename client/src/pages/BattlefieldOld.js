@@ -245,7 +245,7 @@ export default function BattlefieldOld() {
     const displayProposal = (pid) => {
         const pi = proposals[pid]
         return <p key={pid}>
-            proposal#{pid} -- {pi.proposer} | {pi.prefixURI} | {pi.votes} |
+            proposal#{pid} -- {pi.proposer} | {pi.prefixURI} | {pi.voteCount} |
             <button value={pid} disabled={!locked} onClick={(e) => onVote(e)}>vote</button>
         </p>
     }

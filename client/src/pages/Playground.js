@@ -267,7 +267,7 @@ export default function Playground() {
         </p>
     }
 
-    const getMinionInfo = async (isFlora, mid) => {
+    const getMinionProfile = async (isFlora, mid) => {
         if (isFlora) {
             return await contracts.floraContract.methods.getMinionProfile(mid).call()
         }
@@ -326,7 +326,7 @@ export default function Playground() {
                 />
                 <Battlefield
                     fields={fields}
-                    getMinionInfo={getMinionInfo}
+                    getMinionProfile={getMinionProfile}
                     onFloraConquer={onFloraConquer}
                     onFaunaConquer={onFaunaConquer}
                     onRetreat={onRetreat}

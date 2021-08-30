@@ -116,15 +116,21 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     */    
     function getMinionProfile(uint minionID) external view
             returns (MinionProfile memory profile) {
-        require(
-            _exists(minionID),
-            "ARMY: commander query for nonexistent minion");        
-        Minion memory m = minions[minionID];
-        profile.branch = m.branchAddr;
-        profile.armed = m.armed;
-        profile.price = m.envFactor;
-        profile.power = m.power;
-        profile.uri = tokenURI(minionID);
+        if (_exists(minionID)) {
+            Minion memory m = minions[minionID];
+            profile.branch = m.branchAddr;
+            profile.armed = m.armed;
+            profile.price = m.envFactor;
+            profile.power = m.power;
+            profile.uri = tokenURI(minionID);
+        }
+        else {
+            profile.branch = address(0);
+            profile.armed = false;
+            profile.price = 0;
+            profile.power = 0;
+            profile.uri = "";
+        }
     }
 
     /**

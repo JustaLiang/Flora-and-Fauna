@@ -104,11 +104,7 @@ class Prototype extends React.Component {
         if (accounts.length === 0) {
             return
         }
-        const minionIDs = await armyContract.methods.getMinionIDs(accounts[0]).call()
-        let minionList = {}
-        for (let id of minionIDs) {
-            minionList[id] = Object.values(await armyContract.methods.getMinionInfo(id).call())
-        }
+        const minionList = await armyContract.methods.getCommanderTeamInfo(accounts[0]).call()
         this.setState({ minionList })
     }
 

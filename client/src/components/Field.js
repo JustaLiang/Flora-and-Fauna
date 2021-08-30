@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
      },
 
 }))
-export default function Field({ _id, field, getMinionInfo,onFloraConquer,onFaunaConquer,onRetreat,checksumAcc}) {
+export default function Field({ _id, field, getMinionProfile,onFloraConquer,onFaunaConquer,onRetreat,checksumAcc}) {
     const classes = useStyles()
     const { defenders, isFlora, leader } = field;
     const [shadow, setShadow] = useState(3);
@@ -44,7 +44,7 @@ export default function Field({ _id, field, getMinionInfo,onFloraConquer,onFauna
     
     useEffect(() => {
         const fetchInfo = async () => {
-            setMinionInfo(await getMinionInfo(isFlora, defenders[0]))
+            setMinionInfo(await getMinionProfile(isFlora, defenders[0]))
         }
         if (defenders.length) fetchInfo()
     }, [])
@@ -226,7 +226,7 @@ export default function Field({ _id, field, getMinionInfo,onFloraConquer,onFauna
 Field.propTypes = {
     _id: PropTypes.number.isRequired,
     field: PropTypes.array.isRequired,
-    getMinionInfo: PropTypes.func.isRequired,
+    getMinionProfile: PropTypes.func.isRequired,
     onFloraConquer: PropTypes.func.isRequired,
     onFaunaConquer: PropTypes.func.isRequired,
     checksumAcc:PropTypes.string.isRequired

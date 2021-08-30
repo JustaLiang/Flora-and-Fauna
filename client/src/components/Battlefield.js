@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import Field from './Field'
 const field = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-export default function Battlefield({fields,getMinionInfo,onFloraConquer,onFaunaConquer,onRetreat,checksumAcc}) {
+export default function Battlefield({fields,getMinionProfile,onFloraConquer,onFaunaConquer,onRetreat,checksumAcc}) {
     console.log('fields in battlefields: ',fields)
     return (
         <div>
@@ -32,7 +32,7 @@ export default function Battlefield({fields,getMinionInfo,onFloraConquer,onFauna
                                     <Field 
                                     _id={index}
                                     field={field}
-                                    getMinionInfo={getMinionInfo}
+                                    getMinionProfile={getMinionProfile}
                                     onFloraConquer={onFloraConquer}
                                     onFaunaConquer={onFaunaConquer}
                                     onRetreat={onRetreat}
@@ -50,7 +50,7 @@ export default function Battlefield({fields,getMinionInfo,onFloraConquer,onFauna
 
 Battlefield.propTypes = {
     fields: PropTypes.array.isRequired,
-    getMinionInfo: PropTypes.func.isRequired,
+    getMinionProfile: PropTypes.func.isRequired,
     onFloraConquer: PropTypes.func.isRequired,
     onFaunaConquer: PropTypes.func.isRequired,
     onRetreat:PropTypes.func.isRequired,

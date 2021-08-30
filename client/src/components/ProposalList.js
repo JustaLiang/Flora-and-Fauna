@@ -127,7 +127,7 @@ export default function ProposalList({ locked, onPropose, onStartVote, onEndVote
                                 _id={index}
                                 proposer={item.proposer}
                                 prefixURI={item.prefixURI}
-                                votes={parseInt(item.votes)}
+                                votes={parseInt(item.voteCount)}
                                 onVote={onVote} />
                             </Box>
                         )):<><Typography>No proposal now submit proposol</Typography></>
