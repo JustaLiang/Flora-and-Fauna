@@ -13,11 +13,11 @@ def update_price():
     return [agg.latestAnswer() for agg in MockV3Aggregator]        
 
 def rise_price():
-    [agg.updateAnswer(int(agg.latestAnswer()*1.6)) for agg in MockV3Aggregator]
+    [agg.updateAnswer(int(agg.latestAnswer()*1.2)) for agg in MockV3Aggregator]
     return [agg.latestAnswer() for agg in MockV3Aggregator]
 
 def drop_price():
-    [agg.updateAnswer(int(agg.latestAnswer()*0.5)) for agg in MockV3Aggregator]
+    [agg.updateAnswer(int(agg.latestAnswer()*0.8)) for agg in MockV3Aggregator]
     return [agg.latestAnswer() for agg in MockV3Aggregator]
 
 def flora_team(acc=config['wallets']['test_account']):
