@@ -54,7 +54,7 @@ abstract contract BattleBase is Ownable {
 
     struct FieldInfo {
         address leader;
-        uint[] defenders;
+        uint[] defender;
         bool isFlora;
     }
 
@@ -116,10 +116,20 @@ abstract contract BattleBase is Ownable {
             return address(0);
         }
         else if (isFloraField[fieldID]) {
-            return floraArmy.ownerOf(defender[0]);
+            if (floraArmy.minionExists(defender[0])) {
+                return floraArmy.ownerOf(defender[0]);
+            }
+            else {
+                return address(0);
+            }
         }
         else {
-            return faunaArmy.ownerOf(defender[0]);
+            if (faunaArmy.minionExists(defender[0])) {
+                return faunaArmy.ownerOf(defender[0]);
+            }
+            else {
+                return address(0);
+            }
         }
     }
 
@@ -128,11 +138,16 @@ abstract contract BattleBase is Ownable {
      * @param fieldID ID of the field
      * @return fieldInfo Leader, defender and side
     */ 
-    function getFieldInfo(uint fieldID) external view
+    function getFieldInfo(uint fieldID) public view
             returns (FieldInfo memory fieldInfo) {
         fieldInfo.leader = getFieldLeader(fieldID);
-        fieldInfo.defenders = getFieldDefender(fieldID);
-        fieldInfo.isFlora = isFloraField[fieldID];            
+        if (fieldInfo.leader != address(0)) {
+            fieldInfo.defender = getFieldDefender(fieldID);
+            fieldInfo.isFlora = isFloraField[fieldID];
+        }
+        else {
+            delete fieldInfo;
+        }
     }
 
     /**
@@ -143,9 +158,7 @@ abstract contract BattleBase is Ownable {
             returns (FieldInfo[] memory allFieldInfo) {
         allFieldInfo = new FieldInfo[](totalArea);
         for (uint fid = 0; fid < totalArea; fid++) {
-            allFieldInfo[fid].leader = getFieldLeader(fid);
-            allFieldInfo[fid].defenders = getFieldDefender(fid);
-            allFieldInfo[fid].isFlora = isFloraField[fid];
+            allFieldInfo[fid] = getFieldInfo(fid);
         }
     }
 

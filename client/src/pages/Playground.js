@@ -216,7 +216,7 @@ export default function Playground() {
 
     const onFloraConquer = async (fid, attackerID) => {
         const { accounts } = setting
-        contracts.btfdContract.methods.floraConquer(fid, [attackerID]).send({ from: accounts[0] })
+        contracts.btfdContract.methods.floraConquer(fid, attackerID).send({ from: accounts[0] })
             .on("receipt", async () => {
                 await updateFields()
             })
@@ -227,7 +227,7 @@ export default function Playground() {
 
     const onFaunaConquer = async (fid, attackerID) => {
         const { accounts } = setting
-        contracts.btfdContract.methods.faunaConquer(fid, [attackerID]).send({ from: accounts[0] })
+        contracts.btfdContract.methods.faunaConquer(fid, attackerID).send({ from: accounts[0] })
             .on("receipt", async () => {
                 await updateFields()
             })
@@ -246,30 +246,10 @@ export default function Playground() {
                 console.log(err)
             })
     }
-    const displayField = (fid) => {
-        const { web3, accounts } = setting
-        let style = {
-            backgroundColor: 'black',
-            color: 'white',
-        }
-        const fi = fields[fid]
-        const checksumAcc = web3.utils.toChecksumAddress(accounts[0])
-        if (fi.defenders.length) {
-            style.backgroundColor = fi.isFlora ? 'green' : 'red'
-        }
-        return <p key={fid} style={style}>
-            field#{fid} --
-            <button style={{ color: 'green' }} value={fid} onClick={(e) => onFloraConquer(e)}>conquer</button>
-            <button value={fid} onClick={(e) => onRetreat(e)}>retreat</button>
-            <button style={{ color: 'red' }} value={fid} onClick={(e) => onFaunaConquer(e)}>conquer</button>
-            -- ( {fi.defenders.join(', ')} )
-            -- {fi.leader === checksumAcc ? 'owned' : ''}
-        </p>
-    }
 
     const getMinionProfile = async (isFlora, mid) => {
         if (isFlora) {
-            return await contracts.floraContract.methods.getMinionProfile(mid).call()
+            return await contracts.floraContract.methods.getMinionProfile(mid).call() 
         }
         else {
             return await contracts.faunaContract.methods.getMinionProfile(mid).call()

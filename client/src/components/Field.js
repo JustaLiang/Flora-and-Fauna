@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
 }))
 export default function Field({ _id, field, getMinionProfile,onFloraConquer,onFaunaConquer,onRetreat,checksumAcc}) {
     const classes = useStyles()
-    const { defenders, isFlora, leader } = field;
+    const { defender, isFlora, leader } = field;
     const [shadow, setShadow] = useState(3);
     const [open, setOpen] = useState(false);
     const [actionOpen, setActionOpen] = useState(false);
@@ -44,9 +44,9 @@ export default function Field({ _id, field, getMinionProfile,onFloraConquer,onFa
     
     useEffect(() => {
         const fetchInfo = async () => {
-            setMinionInfo(await getMinionProfile(isFlora, defenders[0]))
+            setMinionInfo(await getMinionProfile(isFlora, defender[0]))
         }
-        if (defenders.length) fetchInfo()
+        if (defender.length) fetchInfo()
     }, [])
 
     useEffect(()=>{
@@ -110,15 +110,15 @@ export default function Field({ _id, field, getMinionProfile,onFloraConquer,onFa
                 onMouseOut={() => { setShadow(3) }}
                 onClick={handleClick}
                 className={clsx(classes.white, {
-                    [classes.green]:isFlora && defenders.length,
-                    [classes.red]: !isFlora && defenders.length,
+                    [classes.green]:isFlora && defender.length,
+                    [classes.red]: !isFlora && defender.length,
                   })}
                 style={{
                     height: 200, width: 200, borderRadius: 20, display: 'flex',
                     alignItems: 'center', justifyContent: 'center'
                 }}>
                 {checksumAcc===leader?<EmojiFlagsIcon style={{ width: 75, height: 75,color:"#FFFFFF" }} />:
-                <Typography style={{fontWeight:'bold',fontSize:30,color:defenders.length?"#FFFFFF":"#000000"}} >{_id}</Typography>
+                <Typography style={{fontWeight:'bold',fontSize:30,color:defender.length?"#FFFFFF":"#000000"}} >{_id}</Typography>
                 }
             </Card>
             <Dialog open={open} style={{ textAlign: 'center' }} onClose={handleClose}>
@@ -126,7 +126,7 @@ export default function Field({ _id, field, getMinionProfile,onFloraConquer,onFa
                     Field {_id} Info
                 </DialogTitle>
                 <Box display='flex' flexDirection='column' style={{ height: 600, width: 500 }}>
-                    {defenders.length ? (
+                    {defender.length ? (
                         <>
                             <CardHeader
                                 style={{ marginLeft: 50, textAlign: 'left' }}
@@ -136,7 +136,7 @@ export default function Field({ _id, field, getMinionProfile,onFloraConquer,onFa
                                     <Avatar className={clsx(classes.green, {
                                         [classes.red]: !isFlora
                                     })}>
-                                        {defenders[0]}
+                                        {defender[0]}
                                     </Avatar>
                                 } />
                             <Box style={{

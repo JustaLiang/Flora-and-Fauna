@@ -86,7 +86,7 @@ contract Battlefield is BattleBase, ERC721URIStorage {
     */
     constructor(address floraArmyAddr, address faunaArmyAddr)
         BattleBase(floraArmyAddr, faunaArmyAddr)
-        ERC721("Flora&Fauna Medal Styles", "F&F")
+        ERC721("Flora&Fauna Battlefield", "F&F-BTF")
     {
         generation = 1;
         floraRank = RANK(floraArmy.rankContract());
