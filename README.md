@@ -1,5 +1,7 @@
 # Flora & Fauna
-An upgradable NFT game for both players and artists.  
+### An upgradable NFT game for both players and artists.  
+
+<img src="./assets/Ecosystem.png" alt="Ecosystem" width="500" height="400"/>
 
 ## Overview
 ### Game to get NFTs
