@@ -16,7 +16,7 @@ The platform is called “battlefield” in our system, where artists propose an
 2. Switch to Rinkeby testnet.  
     <img src="./assets/SelectRinkeby.png" alt="Select Rinkeby" width="250" height="400"/>  
 3. Get some ETH from [faucet](https://faucet.rinkeby.io/).  
-4. Here's our [website]("https://flora-fauna.netlify.app/"). Enjoy yourself!  
+4. Here's our [website](https://flora-fauna.netlify.app/). Enjoy yourself!  
 
 ## How to play (for players)
 1. Choose a valid [Chainlink price feed](https://docs.chain.link/docs/ethereum-addresses/), for example: ETH/USD  
