@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function CollectibleList(props) {
-  const { checked, list, onArm, onTrain, onBoost, onHeal, onSell, onRecruit } = props
+  const { checked, list, onArm, onTrain, onBoost, onHeal, onLiberate, onRecruit, onGrant } = props
   const [data, setData] = useState([])
   const [open, setOpen] = useState(false)
 
@@ -121,7 +121,8 @@ export default function CollectibleList(props) {
                   onTrain={onTrain}
                   onBoost={onBoost}
                   onHeal={onHeal}
-                  onSell={onSell}
+                  onLiberate={onLiberate}
+                  onGrant={onGrant}
                 />
               </Grid>)) :
             <Grid item lg={12}>
@@ -147,6 +148,6 @@ CollectibleList.propTypes = {
   onTrain: PropTypes.func.isRequired,
   onBoost: PropTypes.func.isRequired,
   onHeal: PropTypes.func.isRequired,
-  onSell: PropTypes.func.isRequired,
+  onLiberate: PropTypes.func.isRequired,
   onRecruit: PropTypes.func.isRequired
 }

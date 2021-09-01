@@ -230,7 +230,7 @@ export default function Dapp() {
             })
     }
 
-    const onSell = async (e) => {
+    const onLiberate = async (e) => {
         const { accounts } = setting
         const { armyContract } = contractInfo
         e.preventDefault()
@@ -275,6 +275,20 @@ export default function Dapp() {
             })
     }
 
+    const onGrant = async (e) => {
+        const { accounts } = setting
+        const { armyContract } = contractInfo
+        e.preventDefault()
+        const pid = parseInt(e.currentTarget.value)
+        armyContract.methods.grant(pid).send({ from: accounts[0] })
+            .on("receipt", () => {
+                armyGetList()
+            })
+            .on("error", (err) => {
+                console.log(err)
+            })
+    }
+
     const handleChecked = () => {
         setChecked(!checked)
     }
@@ -300,8 +314,10 @@ export default function Dapp() {
                                 onTrain={onTrain}
                                 onBoost={onBoost}
                                 onHeal={onHeal}
-                                onSell={onSell}
-                                onRecruit={onRecruit} />
+                                onLiberate={onLiberate}
+                                onRecruit={onRecruit} 
+                                onGrant={onGrant}
+                                />
                         </Box>
                     </Box>
                 </div>

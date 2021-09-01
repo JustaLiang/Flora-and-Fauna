@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
 import { CardMedia, CardHeader, Card, CardContent, CardActions, Box, Avatar, Typography, Button } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import BuildIcon from '@material-ui/icons/Build';
-import SportsKabaddiIcon from '@material-ui/icons/SportsKabaddi';
+import ColorizeIcon from '@material-ui/icons/Colorize';
+import FitnessCenterIcon from '@material-ui/icons/FitnessCenter';
 import LocalHospitalIcon from '@material-ui/icons/LocalHospital';
 import FlashOnIcon from '@material-ui/icons/FlashOn';
-import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
+import SyncIcon from '@material-ui/icons/Sync';
+import HowToRegIcon from '@material-ui/icons/HowToReg';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import clsx from 'clsx';
@@ -29,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Collectible(props) {
     const classes = useStyles()
-    const { _id, tokenURI, onArm, onTrain, onBoost, onHeal, onSell } = props
+    const { _id, tokenURI, onArm, onTrain, onBoost, onHeal, onLiberate, onGrant } = props
     const [loading, setLoading] = useState(true)
     const [imageURL, setImageURL] = useState("")
 
@@ -55,14 +56,26 @@ export default function Collectible(props) {
                 title="Minion"
                 subheader={props.address}
                 action={
-                    <Button
-                        value={_id}
-                        variant='outlined'
-                        style={{ textTransform: "none", marginTop: 10, marginRight: 10 }}
-                        endIcon={<MonetizationOnIcon />}
-                        onClick={onSell}
-                    >Liberate
-                    </Button>
+                    <Box>
+                        <Button
+                            value={_id}
+                            variant='outlined'
+                            disabled={!props.isArmed}
+                            style={{ textTransform: "none", marginTop: 10, marginRight: 10 }}
+                            endIcon={<HowToRegIcon />}
+                            onClick={onGrant}
+                        >Grant
+                        </Button>
+                        <Button
+                            value={_id}
+                            variant='outlined'
+                            disabled={!props.isArmed}
+                            style={{ textTransform: "none", marginTop: 10, marginRight: 10 }}
+                            endIcon={<SyncIcon />}
+                            onClick={onLiberate}
+                        >Liberate
+                        </Button>
+                    </Box>
                 }
             />
             {!loading ? (
@@ -81,7 +94,7 @@ export default function Collectible(props) {
                     Status: {props.isArmed ? "Armed" : "Trained"}
                 </Typography>
                 <Typography variant='h6' className={classes.info}>
-                    Price: {(props.price / 10 ** 8).toFixed(2)}
+                    {props.isArmed ? "Latest" : "From"}: {(props.price / 10 ** 8).toFixed(2)}
                 </Typography>
                 <Typography variant='h6' className={classes.info}>
                     Power: {props.power}
@@ -93,13 +106,18 @@ export default function Collectible(props) {
                         <Button
                             onClick={onArm}
                             value={_id}
-                            style={{
+                            disabled={props.isArmed}
+                            style={props.isArmed ? {
+                                color: "#D9DDDC",
+                                borderRadius: 10,
+                                fontSize: 12
+                            } : {
                                 color: "#4285F4",
                                 borderRadius: 10,
                                 fontSize: 12
                             }}
                             variant='outlined'
-                            startIcon={<BuildIcon />}>
+                            startIcon={<ColorizeIcon />}>
                             Arm
                         </Button>
                     </Box>
@@ -107,35 +125,31 @@ export default function Collectible(props) {
                         <Button
                             onClick={onTrain}
                             value={_id}
-                            style={{
+                            disabled={!props.isArmed}
+                            style={props.isArmed ? {
                                 color: "#DB4437",
                                 borderRadius: 10,
                                 fontSize: 12
-                            }}
-                            variant='outlined'
-                            startIcon={<SportsKabaddiIcon />}>
-                            Train
-                        </Button>
-                    </Box>
-                    <Box>
-                        <Button
-                            onClick={onBoost}
-                            value={_id}
-                            style={{
-                                color: "#F4B400",
+                            } : {
+                                color: "#D9DDDC",
                                 borderRadius: 10,
                                 fontSize: 12
                             }}
                             variant='outlined'
-                            startIcon={<FlashOnIcon />}>
-                            Boost
+                            startIcon={<FitnessCenterIcon />}>
+                            Train
                         </Button>
                     </Box>
                     <Box>
                         <Button
                             onClick={onHeal}
                             value={_id}
-                            style={{
+                            disabled={props.isArmed}
+                            style={props.isArmed ? {
+                                color: "#D9DDDC",
+                                borderRadius: 10,
+                                fontSize: 12
+                            } : {
                                 color: "#0F9D58",
                                 borderRadius: 10,
                                 fontSize: 12
@@ -143,6 +157,25 @@ export default function Collectible(props) {
                             variant='outlined'
                             startIcon={<LocalHospitalIcon />}>
                             Heal
+                        </Button>
+                    </Box>
+                    <Box>
+                        <Button
+                            onClick={onBoost}
+                            value={_id}
+                            disabled={!props.isArmed}
+                            style={props.isArmed ? {
+                                color: "#F87217",
+                                borderRadius: 10,
+                                fontSize: 12
+                            } : {
+                                color: "#D9DDDC",
+                                borderRadius: 10,
+                                fontSize: 12
+                            }}
+                            variant='outlined'
+                            startIcon={<FlashOnIcon />}>
+                            Boost
                         </Button>
                     </Box>
                 </Box>
@@ -163,5 +196,5 @@ Collectible.propTypes = {
     onTrain: PropTypes.func.isRequired,
     onBoost: PropTypes.func.isRequired,
     onHeal: PropTypes.func.isRequired,
-    onSell: PropTypes.func.isRequired
+    onLiberate: PropTypes.func.isRequired
 }
