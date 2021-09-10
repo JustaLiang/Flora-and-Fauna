@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/ArmyInterface.sol";
+import "./ArmyInterface.sol";
 
 /**
  * @notice Operations only for Army contract

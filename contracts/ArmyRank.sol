@@ -43,15 +43,15 @@ contract ArmyRank is Ownable {
      * @param branchAddr Branch address of the minion
      * @param power Power of the minion
     */
-    function query(address branchAddr, int power) external view returns (string memory) {
+    function query(address branchAddr, int power) external view returns (string memory uriPrefix) {
         for (uint i = powerLevels.length-1; i >= 0; i--) {
             if (power >= powerLevels[i]) {
                 string memory prefix = branchPrefix[branchAddr];
                 if (bytes(prefix).length == 0) {
-                    return string(abi.encodePacked(branchPrefix[address(0)], jsonNames[i]));
+                    uriPrefix = string(abi.encodePacked(branchPrefix[address(0)], jsonNames[i]));
                 }
                 else {
-                    return string(abi.encodePacked(branchPrefix[branchAddr], jsonNames[i]));
+                    uriPrefix = string(abi.encodePacked(branchPrefix[branchAddr], jsonNames[i]));
                 }
             }
         }

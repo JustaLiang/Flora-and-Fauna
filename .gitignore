@@ -1,12 +1,8 @@
-__pycache__
-.history
-.hypothesis/
-build/
-reports/
-.pytest_cache
+node_modules
+
+#hardhat files
+cache
+artifacts
+frontend/src/hardhat
+
 .env
-env
-venv
-.vscode/
-**.DS_Store
-client/src/artifacts
