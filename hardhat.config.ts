@@ -7,7 +7,7 @@ import "@symfoni/hardhat-react";
 import "hardhat-typechain";
 import "@typechain/ethers-v5";
 import "dotenv/config"
-const { WEB3_INFURA_PROJECT_ID, PRIVATE_KEY } = process.env
+
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -36,10 +36,10 @@ const config: HardhatUserConfig = {
         mnemonic: "test test test test test test test test test test test junk", // test test test test test test test test test test test junk
       },
     },
-    rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${WEB3_INFURA_PROJECT_ID}`,
-      accounts: [`0x${PRIVATE_KEY}`]
-    },
+    // rinkeby: {
+    //   url: `https://rinkeby.infura.io/v3/${WEB3_INFURA_PROJECT_ID}`,
+    //   accounts: [`0x${PRIVATE_KEY}`]
+    // },
   },
   solidity: {
     compilers: [
