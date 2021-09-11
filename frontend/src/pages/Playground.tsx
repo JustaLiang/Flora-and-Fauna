@@ -5,8 +5,8 @@ import { Battlefield } from '../components/Battlefield';
 import redPlayground from '../assets/image/redPlayground.png';
 import { ProposalList } from '../components/ProposalList';
 import { makeStyles } from '@material-ui/core/styles';
-// import Logo from '../assets/image/Logo.png';
-// import { Link } from "react-router-dom";
+import Logo from '../assets/image/Logo.png';
+import { Link } from "react-router-dom";
 import { AppBar, Toolbar  } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
         width: 100,
     },
     button: {
-        width: 250,
+        width: 150,
         marginLeft:5,
         background: "#ab801b",
         color: "#FFFFFF",
@@ -53,12 +53,12 @@ export const Playground: React.FC<Props> = () => {
                         <Container maxWidth='xl'>
                         <Box display="flex" flexDirection="row" justifyContent="space-between" >
                             <Box >
-                            {/* <Button component={Link} to="/">
-                            <img src={Logo} className={classes.logo} />
-                        </Button> */}
+                            <Button component={Link} to="/">
+                            <img src={Logo} className={classes.logo} alt="FF" />
+                        </Button>
                             </Box>
                             <Box >
-                                {/* <Button 
+                                <Button 
                                     variant='outlined'
                                     className={classes.button}
                                     style={{
@@ -67,7 +67,7 @@ export const Playground: React.FC<Props> = () => {
                                     component={Link} to="/Factory"
                                 >
                                     Factory
-                                </Button> */}
+                                </Button>
                                 <Button 
                                     variant='outlined'
                                     className={classes.button}
