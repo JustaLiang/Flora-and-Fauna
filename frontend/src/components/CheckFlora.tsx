@@ -1,15 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FloraArmyContext } from "../hardhat/SymfoniContext";
 
-interface Props { };
+interface Props { }
 
 interface MinionProfile {
-    branch: string,
-    armed: Boolean,
-    price: number,
-    power: number,
-    uri: string,
-};
+    branch: string;
+    armed: Boolean;
+    price: number;
+    power: number;
+    uri: string;
+}
 
 export const CheckFlora: React.FC<Props> = () => {
     const flora = useContext(FloraArmyContext);

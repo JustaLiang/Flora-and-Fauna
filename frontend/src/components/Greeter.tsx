@@ -4,7 +4,7 @@ import { GreeterContext } from "./../hardhat/SymfoniContext";
 interface Props { }
 
 export const Greeter: React.FC<Props> = () => {
-    const greeter = useContext(GreeterContext)
+    const greeter = useContext(GreeterContext);
     const [message, setMessage] = useState("");
     const [inputGreeting, setInputGreeting] = useState("");
     useEffect(() => {
