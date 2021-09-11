@@ -5,7 +5,8 @@ import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
 import FilterNoneIcon from '@material-ui/icons/FilterNone';
 import { CardCarousel } from './CardCarousel';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { BigNumber } from 'ethers';
+import { useContext } from 'react';
+import { BattlefieldContext } from '../hardhat/SymfoniContext';
 
 const useStyles = makeStyles((theme) => ({
     card: {
@@ -49,13 +50,11 @@ const suffixURI = [
 export interface ProposalInfo {
     proposer: string;
     prefixURI: string;
-    voteCount: BigNumber;
+    voteCount: number;
 }
 
 interface Props {
     pId: number;
-    proposalInfo: ProposalInfo;
-    onVote: Function;
 }
 
 export const Proposal: React.FC<Props> = (props) => {
@@ -65,15 +64,46 @@ export const Proposal: React.FC<Props> = (props) => {
     const [fieldId, setFieldId] = useState("");
     const [voteError, setVoteError]=useState(false);
     const [imageURLs, setImageURLs] = useState<string[]>([]);
-    const { pId, proposalInfo, onVote } = props;
-    const { proposer, prefixURI, voteCount } = proposalInfo;
+    const battlefield = useContext(BattlefieldContext);
+    const [proposalInfo, setProposalInfo] = useState<ProposalInfo>();
+    const { pId } = props;
+
+    useEffect(() => {
+        const loadProposals = async () => {
+            if (!battlefield.instance) return;
+            const pInfo = await battlefield.instance.proposals(pId);
+            setProposalInfo({
+                proposer: pInfo.proposer,
+                prefixURI: pInfo.prefixURI,
+                voteCount: pInfo.voteCount.toNumber(),
+            });
+        }
+        loadProposals();
+    }, [battlefield, pId])
+
+    const onVote = async (fieldId: number) => {
+        if (!battlefield.instance) return;
+        const tx = await battlefield.instance.vote(fieldId, pId);
+        const receipt =  await tx.wait();
+        if (receipt.status) {
+            const pInfo = await battlefield.instance.proposals(pId);
+            setProposalInfo({
+                proposer: pInfo.proposer,
+                prefixURI: pInfo.prefixURI,
+                voteCount: pInfo.voteCount.toNumber(),
+            });
+        }
+        else
+            console.log(receipt.logs);
+    }
 
     const onCopy = () => {
+        if (!proposalInfo) return;
         navigator.clipboard.writeText(proposalInfo.proposer);
         setOpen(true);
     }
     const handleBarClose = (event: React.SyntheticEvent<any>, reason: SnackbarCloseReason) => {
-        event.preventDefault();
+        event?.preventDefault();
         if (reason === 'clickaway') {
             return;
         }
@@ -93,17 +123,19 @@ export const Proposal: React.FC<Props> = (props) => {
 
     };
     const handleVoteSubmit: React.MouseEventHandler = () => {
-        if(isNaN(parseInt(fieldId)) || 
-            (parseInt(fieldId) < 0 && parseInt(fieldId) > 20)) {
-            setVoteError(true)
-            return
+        const fid = parseInt(fieldId);
+        if(isNaN(fid) || (fid < 0 && fid > 20)) {
+            setVoteError(true);
+            return;
         }    
-        onVote(fieldId, pId);
+        onVote(fid);
         setVoteError(false);
         setFieldId("");
         setVoteOpen(false);
     }
     useEffect(() => {
+        if (!proposalInfo) return;
+        const { prefixURI } = proposalInfo;
         var imageList: string[] = [];
         suffixURI.forEach((suffix) => {
             fetch(`${prefixURI}${suffix}`)
@@ -116,8 +148,7 @@ export const Proposal: React.FC<Props> = (props) => {
                 })
         })
         setImageURLs(imageList);
-        console.log(imageURLs);
-    }, [])
+    }, [proposalInfo])
 
     return (
         <div>
@@ -132,7 +163,7 @@ export const Proposal: React.FC<Props> = (props) => {
                     </Box>}
                 </Box>
                 <CardContent style={{ marginTop: 10 }}>
-                    <Typography style={{ wordWrap: 'break-word' }}> Proposer: {proposer.slice(0, 10)}... <IconButton onClick={onCopy}><FilterNoneIcon /></IconButton></Typography>
+                    <Typography style={{ wordWrap: 'break-word' }}> Proposer: {proposalInfo?.proposer.slice(0, 10)}... <IconButton onClick={onCopy}><FilterNoneIcon /></IconButton></Typography>
                 </CardContent>
                 <Snackbar open={open} autoHideDuration={1000} onClose={handleBarClose}>
                     <Alert onClose={handleAlertClose} severity="success">
@@ -146,7 +177,7 @@ export const Proposal: React.FC<Props> = (props) => {
 
                 </CardActions>
                 <Box className={classes.footer}>
-                    <Typography>Vote count: {voteCount}</Typography>
+                    <Typography>Vote count: {proposalInfo?.voteCount}</Typography>
                 </Box>
                 <Dialog open={voteOpen}  scroll="paper"
                     classes={{

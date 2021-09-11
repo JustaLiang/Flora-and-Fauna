@@ -97,6 +97,10 @@ contract Battlefield is BattleBase, ERC721URIStorage {
         slottingFee = 1e12 wei;
     }
 
+    function getProposalCount() external view returns (uint) {
+        return proposals.length;
+    }
+
     /**
      * @notice Get details of all proposals
      * @return Details of all proposals

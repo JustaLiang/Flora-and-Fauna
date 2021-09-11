@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Box, Button, Container, Dialog, DialogTitle, Typography, DialogContent, TextField, DialogActions } from '@material-ui/core';
-import { Proposal, ProposalInfo } from './Proposal';
+import { Proposal } from './Proposal';
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { BattlefieldContext } from '../hardhat/SymfoniContext';
@@ -44,7 +44,7 @@ export const ProposalList: React.FC<Props> = () => {
     const classes = useStyles();
     const battlefield = useContext(BattlefieldContext);
     const [locked, setLocked] = useState<boolean>(false);
-    const [proposals, setProposals] = useState<ProposalInfo[]>([]); 
+    const [proposalCount, setProposalCount] = useState<number>(0);
     const [open, setOpen] = useState(false);
     const [URL, setURL] = useState("");
 
@@ -53,31 +53,22 @@ export const ProposalList: React.FC<Props> = () => {
             if (!battlefield.instance) return;
             setLocked(await battlefield.instance.fieldLocked());
             console.log(locked?"Locked":"unLocked");
-            setProposals(await battlefield.instance.getAllProposalInfo());
-            console.log("Proposals :", proposals);
+            const pCount = await battlefield.instance.getProposalCount();
+            setProposalCount(pCount.toNumber());
+            console.log("Proposal count:", proposalCount);
         }
         loadProposals();
-    }, [battlefield])
+    }, [battlefield, locked, proposalCount])
 
     const onPropose = async (uriPrefix: string) => {
         if (!battlefield.instance) return;
-        if (!uriPrefix || uriPrefix.slice(-1) != '/') return;
+        if (!uriPrefix || uriPrefix.slice(-1) !== '/') return;
         const tx = await battlefield.instance.propose(uriPrefix, {value: 10**12});
         const receipt =  await tx.wait();
         if (receipt.status) {
-            setProposals(await battlefield.instance.getAllProposalInfo());
-        }
-        else {
-            console.log(receipt.logs);
-        }
-    }
-
-    const onVote = async (fieldId: number, pid: number) => {
-        if (!battlefield.instance) return;
-        const tx = await battlefield.instance.vote(fieldId, pid);
-        const receipt =  await tx.wait();
-        if (receipt.status) {
-            setProposals(await battlefield.instance.getAllProposalInfo());
+            const pCount = await battlefield.instance.getProposalCount();
+            setProposalCount(pCount.toNumber());
+            console.log("Proposal count:", proposalCount);
         }
         else {
             console.log(receipt.logs);
@@ -102,7 +93,8 @@ export const ProposalList: React.FC<Props> = () => {
         const receipt =  await tx.wait();
         if (receipt.status) {
             setLocked(await battlefield.instance.fieldLocked());
-            setProposals(await battlefield.instance.getAllProposalInfo());
+            const pCount = await battlefield.instance.getProposalCount();
+            setProposalCount(pCount.toNumber());
         }
         else {
             console.log(receipt.logs);
@@ -188,13 +180,12 @@ export const ProposalList: React.FC<Props> = () => {
                 </Dialog>
                 <Box display='flex' flexDirection='row'
                     className={classes.proposalBox}>
-                    {proposals.length?
-                        proposals.map((item, index) => (
-                            <Box >
+                    {proposalCount?
+                        Array.from(Array(proposalCount).keys()).map((pId) => (
+                            <Box key={pId}>
                                 <Proposal 
-                                pId={index}
-                                proposalInfo={item}
-                                onVote={onVote} />
+                                pId={pId}
+                                />
                             </Box>
                         )):<><Typography>No proposal now submit proposol</Typography></>
                     }

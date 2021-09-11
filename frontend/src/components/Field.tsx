@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Card, Box, Button, Dialog, DialogTitle, MenuItem, Select, TextField, InputLabel, FormControl, CardHeader, Avatar, Typography, CardContent } from '@material-ui/core';
+import { Card, Box, Button, Dialog, DialogTitle, MenuItem, Select, TextField, InputLabel, FormControl, CardHeader, Avatar, Typography } from '@material-ui/core';
 import EmojiFlagsIcon from '@material-ui/icons/EmojiFlags';
 import Skeleton from '@material-ui/lab/Skeleton';
 import clsx from 'clsx';
@@ -54,7 +54,7 @@ export const Field: React.FC<Props> = (props) => {
     const { fId, fieldInfo } = props;
     const [field, setField] = useState<FieldInfo>(fieldInfo);
 
-    const [account, _] = useContext(CurrentAddressContext);
+    const account = useContext(CurrentAddressContext);
     const battlefield = useContext(BattlefieldContext);
     const floraArmy = useContext(FloraArmyContext);
     const faunaArmy = useContext(FaunaArmyContext);
@@ -80,8 +80,8 @@ export const Field: React.FC<Props> = (props) => {
                 setMinionProfile(await faunaArmy.instance.getMinionProfile(defender[0]));
         }
         if (defender.length) fetchProfile();
-        if (account) setChecksumAcc(ethers.utils.getAddress(account));
-    }, [field])
+        if (account[0]) setChecksumAcc(ethers.utils.getAddress(account[0]));
+    }, [field, floraArmy, faunaArmy, account])
 
     useEffect(() => {
         if (!minionProfile) return;
