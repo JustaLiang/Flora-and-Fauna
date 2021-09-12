@@ -1,11 +1,9 @@
-import { Box, Button, Container, Paper, Typography } from "@material-ui/core";
+import { Box, Container, Paper, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { useEthers } from "@usedapp/core";
-import PropTypes from "prop-types";
-import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { useHistory } from "react-router";
-import { setConnected } from "../redux/actions";
+import React, { useContext, useEffect } from "react";
+import { FloraArmyContext, FaunaArmyContext, CurrentAddressContext, ArmyEnhancerContext } from "../hardhat/SymfoniContext";
+import { BalanceContext } from "../pages/Factory";
+import { BigNumber } from "ethers";
 const useStyle = makeStyles((theme) => ({
   paper: {
     marginTop: "20px",
@@ -14,25 +12,37 @@ const useStyle = makeStyles((theme) => ({
 }));
 
 interface Props {
-  balance: number,
-  address: string
+  isFauna: boolean
 }
-export default function PersonalInfo(properties:Props) {
-  const { balance, address } = properties;
-  const { activateBrowserWallet, account } = useEthers();
+export default function PersonalInfo(properties: Props) {
   const classes = useStyle();
-  const history = useHistory();
-  const dispatch = useDispatch();
-  const handleConnect = () => {
-    activateBrowserWallet();
-  };
+  const { isFauna } = properties;
+  const floraArmy = useContext(FloraArmyContext);
+  const faunaArmy = useContext(FaunaArmyContext);
+  const armyEnhancer = useContext(ArmyEnhancerContext);
+  const account = useContext(CurrentAddressContext);
+  const [balance, setBalance] = useContext(BalanceContext);
 
   useEffect(() => {
-    if (account) {
-      dispatch(setConnected(account));
-      history.go(0);
+    const fetchEnhancerBalance = async () => {
+      if (!armyEnhancer.factory) return;
+      if (isFauna && faunaArmy.instance) {
+        const enhrAddr = await faunaArmy.instance.enhancerContract();
+        const enhancer = armyEnhancer.factory.attach(enhrAddr);
+        const rawBalance = await enhancer.balanceOf(account[0]);
+        const decimals = await enhancer.decimals();
+        setBalance(rawBalance.div(BigNumber.from(10).pow(decimals)));
+      } 
+      if (!isFauna && floraArmy.instance) {
+        const enhrAddr = await floraArmy.instance.enhancerContract();
+        const enhancer = armyEnhancer.factory.attach(enhrAddr);
+        const rawBalance = await enhancer.balanceOf(account[0]);
+        const decimals = await enhancer.decimals();
+        setBalance(rawBalance.div(BigNumber.from(10).pow(decimals)));
+      }
     }
-  }, [account]);
+    fetchEnhancerBalance();
+  }, [isFauna, account, armyEnhancer, faunaArmy, floraArmy, setBalance])
 
   return (
     <Container>
@@ -42,28 +52,16 @@ export default function PersonalInfo(properties:Props) {
             Balance
           </Typography>
         </Box>
-        <Box>
-          {!address ? (
-            <>
-              <Button variant="outlined" onClick={handleConnect}>
-                {" "}
-                Connect
-              </Button>
-            </>
-          ) : (
-            <></>
-          )}
-        </Box>
       </Box>
       <Paper
         className={classes.paper}
         style={{ maxWidth: 1000, minWidth: 800, borderRadius: 20 }}
         elevation={3}
       >
-        {address ? (
+        {account[0] ? (
           <>
-            <Typography>Your account address: {address}</Typography>
-            <Typography>Your Enhancer Balance: {balance}</Typography>
+            <Typography>Your account address: {account[0]}</Typography>
+            <Typography>Your Enhancer Balance: {balance.toString()}</Typography>
           </>
         ) : (
           <>

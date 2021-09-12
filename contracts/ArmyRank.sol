@@ -44,7 +44,7 @@ contract ArmyRank is Ownable {
      * @param power Power of the minion
     */
     function query(address branchAddr, int power) external view returns (string memory uriPrefix) {
-        for (uint i = powerLevels.length-1; i >= 0; i--) {
+        for (uint i = 0; i < powerLevels.length; i++) {
             if (power >= powerLevels[i]) {
                 string memory prefix = branchPrefix[branchAddr];
                 if (bytes(prefix).length == 0) {

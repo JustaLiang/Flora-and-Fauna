@@ -8,7 +8,6 @@ interface Props {
 
 export const CardCarousel: React.FC<Props> = (props) => {
     const { urlList } = props;
-    console.log(urlList);
     return (
         <div>
             <Carousel>

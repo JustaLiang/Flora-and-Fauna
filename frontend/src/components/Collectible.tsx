@@ -11,9 +11,10 @@ import LocalHospitalIcon from "@material-ui/icons/LocalHospital";
 import SyncIcon from "@material-ui/icons/Sync";
 import clsx from "clsx";
 import React, { useContext, useEffect, useState } from "react";
-import { FloraArmyContext, FaunaArmyContext } from "../hardhat/SymfoniContext";
+import { FloraArmyContext, FaunaArmyContext, CurrentAddressContext } from "../hardhat/SymfoniContext";
 import { BigNumber } from "ethers";
-import { FormatListNumbered } from "@material-ui/icons";
+import { PairMap } from "../assets/map/PairMap";
+import { MinionListContext } from "./CollectibleList";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -39,24 +40,25 @@ interface MinionProfile {
 
 interface Props{
     isFauna: boolean;
-    mId: string;
-    onLiberate: React.MouseEventHandler<HTMLButtonElement>;
+    mId: number;
 }
 
 export const Collectible: React.FC<Props> = (props) => {
     const classes = useStyles();
     const floraArmy = useContext(FloraArmyContext);
     const faunaArmy = useContext(FaunaArmyContext);
+    const account = useContext(CurrentAddressContext);
+    const [minionIds, setMinionIds] = useContext(MinionListContext);
     const [minionProfile, setMinionProfile] = useState<MinionProfile>();
     const [loading, setLoading] = useState(true);
     const [imageURL, setImageURL] = useState("");
-    const { isFauna, mId, onLiberate } = props;
+    const { isFauna, mId } = props;
 
     useEffect(() => {
         const fetchMinionProfile = async () => {
             if (isFauna && faunaArmy.instance)
                 setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
-            else if (!isFauna && floraArmy.instance)
+            if (!isFauna && floraArmy.instance)
                 setMinionProfile(await floraArmy.instance.getMinionProfile(mId));   
         }
         fetchMinionProfile();
@@ -86,7 +88,7 @@ export const Collectible: React.FC<Props> = (props) => {
                 console.log(receipt.logs)
             }
         }
-        else if (!isFauna && floraArmy.instance) {
+        if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.arm(mId);
             const receipt = await tx.wait();
             if (receipt.status) {
@@ -109,7 +111,7 @@ export const Collectible: React.FC<Props> = (props) => {
                 console.log(receipt.logs)
             }
         }
-        else if (!isFauna && floraArmy.instance) {
+        if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.train(mId);
             const receipt = await tx.wait();
             if (receipt.status) {
@@ -132,7 +134,7 @@ export const Collectible: React.FC<Props> = (props) => {
                 console.log(receipt.logs)
             }
         }
-        else if (!isFauna && floraArmy.instance) {
+        if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.boost(mId);
             const receipt = await tx.wait();
             if (receipt.status) {
@@ -155,7 +157,7 @@ export const Collectible: React.FC<Props> = (props) => {
                 console.log(receipt.logs)
             }
         }
-        else if (!isFauna && floraArmy.instance) {
+        if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.heal(mId);
             const receipt = await tx.wait();
             if (receipt.status) {
@@ -165,6 +167,30 @@ export const Collectible: React.FC<Props> = (props) => {
                 console.log(receipt.logs)
             }            
         }
+    }
+
+    const onLiberate: React.MouseEventHandler<HTMLButtonElement> = async () => {
+        if (isFauna && faunaArmy.instance) {
+            const tx = await faunaArmy.instance.liberate(mId);
+            const receipt = await tx.wait();
+            if (receipt.status) {
+                setMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
+            }
+            else {
+                console.log(receipt.logs)
+            }
+        }
+        if (!isFauna && floraArmy.instance) {
+            const tx = await floraArmy.instance.liberate(mId);
+            const receipt = await tx.wait();
+            if (receipt.status) {
+                setMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
+            }
+            else {
+                console.log(receipt.logs)
+            }
+        }
+        console.log("minion list:", minionIds);
     }
 
     const onGrant: React.MouseEventHandler<HTMLButtonElement> = async () => {
@@ -178,7 +204,7 @@ export const Collectible: React.FC<Props> = (props) => {
                 console.log(receipt.logs)
             }
         }
-        else if (!isFauna && floraArmy.instance) {
+        if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.grant(mId);
             const receipt = await tx.wait();
             if (receipt.status) {
@@ -203,7 +229,7 @@ export const Collectible: React.FC<Props> = (props) => {
                     </Avatar>
                 }
                 title="Minion"
-                subheader={minionProfile?.branch}
+                subheader={minionProfile?PairMap[minionProfile.branch]:"???"}
                 action={
                     <Box>
                         <Button

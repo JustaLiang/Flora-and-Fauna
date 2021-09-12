@@ -3,17 +3,23 @@ import {
 } from "@material-ui/core";
 import { AlertProps } from "@material-ui/lab/Alert";
 import MuiAlert from "@material-ui/lab/Alert";
-import PropTypes from "prop-types";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { CurrentAddressContext, FaunaArmyContext, FloraArmyContext } from "../hardhat/SymfoniContext";
+import { MinionListContext } from "./CollectibleList";
+import { ethers } from "ethers";
 function Alert(properties: AlertProps) {
   return <MuiAlert elevation={6} variant="filled" {...properties} />;
 }
 interface Props {
-  onRecruit: (quote: string, base: string) => boolean,
+  isFauna: boolean,
   onClose: React.MouseEventHandler<HTMLButtonElement>
 }
 export default function Recruit(properties: Props) {
-  const { onRecruit, onClose } = properties;
+  const { isFauna, onClose } = properties;
+  const floraArmy = useContext(FloraArmyContext);
+  const faunaArmy = useContext(FaunaArmyContext);
+  const account = useContext(CurrentAddressContext);
+  const [minionIds, setMinionIds] = useContext(MinionListContext);
   const [state, setState] = useState({
     quote: "ETH",
     base: "USD",
@@ -25,6 +31,36 @@ export default function Recruit(properties: Props) {
       [e.target.name]: e.target.value,
     });
   };
+
+  const onRecruit = async(quote: string, base: string) => {
+    const pairHash =  ethers.utils.namehash(`${quote}-${base}.data.eth`);
+    console.log(pairHash);
+    if (isFauna && faunaArmy.instance) {
+      const tx = await faunaArmy.instance.recruit(pairHash);
+      const receipt = await tx.wait();
+      console.log(receipt);
+      if (receipt.status) {
+        setMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
+        return true;
+      }
+      else {
+        console.log(receipt.status);
+      }
+    }
+    if (!isFauna && floraArmy.instance) {
+      const tx = await floraArmy.instance.recruit(pairHash);
+      const receipt = await tx.wait();
+      if (receipt.status) {
+        setMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
+        return true;
+      }
+      else
+        console.log(receipt.logs);     
+    }
+    console.log(minionIds);
+    return false;
+  }
+
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     const success = await onRecruit(state.quote, state.base);
@@ -100,6 +136,3 @@ export default function Recruit(properties: Props) {
     </div>
   );
 }
-Recruit.propTypes = {
-  onRecruit: PropTypes.func.isRequired,
-};

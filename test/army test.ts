@@ -21,7 +21,7 @@ describe("Deploy all contract", async function () {
   let ensAddress;
 
 
-  beforeEach(async function () {
+  before(async function () {
     
     //--- get chain ID
     const chainId = await hre.getChainId();
@@ -155,8 +155,8 @@ describe("Deploy all contract", async function () {
     ).to.be.revertedWith("ERC721: owner query for nonexistent token");
 
     
-    // const profile = await flora_army.getMinionProfile(minions[1]);
-    // console.log(profile);
+    const profile = await flora_army.getMinionProfile(minions[1]);
+    console.log(profile);
 
     // enhancer
     const ArmyEnhancer = await hre.ethers.getContractFactory("ArmyEnhancer");

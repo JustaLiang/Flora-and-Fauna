@@ -5,9 +5,11 @@ import {
 import { makeStyles } from "@material-ui/core/styles";
 import Switch from "@material-ui/core/Switch";
 import clsx from "clsx";
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import Logo from "../assets/image/Logo.png";
+import { SwitchContext } from "../pages/Factory";
+
 const useStyle = makeStyles((theme) => ({
   appBar: { backgroundColor: "#FFFFFF" },
   green: { color: "#1CBA1C" },
@@ -37,29 +39,34 @@ const useStyle = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
-  checked: boolean,
-  toggleChecked: () => void
-}
+interface Props { }
+
 export default function Header(properties: Props) {
   const classes = useStyle();
+  const [isFauna, setIsFauna] = useContext(SwitchContext);
+
+  const onToggle = (event: React.ChangeEvent<{}>, checked: boolean) => {
+    event.preventDefault();
+    setIsFauna(checked);
+  }
+
   return (
     <AppBar className={classes.appBar}>
       <Toolbar>
         <Grid container>
           <Grid item lg={6}>
             <Button component={Link} to="/">
-              <img src={Logo} className={classes.logo} />
+              <img src={Logo} className={classes.logo} alt="Logo"/>
             </Button>
           </Grid>
           <Grid item lg={6} style={{ paddingTop: 20 }}>
             <Typography
               variant="h5"
               className={clsx(classes.green, {
-                [classes.red]: properties.checked,
+                [classes.red]: isFauna,
               })}
             >
-              {!properties.checked ? "Flora Army" : "Fauna Army"}
+              {!isFauna ? "Flora Army" : "Fauna Army"}
             </Typography>
           </Grid>
         </Grid>
@@ -68,7 +75,7 @@ export default function Header(properties: Props) {
           variant="outlined"
           to="/Playground"
           className={clsx(classes.greenButton, {
-            [classes.redButton]: properties.checked,
+            [classes.redButton]: isFauna,
           })}
           style={{
             textTransform: "none",
@@ -85,15 +92,15 @@ export default function Header(properties: Props) {
             <Typography
               variant="body1"
               className={clsx(classes.switch_green, {
-                [classes.switch_red]: properties.checked,
+                [classes.switch_red]: isFauna,
               })}
             >
               Switch
             </Typography>
           }
           labelPlacement="start"
-          checked={properties.checked}
-          onChange={properties.toggleChecked}
+          checked={isFauna}
+          onChange={onToggle}
           style={{ fontWeight: "bold" }}
         />
       </Toolbar>

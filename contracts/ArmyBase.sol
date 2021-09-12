@@ -116,22 +116,16 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
     */    
     function getMinionProfile(uint minionID) external view
             returns (MinionProfile memory profile) {
-            if (_exists(minionID)) {
-                Minion storage m = minions[minionID];
-                profile.branch = m.branchAddr;
-                profile.armed = m.armed;
-                profile.price = m.envFactor;
-                profile.power = m.power;
-                profile.uri = tokenURI(minionID);
-            }
-            else {
-                profile.branch = address(0);
-                profile.armed = false;
-                profile.price = 0;
-                profile.power = 0;
-                profile.uri = "";                
-            }
-        }
+            require(
+                _exists(minionID),
+                "ARMY: commander query for nonexistent minion");            
+            Minion storage m = minions[minionID];
+            profile.branch = m.branchAddr;
+            profile.armed = m.armed;
+            profile.price = m.envFactor;
+            profile.power = m.power;
+            profile.uri = tokenURI(minionID);
+    }
 
     /**
      * @notice Get minion IDs, like (2,6,9), given commander
@@ -162,7 +156,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
         teamInfo = new Minion[](minionIDs.length);
         for (uint i = 0; i < minionIDs.length; i++) {
             teamInfo[i] = minions[minionIDs[i]];
-        }        
+        }
     }
 
     /**

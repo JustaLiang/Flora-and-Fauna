@@ -300,8 +300,9 @@ export default function Home() {
               overflow="visible"
               style={{ flexWrap: "nowrap", overflowX: "scroll", gap: 5 }}
             >
-              {card.map((item) => (
+              {card.map((item, idx) => (
                 <img
+                  key={idx}
                   src={item}
                   alt="card"
                   style={{ width: 300, height: 300 }}

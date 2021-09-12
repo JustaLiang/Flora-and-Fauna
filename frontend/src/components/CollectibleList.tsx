@@ -1,3 +1,4 @@
+import { BigNumber } from "@ethersproject/bignumber";
 import {
     Box, Button, Container, Dialog,
     DialogTitle, Grid, Paper, Typography
@@ -6,8 +7,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import AddIcon from "@material-ui/icons/Add";
 import clsx from "clsx";
 import React, { useContext, useEffect, useState } from "react";
-import PairMap from "../assets/map/index";
-import { FaunaArmyContext, FloraArmyContext } from "../hardhat/SymfoniContext";
+import { CurrentAddressContext, FaunaArmyContext, FloraArmyContext } from "../hardhat/SymfoniContext";
 import { Collectible } from "./Collectible";
 import Recruit from "./Recruit";
 
@@ -56,54 +56,31 @@ interface Props {
     isFauna: boolean,
 }
 
+export const MinionListContext = React.createContext<[BigNumber[], React.Dispatch<React.SetStateAction<BigNumber[]>>]>([[], () => { }]);
+
 export const CollectibleList: React.FC<Props> = (props) => {
+    const classes = useStyles();
     const { isFauna } = props;
-    const [data, setData] = useState<IState['data']>([]);
     const [open, setOpen] = useState(false);
     const floraArmy = useContext(FloraArmyContext);
     const faunaArmy = useContext(FaunaArmyContext);
+    const account = useContext(CurrentAddressContext);
+    const [minionIds, setMinionIds] = useState<BigNumber[]>([]);
 
-    const onLiberate: React.MouseEventHandler<HTMLButtonElement> = 
-            async (mId: number) => {
-        if (isFauna && faunaArmy.instance) {
-                const tx = await faunaArmy.instance.liberate(mId);
-                const receipt = await tx.wait();
-                if (receipt.status) {
-                        setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
-                }
-                else {
-                        console.log(receipt.logs)
-                }
-        }
-        else if (!isFauna && floraArmy.instance) {
-                const tx = await floraArmy.instance.liberate(mId);
-                const receipt = await tx.wait();
-                if (receipt.status) {
-                        setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
-                }
-                else {
-                        console.log(receipt.logs)
-                }
-        }
-}
-
-    const classes = useStyles();
     useEffect(() => {
-        if (list) {
-            const temporary:IState['data'] = [];
-            for (const key in list) {
-                temporary.push({
-                    _id: key,
-                    address: PairMap[list[key][0]],
-                    isArmed: list[key][1],
-                    price: list[key][2],
-                    power: list[key][3],
-                    tokenURI: list[key][4],
-                });
-            }
-            setData(temporary);
+        const fetchPlayerMinions = async () => {
+            if (isFauna && faunaArmy.instance)
+                setMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
+            if (!isFauna && floraArmy.instance)
+                setMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
         }
-    }, [list]);
+        fetchPlayerMinions();
+    }, [isFauna, account, faunaArmy, floraArmy])
+
+    useEffect(() => {
+        console.log(minionIds);
+    }, [minionIds])
+
     const handleClickOpen = () => {
         setOpen(true);
     };
@@ -111,9 +88,10 @@ export const CollectibleList: React.FC<Props> = (props) => {
     const handleClose = () => {
         setOpen(false);
     };
-    console.log("List:", list);
+
     return (
         <div>
+            <MinionListContext.Provider value={[minionIds, setMinionIds]}>
             <Container maxWidth="lg">
                 <Box
                     display="flex"
@@ -130,7 +108,7 @@ export const CollectibleList: React.FC<Props> = (props) => {
                     <Box>
                         <Button
                             className={clsx(classes.green, {
-                                [classes.red]: checked,
+                                [classes.red]: isFauna,
                             })}
                             variant="outlined"
                             endIcon={<AddIcon />}
@@ -144,7 +122,7 @@ export const CollectibleList: React.FC<Props> = (props) => {
                             onClose={handleClose}
                         >
                             <DialogTitle id="form-dialog-title">Recruit Minion</DialogTitle>
-                            <Recruit onRecruit={onRecruit} onClose={handleClose} />
+                            <Recruit isFauna={isFauna} onClose={handleClose} />
                         </Dialog>
                     </Box>
                 </Box>
@@ -154,23 +132,12 @@ export const CollectibleList: React.FC<Props> = (props) => {
                     className={classes.root}
                     alignItems="center"
                 >
-                    {data.length > 0 ? (
-                        data.map((item, index) => (
-                            <Grid item lg={6} key={index}>
+                    {minionIds? (
+                        minionIds.map((mid) => (
+                            <Grid item lg={6} key={mid.toNumber()}>
                                 <Collectible
-                                    checked={checked}
-                                    _id={item._id}
-                                    address={item.address}
-                                    isArmed={item.isArmed}
-                                    price={item.price}
-                                    power={item.power}
-                                    tokenURI={item.tokenURI}
-                                    onArm={onArm}
-                                    onTrain={onTrain}
-                                    onBoost={onBoost}
-                                    onHeal={onHeal}
-                                    onLiberate={onLiberate}
-                                    onGrant={onGrant}
+                                    isFauna={isFauna}
+                                    mId={mid.toNumber()}
                                 />
                             </Grid>
                         ))
@@ -189,6 +156,7 @@ export const CollectibleList: React.FC<Props> = (props) => {
                     )}
                 </Grid>
             </Container>
+            </MinionListContext.Provider>
         </div>
     );
 }

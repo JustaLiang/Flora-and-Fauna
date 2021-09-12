@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers';
 import React, { useContext, useEffect, useState } from 'react';
 import { FloraArmyContext } from "../hardhat/SymfoniContext";
 
@@ -6,21 +7,15 @@ interface Props { }
 interface MinionProfile {
     branch: string;
     armed: Boolean;
-    price: number;
-    power: number;
+    price: BigNumber;
+    power: BigNumber;
     uri: string;
 }
 
 export const CheckFlora: React.FC<Props> = () => {
     const flora = useContext(FloraArmyContext);
     const [minionId, setMinionId] = useState<number>(0);
-    const [minionProfile, setMinionProfile] = useState<MinionProfile>({
-        branch: "",
-        armed: false,
-        price: 0,
-        power: 0,
-        uri: ""
-    });
+    const [minionProfile, setMinionProfile] = useState<MinionProfile>();
     const [imageURI, setImageURI] = useState<string>("loading");
 
     useEffect(() => {
@@ -33,6 +28,7 @@ export const CheckFlora: React.FC<Props> = () => {
 
     useEffect(() => {
         const updateImageURI = async () => {
+            if (!minionProfile) return;
             fetch(minionProfile.uri)
                 .then((res) => {
                     if (res.status === 404) throw Error("URI error: 404")
@@ -51,28 +47,15 @@ export const CheckFlora: React.FC<Props> = () => {
 
     const onCheck = async () => {
         if (!flora.instance) throw Error("FloraArmy instance not ready");
-        
-        flora.instance.getMinionProfile(minionId)
-        .then((info) => {
-            setMinionProfile({
-                branch: info.branch,
-                armed:  info.armed,
-                price:  info.price.toNumber(),
-                power:  info.power.toNumber(),
-                uri:    info.uri,
-            })            
-        })
-        .catch((err) => {
-            console.log(err);
-        })
+        setMinionProfile(await flora.instance.getMinionProfile(minionId));
     };
 
     return (
         <div>
             <img ref={imageURI} alt="loading"></img>
-            <p>Status: {minionProfile.armed?"Armed":"Trained"}</p>
-            <p>Price: {minionProfile.price}</p>
-            <p>Power: {minionProfile.power}</p>
+            <p>Status: {minionProfile?.armed?"Armed":"Trained"}</p>
+            <p>Price: {minionProfile?.price.toNumber()}</p>
+            <p>Power: {minionProfile?.power.toNumber()}</p>
             <input onChange={(e) => setMinionId(parseInt(e.target.value))}></input>
             <button onClick={onCheck}>check minion</button>
         </div>
