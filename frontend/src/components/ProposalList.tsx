@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Button, Container, Dialog, DialogTitle, Typography, DialogContent, TextField, DialogActions,Divider } from '@material-ui/core';
+import { Box, Button, Container, Dialog, DialogTitle, Typography, DialogContent, TextField, Divider } from '@material-ui/core';
 import { Proposal } from './Proposal';
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';

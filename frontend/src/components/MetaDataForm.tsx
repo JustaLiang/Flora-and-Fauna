@@ -1,4 +1,4 @@
-import { Paper, Box, Typography, Container, Card, Button } from '@material-ui/core'
+import { Box, Typography, Button } from '@material-ui/core'
 import React, { useState, useContext } from 'react'
 import AddForm from './AddForm'
 import { NFTStorage, File } from 'nft.storage'
