@@ -1,31 +1,24 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Route, Switch, BrowserRouter as Router, } from 'react-router-dom';
+import Home from './pages/Home';
+import Factory from './pages/Factory';
+import UploadPage from './pages/UploadPage';
 import { Symfoni } from "./hardhat/SymfoniContext";
-import { Greeter } from './components/Greeter';
 
 function App() {
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <Symfoni autoInit={true} >
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-        </a>
-          <Greeter></Greeter>
+    <Router>
+      <Switch>
+        <Symfoni autoInit={true} loadingComponent={<h1>Loading...</h1>}>
+          <Route exact path='/'><Home /></Route>
+          <Route exact path='/upload'><UploadPage /></Route>
+          <Route exact path='/factory'>
+            <Factory />
+          </Route>
         </Symfoni>
-      </header>
-    </div>
+      </Switch>
+    </Router>
   );
 }
 

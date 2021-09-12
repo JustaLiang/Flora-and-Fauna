@@ -1,5 +1,8 @@
 // Rinkeby
-const PairMap = {
+interface IPairMap{
+  [key:string]:string
+}
+const PairMap:IPairMap = {
   "0x21c095d2aDa464A294956eA058077F14F66535af": "AUD / USD",
   "0x3409e71EA92635A56Dc937b79B6Fa34F05d76174": "Arb Mainnet Seq Status",
   "0x13E99C19833F557672B67C70508061A2E1e54162": "Arb Seq Status",

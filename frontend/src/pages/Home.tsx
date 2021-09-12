@@ -320,7 +320,7 @@ export default function Home() {
           Github:{" "}
           <a
             href="https://github.com/JustaJunk/Flora-and-Fauna"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             target="_blank"
           >
             Flora-Fauna
