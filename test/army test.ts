@@ -1,7 +1,7 @@
 const hre = require("hardhat");
-const {ethers, BigNumber} = require("ethers");
+const {ethers, BigNumber } = require("ethers");
 const { expect, assert } = require("chai");
-
+const utils = require('ethers').utils;
 
 const zeroAddress = ethers.constants.AddressZero;
 const initEnhancer = 7777777777777;
@@ -19,6 +19,7 @@ describe("Deploy all contract", async function () {
   let owner, addr1, addr2;
   let minions;
   let ensAddress;
+  let mockAgg;
 
 
   beforeEach(async function () {
@@ -27,7 +28,6 @@ describe("Deploy all contract", async function () {
     const chainId = await hre.getChainId();
 
     //--- setup local ENS, resolver and aggregator when in local network
-    const setupEnsRegistry = async () => {
       const ENS = await hre.ethers.getContractFactory("MockEnsRegistry");
       const ens = await ENS.deploy();
       await ens.deployed();
@@ -40,22 +40,18 @@ describe("Deploy all contract", async function () {
       const mockPairs = ['eth-usd', 'btc-usd', 'bnb-usd', 'link-usd'];
       const mockPrices = [3500, 50000, 400, 30];
 
-      mockPairs.map(async (pair, idx) => {
-        const namehash = ethers.utils.namehash(pair + ".data.eth");
-        console.log(idx);
-        console.log(pair, namehash);
-        const mockAgg = await Aggregator.deploy(1, mockPrices[idx] * 8);
-        await mockAgg.deployed();
-        ens.setResolver(namehash, resolver.address);
-        resolver.setAddr(namehash, mockAgg.address);
-      })
-      return ens;
-    }
+      const pair = 'bnb-usd';
+      const namehash = ethers.utils.namehash(pair + ".data.eth");
+      mockAgg = await Aggregator.deploy(1, 400);
+      await mockAgg.deployed();
+      // console.log("Resolver deployed to:", resolver.address);
+      ens.setResolver(namehash, resolver.address);
+      resolver.setAddr(namehash, mockAgg.address);
+      // console.log(pair, "Aggregator deployed to:", mockAgg.address);
 
     //--- get ENS registry address
-    ensAddress = await setupEnsRegistry();
     const ensRegistryAddr = (chainId === '1337') ?
-      await ensAddress.address : "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
+      await ens.address : "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 
     //--- deploy FloraArmy
     const FloraArmy = await hre.ethers.getContractFactory("FloraArmy");
@@ -88,7 +84,6 @@ describe("Deploy all contract", async function () {
 
     // for test
     [owner, addr1, addr2] = await hre.ethers.getSigners();
-    const pair = 'bnb-usd';
     bnb_hash = ethers.utils.namehash(pair + ".data.eth");
     flora_army = floraArmy;
     
@@ -142,30 +137,78 @@ describe("Deploy all contract", async function () {
 
   it("floraArmy contract", async function () {
 
-    // train before liberate
+    // arm before liberate
     await flora_army.arm(minions[0]);
     await flora_army.arm(minions[1]);
-    const info = await flora_army.getMinionInfo(minions[0]);
+    let info = await flora_army.getMinionInfo(minions[0]);
     assert( await info[1] === true, 'armed = true after arm');
 
-
     await flora_army.liberate(minions[0]);
+    await expect(
+      flora_army.liberate(minions[0])
+    ).to.be.revertedWith("ERC721: operator query for nonexistent token");
     await expect(
       flora_army.ownerOf(minions[0])
     ).to.be.revertedWith("ERC721: owner query for nonexistent token");
 
-    
-    // const profile = await flora_army.getMinionProfile(minions[1]);
+    // const profile = await flora_army.getMinionProfile(minions[1]); getMinionProfile 有問題
     // console.log(profile);
 
     // enhancer
     const ArmyEnhancer = await hre.ethers.getContractFactory("ArmyEnhancer");
     const floraEnhancer = ArmyEnhancer.attach(await flora_army.enhancerContract())
-    let ownerEnhancer = await floraEnhancer.balanceOf(owner.address);
-    let totalEnhancer = await floraEnhancer.totalSupply();
-    const initEnhancer_big = await BigNumber.from( initEnhancer*10**18 );
+    const ownerEnhancer = await floraEnhancer.balanceOf(owner.address);
+    const totalEnhancer = await floraEnhancer.totalSupply();
 
-    assert(totalEnhancer === ownerEnhancer, 'Enhancer total supply equal to owner');
+    assert(ownerEnhancer.eq(totalEnhancer), 'Enhancer total supply equal to owner');
+    await flora_army.liberate(minions[1]);
+    assert( ownerEnhancer.eq(await floraEnhancer.balanceOf(owner.address)), 'liberate power 1000 does not gain enhancer');
+
+    // can trained be heal when price not change?
+    await flora_army.heal(minions[2]);
+    assert( ownerEnhancer.eq(await floraEnhancer.balanceOf(owner.address)), "heal should not take enhancer if price doesn't change");
+    info = await flora_army.getMinionInfo(minions[2]);
+    assert( await info[1] === true, 'armed after heal');
+  });
+
+  it("mockAgg", async function () {
+    const ArmyEnhancer = await hre.ethers.getContractFactory("ArmyEnhancer");
+    const floraEnhancer = ArmyEnhancer.attach(await flora_army.enhancerContract())
+    let ownerEnhancer = await floraEnhancer.balanceOf(owner.address);
+    console.log(ownerEnhancer.toString());
+    const latestAnswer = await mockAgg.latestAnswer();
+    // console.log(await latestAnswer.toNumber() );
+    let info = await flora_army.getMinionInfo(minions[0]);
+    let envFactor = await info[2];
+    assert( latestAnswer.eq(envFactor), 'latestAnswer equal to envFactor');
+
+    // update price to 600
+    // train -> arm
+    await mockAgg.updateAnswer(600);
+    let updateAnswer = await mockAgg.latestAnswer();
+    await flora_army.arm(minions[0]);
+    info = await flora_army.getMinionInfo(minions[0]);
+    // console.log(await info[3].toNumber() );
+    assert( updateAnswer.eq(info[2]), 'updateAnswer equal to envFactor after arm');
+
+    // update price to 800
+    // arm -> train
+    await mockAgg.updateAnswer(800);
+    updateAnswer = await mockAgg.latestAnswer();
+    await flora_army.boost(minions[0]);
+    ownerEnhancer = await floraEnhancer.balanceOf(owner.address);
+    console.log(ownerEnhancer.toString());
+    info = await flora_army.getMinionInfo(minions[0]);
+    // console.log(await info[3].toNumber() );
+    // assert( updateAnswer.eq(info[2]), 'updateAnswer equal to envFactor after boost');
+
+    await flora_army.heal(minions[0]);
+    ownerEnhancer = await floraEnhancer.balanceOf(owner.address);
+    console.log(ownerEnhancer.toString());
+    await flora_army.boost(minions[0]);
+    ownerEnhancer = await floraEnhancer.balanceOf(owner.address);
+    console.log(ownerEnhancer.toString());
+
   });
 
 });
