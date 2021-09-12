@@ -163,10 +163,9 @@ describe("Deploy all contract", async function () {
     const floraEnhancer = ArmyEnhancer.attach(await flora_army.enhancerContract())
     let ownerEnhancer = await floraEnhancer.balanceOf(owner.address);
     let totalEnhancer = await floraEnhancer.totalSupply();
-    const initEnhancer_big = await BigNumber.from( initEnhancer*10**decimals() );
+    const initEnhancer_big = await BigNumber.from( initEnhancer*10**18 );
 
     assert(totalEnhancer === ownerEnhancer, 'Enhancer total supply equal to owner');
-    console.log()
   });
 
 });
