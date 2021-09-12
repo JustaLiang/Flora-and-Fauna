@@ -98,7 +98,7 @@ export default function Header(properties: Props) {
               Switch
             </Typography>
           }
-          labelPlacement="start"
+          labelPlacement="end"
           checked={isFauna}
           onChange={onToggle}
           style={{ fontWeight: "bold" }}
