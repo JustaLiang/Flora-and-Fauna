@@ -18,6 +18,7 @@ describe("Deploy all contract", async function () {
   let flora_army;
   let owner, addr1, addr2;
   let minions;
+  let ensAddress;
 
 
   beforeEach(async function () {
@@ -30,12 +31,10 @@ describe("Deploy all contract", async function () {
       const ENS = await hre.ethers.getContractFactory("MockEnsRegistry");
       const ens = await ENS.deploy();
       await ens.deployed();
-      console.log("ENS deployed to:", ens.address);
 
       const Resolver = await hre.ethers.getContractFactory("MockPublicResolver");
       const resolver = await Resolver.deploy();
       await resolver.deployed();
-      console.log("Resolver deployed to:", resolver.address);
 
       const Aggregator = await hre.ethers.getContractFactory("MockV3Aggregator");
       const mockPairs = ['eth-usd', 'btc-usd', 'bnb-usd', 'link-usd'];
@@ -47,16 +46,16 @@ describe("Deploy all contract", async function () {
         console.log(pair, namehash);
         const mockAgg = await Aggregator.deploy(1, mockPrices[idx] * 8);
         await mockAgg.deployed();
-        console.log(pair, "Aggregator deployed to:", mockAgg.address);
         ens.setResolver(namehash, resolver.address);
         resolver.setAddr(namehash, mockAgg.address);
       })
-      return ens.address;
+      return ens;
     }
 
     //--- get ENS registry address
+    ensAddress = await setupEnsRegistry();
     const ensRegistryAddr = (chainId === '1337') ?
-      await setupEnsRegistry() : "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
+      await ensAddress.address : "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
 
     //--- deploy FloraArmy
     const FloraArmy = await hre.ethers.getContractFactory("FloraArmy");
@@ -64,7 +63,6 @@ describe("Deploy all contract", async function () {
       ensRegistryAddr, initEnhancer, powerLevels, floraNames
     );
     await floraArmy.deployed();
-    console.log("FloraArmy deployed to:", floraArmy.address);
 
     //--- deploy FaunaArmy
     const FaunaArmy = await hre.ethers.getContractFactory("FaunaArmy");
@@ -72,25 +70,21 @@ describe("Deploy all contract", async function () {
       ensRegistryAddr, initEnhancer, powerLevels, faunaNames
     );
     await faunaArmy.deployed();
-    console.log("FaunaArmy deployed to:", faunaArmy.address);
 
     //--- setup FloraRank prefix
     const FloraRank = await hre.ethers.getContractFactory("ArmyRank");
     const floraRank = FloraRank.attach(await floraArmy.rankContract())
     floraRank.updateBranchPrefix(zeroAddress, floraPrefix);
-    console.log("FloraRank prefix:", await floraRank.branchPrefix(zeroAddress));
 
     //--- setup FaunaRank prefix
     const FaunaRank = await hre.ethers.getContractFactory("ArmyRank");
     const faunaRank = FaunaRank.attach(await faunaArmy.rankContract())
     faunaRank.updateBranchPrefix(zeroAddress, faunaPrefix);
-    console.log("FaunaRank prefix:", await faunaRank.branchPrefix(zeroAddress));
 
     //--- deploy battlefield
     const Battlefield = await hre.ethers.getContractFactory("Battlefield");
     const battlefield = await Battlefield.deploy(floraArmy.address, faunaArmy.address);
     await battlefield.deployed();
-    console.log("Battlefield deployed to:", battlefield.address);
 
     // for test
     [owner, addr1, addr2] = await hre.ethers.getSigners();
@@ -150,19 +144,29 @@ describe("Deploy all contract", async function () {
 
     // train before liberate
     await flora_army.arm(minions[0]);
+    await flora_army.arm(minions[1]);
     const info = await flora_army.getMinionInfo(minions[0]);
     assert( await info[1] === true, 'armed = true after arm');
 
-    
+
     await flora_army.liberate(minions[0]);
     await expect(
       flora_army.ownerOf(minions[0])
     ).to.be.revertedWith("ERC721: owner query for nonexistent token");
 
-    const profile = await flora_army.getMinionProfile(minions[1]);
-    console.log(profile);
     
+    // const profile = await flora_army.getMinionProfile(minions[1]);
+    // console.log(profile);
 
+    // enhancer
+    const ArmyEnhancer = await hre.ethers.getContractFactory("ArmyEnhancer");
+    const floraEnhancer = ArmyEnhancer.attach(await flora_army.enhancerContract())
+    let ownerEnhancer = await floraEnhancer.balanceOf(owner.address);
+    let totalEnhancer = await floraEnhancer.totalSupply();
+    const initEnhancer_big = await BigNumber.from( initEnhancer*10**decimals() );
+
+    assert(totalEnhancer === ownerEnhancer, 'Enhancer total supply equal to owner');
+    console.log()
   });
 
 });
