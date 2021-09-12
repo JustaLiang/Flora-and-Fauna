@@ -18,6 +18,7 @@ export default function Factory() {
         const fetchData = async () => {
             if (!faunaArmy.instance || !floraArmy.instance || !armyEnhancer.instance || !currentAddres) return ;
             console.log(floraArmy.instance.address);
+            console.log(await floraArmy.instance.getMinionIDs(currentAddres[0]));
             console.log(floraArmy);
             console.log(floraArmy.instance);
 

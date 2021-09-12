@@ -127,9 +127,10 @@ export const Proposal: React.FC<Props> = (props) => {
     useEffect(() => {
         if (!proposalInfo) return;
         const { prefixURI } = proposalInfo;
+        const httpPrefix = 'https://ipfs.io/ipfs/' + prefixURI.slice(7)
         var imageList: string[] = [];
         suffixURI.forEach((suffix) => {
-            fetch(`${prefixURI}${suffix}`)
+            fetch(`${httpPrefix}${suffix}`)
                 .then(res => {
                     if(res.status===404) console.log('404 metadata not found')
                     return res.json()
