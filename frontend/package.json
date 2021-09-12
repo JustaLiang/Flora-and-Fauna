@@ -17,6 +17,7 @@
     "@usedapp/core": "^0.4.7",
     "dotenv": "^10.0.0",
     "ethers": "^5.0.17",
+    "nft.storage": "^3.2.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-material-ui-carousel": "^2.3.1",

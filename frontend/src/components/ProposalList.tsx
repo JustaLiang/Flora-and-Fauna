@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Button, Container, Dialog, DialogTitle, Typography, DialogContent, TextField, DialogActions } from '@material-ui/core';
+import { Box, Button, Container, Dialog, DialogTitle, Typography, DialogContent, TextField, DialogActions,Divider } from '@material-ui/core';
 import { Proposal } from './Proposal';
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { BattlefieldContext } from '../hardhat/SymfoniContext';
+import MetaDataForm from './MetaDataForm';
 
 const useStyles = makeStyles((theme) => ({
     proposalBox: {
@@ -149,7 +150,7 @@ export const ProposalList: React.FC<Props> = () => {
                         </Button>
                     </Box>
                 </Box>
-                <Dialog open={open} style={{}} scroll="paper"
+                <Dialog open={open} style={{}} scroll="paper" maxWidth='xl'
                     classes={{
                         scrollPaper: classes.topScrollPaper,
                         paperScrollBody: classes.topPaperScrollBody,
@@ -158,7 +159,7 @@ export const ProposalList: React.FC<Props> = () => {
                     <DialogTitle>
                         Enter your url prefix
                     </DialogTitle>
-                    <DialogContent dividers>
+                    <DialogContent >
                         <Box style={{width:400,height:100}}>
                             <TextField 
                             value={URL}
@@ -167,16 +168,19 @@ export const ProposalList: React.FC<Props> = () => {
                             style={{marginTop:20,width:390}}
                             />
                         </Box>
-                    </DialogContent>
-                    <DialogActions >
                         <Button
                         variant='outlined'
                         onClick={handleSubmit}
-                        style={{marginTop:10, marginBottom:10}}
+                        style={{marginTop:10, marginBottom:10, textTransform:'none'}}
                         >
                             Submit
                         </Button>
-                    </DialogActions>
+                        <Divider style={{marginTop:20,marginBottom:20}}/>
+                        <p style={{color:'#9e9d9d'}}>or</p>
+                        <MetaDataForm/>
+                    </DialogContent>
+                    
+
                 </Dialog>
                 <Box display='flex' flexDirection='row'
                     className={classes.proposalBox}>

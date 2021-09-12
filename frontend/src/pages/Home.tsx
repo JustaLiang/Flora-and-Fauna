@@ -42,7 +42,8 @@ const useStyles = makeStyles((theme) => ({
     width: 100,
   },
   bodyLeft: {
-    padding: " 88px 152px",
+    paddingLeft: "88px",
+    paddingTop: '50px'
   },
   main: {
     backgroundImage: `url(${BackgroundDapp})`,
@@ -169,8 +170,9 @@ export default function Home() {
         <Box
           display="flex"
           flexDirection="row"
+          justifyContent='center'
           className={classes.main}
-          style={{ height: 830 }}
+          style={{ height: 830,gap:100 }}
         >
           <Box className={classes.bodyLeft}>
             <Typography className={classes.title}>People trade NFT</Typography>
@@ -323,6 +325,7 @@ export default function Home() {
             href="https://github.com/JustaJunk/Flora-and-Fauna"
             rel="noopener noreferrer"
             target="_blank"
+            style={{color:'#6988b9'}}
           >
             Flora-Fauna
           </a>
