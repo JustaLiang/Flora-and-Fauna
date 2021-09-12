@@ -202,7 +202,7 @@ export const Field: React.FC<Props> = (props) => {
                                     <Avatar className={clsx(classes.green, {
                                         [classes.red]: !field.isFlora
                                     })}>
-                                        {field.defender[0]}
+                                        {field.defender[0].toNumber()}
                                     </Avatar>
                                 } />
                             <Box style={{
@@ -218,7 +218,7 @@ export const Field: React.FC<Props> = (props) => {
                                     Status: {minionProfile?.armed ? "Armed" : "Unarmed"}
                                 </Typography>
                                 <Typography variant='h6' style={{ fontWeight: 'bold', textAlign: 'left', marginLeft: 75 }}>
-                                    Power: {minionProfile?.power}
+                                    Power: {minionProfile?.power.toNumber()}
                                 </Typography>
 
                             </Box>

@@ -13,8 +13,10 @@ export const CardCarousel: React.FC<Props> = (props) => {
         <div>
             <Carousel>
                 {
-                    urlList.map((item)=>(
-                        <Box style={{backgroundImage: `url(${item})`,
+                    urlList.map((item, idx)=>(
+                        <Box
+                            key={idx} 
+                            style={{backgroundImage: `url(${item})`,
                             backgroundSize: "cover",
                             backgroundPosition: '50% 50%',
                             width: 280,

@@ -7,7 +7,8 @@ import { CardCarousel } from './CardCarousel';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useContext } from 'react';
 import { BattlefieldContext } from '../hardhat/SymfoniContext';
-
+import { BigNumber } from "ethers";
+ 
 const useStyles = makeStyles((theme) => ({
     card: {
         width: 275
@@ -50,7 +51,7 @@ const suffixURI = [
 export interface ProposalInfo {
     proposer: string;
     prefixURI: string;
-    voteCount: number;
+    voteCount: BigNumber;
 }
 
 interface Props {
@@ -71,12 +72,7 @@ export const Proposal: React.FC<Props> = (props) => {
     useEffect(() => {
         const loadProposals = async () => {
             if (!battlefield.instance) return;
-            const pInfo = await battlefield.instance.proposals(pId);
-            setProposalInfo({
-                proposer: pInfo.proposer,
-                prefixURI: pInfo.prefixURI,
-                voteCount: pInfo.voteCount.toNumber(),
-            });
+            setProposalInfo(await battlefield.instance.proposals(pId));
         }
         loadProposals();
     }, [battlefield, pId])
@@ -86,12 +82,7 @@ export const Proposal: React.FC<Props> = (props) => {
         const tx = await battlefield.instance.vote(fieldId, pId);
         const receipt =  await tx.wait();
         if (receipt.status) {
-            const pInfo = await battlefield.instance.proposals(pId);
-            setProposalInfo({
-                proposer: pInfo.proposer,
-                prefixURI: pInfo.prefixURI,
-                voteCount: pInfo.voteCount.toNumber(),
-            });
+            setProposalInfo(await battlefield.instance.proposals(pId));
         }
         else
             console.log(receipt.logs);
@@ -177,7 +168,7 @@ export const Proposal: React.FC<Props> = (props) => {
 
                 </CardActions>
                 <Box className={classes.footer}>
-                    <Typography>Vote count: {proposalInfo?.voteCount}</Typography>
+                    <Typography>Vote count: {proposalInfo?.voteCount.toNumber()}</Typography>
                 </Box>
                 <Dialog open={voteOpen}  scroll="paper"
                     classes={{
