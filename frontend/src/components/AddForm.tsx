@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
-import { Paper, Box, Typography, Container, Card, Dialog, DialogTitle, TextField, Input, Button, Fab } from '@material-ui/core'
-import AddIcon from '@material-ui/icons/Add';
-import CheckIcon from '@material-ui/icons/Check';
-import AddPhotoAlternateIcon from "@material-ui/icons/AddPhotoAlternate";
-import { NFTStorage, File } from 'nft.storage'
-import { MetaData } from './MetaDataForm'
+import { Box, Button, Dialog, DialogTitle, Fab, TextField, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import AddIcon from '@material-ui/icons/Add';
+import AddPhotoAlternateIcon from "@material-ui/icons/AddPhotoAlternate";
+import CheckIcon from '@material-ui/icons/Check';
+import { File, NFTStorage } from 'nft.storage';
+import React, { useState } from 'react';
+import { MetaData } from './MetaDataForm';
 
 const NFT_STORAGE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEU1MjA4ZDE2QUJhOTU4MjhEN2Y0QzRFMTJFNTZmOTAxN0QxN2ZkZGQiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTYzMTQzMTg3NDg5OCwibmFtZSI6InRlc3RfZmlsZV91cGxvYWQifQ.4CiGIYN_bFDbRBmi9EBarnmy58O_UoMGSubK5C21ZrI"
 const client = new NFTStorage({ token: NFT_STORAGE_KEY })

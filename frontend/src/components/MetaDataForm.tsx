@@ -1,9 +1,9 @@
-import { Paper, Box, Typography, Container, Card, Button } from '@material-ui/core'
-import React, { useState, useContext } from 'react'
-import AddForm from './AddForm'
-import { NFTStorage, File } from 'nft.storage'
+import { Box, Button, Typography } from '@material-ui/core';
 import LinearProgress, { LinearProgressProps } from '@material-ui/core/LinearProgress';
+import { File, NFTStorage } from 'nft.storage';
+import React, { useContext, useState } from 'react';
 import { BattlefieldContext } from '../hardhat/SymfoniContext';
+import AddForm from './AddForm';
 
 const NFT_STORAGE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEU1MjA4ZDE2QUJhOTU4MjhEN2Y0QzRFMTJFNTZmOTAxN0QxN2ZkZGQiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTYzMTQzMTg3NDg5OCwibmFtZSI6InRlc3RfZmlsZV91cGxvYWQifQ.4CiGIYN_bFDbRBmi9EBarnmy58O_UoMGSubK5C21ZrI"
 const client = new NFTStorage({ token: NFT_STORAGE_KEY })

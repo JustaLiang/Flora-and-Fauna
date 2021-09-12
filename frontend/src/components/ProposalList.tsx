@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Box, Button, Container, Dialog, DialogTitle, Typography, DialogContent, TextField, DialogActions,Divider } from '@material-ui/core';
-import { Proposal } from './Proposal';
+import { Box, Button, Container, Dialog, DialogContent, DialogTitle, Divider, TextField, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
+import React, { useContext, useEffect, useState } from 'react';
 import { BattlefieldContext } from '../hardhat/SymfoniContext';
 import MetaDataForm from './MetaDataForm';
+import { Proposal } from './Proposal';
 
 const useStyles = makeStyles((theme) => ({
     proposalBox: {
