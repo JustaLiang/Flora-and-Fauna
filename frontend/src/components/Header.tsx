@@ -1,5 +1,5 @@
 import {
-  AppBar, Button, FormControlLabel, Grid, Toolbar,
+  AppBar, Button, Grid, Toolbar,
   Typography
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
@@ -53,7 +53,7 @@ export default function Header(properties: Props) {
   return (
     <AppBar className={classes.appBar}>
       <Toolbar>
-        <Grid container>
+        <Grid container style={{width:'80vw'}}>
           <Grid item lg={6}>
             <Button component={Link} to="/">
               <img src={Logo} className={classes.logo} alt="Logo"/>
@@ -86,23 +86,8 @@ export default function Header(properties: Props) {
         >
           Playground
         </Button>
-        <FormControlLabel
-          control={<Switch />}
-          label={
-            <Typography
-              variant="body1"
-              className={clsx(classes.switch_green, {
-                [classes.switch_red]: isFauna,
-              })}
-            >
-              Switch
-            </Typography>
-          }
-          labelPlacement="end"
-          checked={isFauna}
-          onChange={onToggle}
-          style={{ fontWeight: "bold" }}
-        />
+        <Switch onChange={onToggle}/>
+
       </Toolbar>
     </AppBar>
   );

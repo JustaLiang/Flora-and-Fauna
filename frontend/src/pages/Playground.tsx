@@ -1,13 +1,12 @@
-import React, { useEffect, useContext } from 'react';
-import { BattlefieldContext } from '../hardhat/SymfoniContext';
-import { Container, Box, Button } from '@material-ui/core';
-import { Battlefield } from '../components/Battlefield';
-import redPlayground from '../assets/image/redPlayground.png';
-import { ProposalList } from '../components/ProposalList';
+import { AppBar, Box, Button, Container, Toolbar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import Logo from '../assets/image/Logo.png';
+import React, { useContext, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import { AppBar, Toolbar  } from '@material-ui/core';
+import Logo from '../assets/image/Logo.png';
+import redPlayground from '../assets/image/redPlayground.png';
+import { Battlefield } from '../components/Battlefield';
+import { ProposalList } from '../components/ProposalList';
+import { BattlefieldContext } from '../hardhat/SymfoniContext';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -20,15 +19,8 @@ const useStyles = makeStyles((theme) => ({
     logo: {
         heigh: 40,
         width: 100,
-    },
-    button: {
-        width: 150,
-        marginLeft:5,
-        background: "#ab801b",
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        textAlign: "center"
-    },
+    }
+    
 }))
 
 interface Props { }
@@ -60,7 +52,6 @@ export const Playground: React.FC<Props> = () => {
                             <Box >
                                 <Button 
                                     variant='outlined'
-                                    className={classes.button}
                                     style={{
                                         marginTop:20,marginRight:30,textTransform:'none',fontSize:16,fontWeight:'bold'
                                     }}
@@ -70,7 +61,6 @@ export const Playground: React.FC<Props> = () => {
                                 </Button>
                                 <Button 
                                     variant='outlined'
-                                    className={classes.button}
                                     style={{
                                         marginTop:20,textTransform:'none',fontSize:16,fontWeight:'bold'
                                     }}
