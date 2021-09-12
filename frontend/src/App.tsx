@@ -3,6 +3,8 @@ import { Route, Switch, BrowserRouter as Router, } from 'react-router-dom';
 import Home from './pages/Home';
 import Factory from './pages/Factory';
 import UploadPage from './pages/UploadPage';
+import { Playground } from "./pages/Playground";
+
 import { Symfoni } from "./hardhat/SymfoniContext";
 
 function App() {
@@ -16,10 +18,10 @@ function App() {
           <Route exact path='/factory'>
             <Factory />
           </Route>
+          <Route exact path='/Playground'><Playground /></Route>
+
         </Symfoni>
       </Switch>
     </Router>
   );
-}
 
-export default App;
