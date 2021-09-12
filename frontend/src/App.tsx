@@ -15,13 +15,12 @@ function App() {
         <Symfoni autoInit={true} loadingComponent={<h1>Loading...</h1>}>
           <Route exact path='/'><Home /></Route>
           <Route exact path='/upload'><UploadPage /></Route>
-          <Route exact path='/factory'>
-            <Factory />
-          </Route>
+          <Route exact path='/factory'><Factory /></Route>
           <Route exact path='/Playground'><Playground /></Route>
-
         </Symfoni>
       </Switch>
     </Router>
   );
+}
 
+export default App;
