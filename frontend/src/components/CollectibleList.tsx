@@ -103,6 +103,7 @@ export const CollectibleList: React.FC<Props> = (props) => {
 
     return (
         <div>
+            <MinionListContext.Provider value={[setFloraMinionIds, setFaunaMinionIds]}>
             <Container maxWidth="lg">
                 <Box
                     display="flex"
@@ -137,7 +138,6 @@ export const CollectibleList: React.FC<Props> = (props) => {
                         </Dialog>
                     </Box>
                 </Box>
-                <MinionListContext.Provider value={[setFloraMinionIds, setFaunaMinionIds]}>
                 <Grid
                     container
                     spacing={5}
@@ -167,8 +167,8 @@ export const CollectibleList: React.FC<Props> = (props) => {
                         </Grid>
                     )}
                 </Grid>
-                </MinionListContext.Provider>
             </Container>
+            </MinionListContext.Provider>
         </div>
     );
 }

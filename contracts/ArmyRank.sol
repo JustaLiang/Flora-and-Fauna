@@ -53,6 +53,7 @@ contract ArmyRank is Ownable {
                 else {
                     uriPrefix = string(abi.encodePacked(branchPrefix[branchAddr], jsonNames[i]));
                 }
+                return uriPrefix;
             }
         }
     }

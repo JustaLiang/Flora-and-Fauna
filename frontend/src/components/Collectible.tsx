@@ -80,7 +80,7 @@ export const Collectible: React.FC<Props> = (props) => {
                 .catch((err) => {
                     setImageURL("")
                     console.log(err)
-                })     
+                })
         }
         fetchImageURI();
     }, [minionProfile]);
@@ -102,22 +102,18 @@ export const Collectible: React.FC<Props> = (props) => {
         if (isFauna && faunaArmy.instance) {
             const tx = await faunaArmy.instance.arm(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
-                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }
+            if (receipt.status)
+                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
+            else
+                console.log(receipt.logs);
         }
         if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.arm(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
+            if (receipt.status)
                 setMinionProfile(await floraArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }            
+            else
+                console.log(receipt.logs);
         }
     }
 
@@ -125,22 +121,18 @@ export const Collectible: React.FC<Props> = (props) => {
         if (isFauna && faunaArmy.instance) {
             const tx = await faunaArmy.instance.train(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
-                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }
+            if (receipt.status)
+                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
+            else
+                console.log(receipt.logs);
         }
         if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.train(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
-                setMinionProfile(await floraArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }            
+            if (receipt.status)
+                setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
+            else
+                console.log(receipt.logs);
         }
     }
 
@@ -148,22 +140,18 @@ export const Collectible: React.FC<Props> = (props) => {
         if (isFauna && faunaArmy.instance) {
             const tx = await faunaArmy.instance.boost(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
-                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }
+            if (receipt.status)
+                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
+            else
+                console.log(receipt.logs);
         }
         if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.boost(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
-                setMinionProfile(await floraArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }            
+            if (receipt.status)
+                setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
+            else
+                console.log(receipt.logs);
         }
     }
 
@@ -171,22 +159,18 @@ export const Collectible: React.FC<Props> = (props) => {
         if (isFauna && faunaArmy.instance) {
             const tx = await faunaArmy.instance.heal(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
-                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }
+            if (receipt.status)
+                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
+            else
+                console.log(receipt.logs);
         }
         if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.heal(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
-                setMinionProfile(await floraArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }            
+            if (receipt.status)
+                setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
+            else
+                console.log(receipt.logs);
         }
     }
 
@@ -194,22 +178,18 @@ export const Collectible: React.FC<Props> = (props) => {
         if (isFauna && faunaArmy.instance) {
             const tx = await faunaArmy.instance.liberate(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
+            if (receipt.status)
                 setFaunaMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
-            }
-            else {
-                console.log(receipt.logs)
-            }
+            else
+                console.log(receipt.logs);
         }
         if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.liberate(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
+            if (receipt.status)
                 setFloraMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
-            }
-            else {
-                console.log(receipt.logs)
-            }
+            else
+                console.log(receipt.logs);
         }
     }
 
@@ -217,22 +197,18 @@ export const Collectible: React.FC<Props> = (props) => {
         if (isFauna && faunaArmy.instance) {
             const tx = await faunaArmy.instance.grant(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
-                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }
+            if (receipt.status)
+                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
+            else
+                console.log(receipt.logs);
         }
         if (!isFauna && floraArmy.instance) {
             const tx = await floraArmy.instance.grant(mId);
             const receipt = await tx.wait();
-            if (receipt.status) {
-                setMinionProfile(await floraArmy.instance.getMinionProfile(mId)); 
-            }
-            else {
-                console.log(receipt.logs)
-            }            
+            if (receipt.status)
+                setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
+            else
+                console.log(receipt.logs);
         }
     }
 

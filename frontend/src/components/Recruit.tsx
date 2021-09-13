@@ -19,7 +19,7 @@ export default function Recruit(properties: Props) {
   const floraArmy = useContext(FloraArmyContext);
   const faunaArmy = useContext(FaunaArmyContext);
   const account = useContext(CurrentAddressContext);
-  const [minionIds, setMinionIds] = useContext(MinionListContext);
+  const [setFloraMinionIds, setFaunaMinionIds] = useContext(MinionListContext);
   const [state, setState] = useState({
     quote: "ETH",
     base: "USD",
@@ -40,7 +40,7 @@ export default function Recruit(properties: Props) {
       const receipt = await tx.wait();
       console.log(receipt);
       if (receipt.status) {
-        setMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
+        setFaunaMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
         return true;
       }
       else {
@@ -51,13 +51,12 @@ export default function Recruit(properties: Props) {
       const tx = await floraArmy.instance.recruit(pairHash);
       const receipt = await tx.wait();
       if (receipt.status) {
-        setMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
+        setFloraMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
         return true;
       }
       else
         console.log(receipt.logs);     
     }
-    console.log(minionIds);
     return false;
   }
 

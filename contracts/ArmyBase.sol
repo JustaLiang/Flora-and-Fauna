@@ -124,7 +124,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
             profile.armed = m.armed;
             profile.price = m.envFactor;
             profile.power = m.power;
-            profile.uri = tokenURI(minionID);
+            profile.uri = this.tokenURI(minionID);
     }
 
     /**
@@ -212,7 +212,7 @@ abstract contract ArmyBase is ERC721URIStorage, ArmyInterface {
             "ARMY: commander query for nonexistent minion");
         Minion storage target = minions[minionID];
         string memory grantedURI = super.tokenURI(minionID);
-        if (bytes(grantedURI).length > 11) {
+        if (bytes(grantedURI).length > 0) {
             return grantedURI;
         }
         else {
