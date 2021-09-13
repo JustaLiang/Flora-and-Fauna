@@ -8,7 +8,8 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { useContext } from 'react';
 import { BattlefieldContext } from '../hardhat/SymfoniContext';
 import { BigNumber } from "ethers";
- 
+import { toGatewayURL } from 'nft.storage'; 
+
 const useStyles = makeStyles((theme) => ({
     card: {
         width: 275
@@ -127,7 +128,7 @@ export const Proposal: React.FC<Props> = (props) => {
     useEffect(() => {
         if (!proposalInfo) return;
         const { prefixURI } = proposalInfo;
-        const httpPrefix = 'https://ipfs.io/ipfs/' + prefixURI.slice(7)
+        const httpPrefix = toGatewayURL(prefixURI).toString();
         var imageList: string[] = [];
         suffixURI.forEach((suffix) => {
             fetch(`${httpPrefix}${suffix}`)
@@ -135,8 +136,8 @@ export const Proposal: React.FC<Props> = (props) => {
                     if(res.status===404) console.log('404 metadata not found')
                     return res.json()
                 })
-                .then((object) => {
-                    imageList.push(object.image)
+                .then((metadata) => {
+                    imageList.push(toGatewayURL(metadata.image).toString());
                 })
         })
         setImageURLs(imageList);

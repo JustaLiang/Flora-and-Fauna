@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import { PairMap } from '../assets/map/PairMap';
 import { BigNumber, ethers } from 'ethers';
 import { BattlefieldContext, FaunaArmyContext, FloraArmyContext, CurrentAddressContext } from '../hardhat/SymfoniContext';
+import { toGatewayURL } from "nft.storage";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -85,11 +86,9 @@ export const Field: React.FC<Props> = (props) => {
 
     useEffect(() => {
         if (!minionProfile) return;
-        if(minionProfile.uri) {
-            fetch(minionProfile.uri)
+        fetch(toGatewayURL(minionProfile.uri).toString())
             .then(res => res.json())
-            .then(metadata => setImageURL(metadata.image))
-        }
+            .then(metadata => setImageURL(toGatewayURL(metadata.image).toString()))
     }, [minionProfile])
 
     const onFloraConquer = async (fid: number, attackerID: number) => {

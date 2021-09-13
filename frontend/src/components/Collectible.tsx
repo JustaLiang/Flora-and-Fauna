@@ -15,6 +15,7 @@ import { FloraArmyContext, FaunaArmyContext, CurrentAddressContext } from "../ha
 import { BigNumber } from "ethers";
 import { PairMap } from "../assets/map/PairMap";
 import { MinionListContext } from "./CollectibleList";
+import { toGatewayURL } from "nft.storage";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -48,7 +49,7 @@ export const Collectible: React.FC<Props> = (props) => {
     const floraArmy = useContext(FloraArmyContext);
     const faunaArmy = useContext(FaunaArmyContext);
     const account = useContext(CurrentAddressContext);
-    const [minionIds, setMinionIds] = useContext(MinionListContext);
+    const [setFloraMinionIds, setFaunaMinionIds] = useContext(MinionListContext);
     const [minionProfile, setMinionProfile] = useState<MinionProfile>();
     const [loading, setLoading] = useState(true);
     const [imageURL, setImageURL] = useState("");
@@ -67,10 +68,11 @@ export const Collectible: React.FC<Props> = (props) => {
     useEffect(() => {
         const fetchImageURI = async () => {
             if (!minionProfile) return;
-            fetch(minionProfile.uri)
+            console.log(toGatewayURL(minionProfile.uri).toString());
+            fetch(toGatewayURL(minionProfile.uri).toString())
                 .then((res) => res.json())
                 .then((metadata) => {
-                    setImageURL(metadata.image);
+                    setImageURL(toGatewayURL(metadata.image).toString());
                     setLoading(false);
                 });
         }
@@ -174,7 +176,7 @@ export const Collectible: React.FC<Props> = (props) => {
             const tx = await faunaArmy.instance.liberate(mId);
             const receipt = await tx.wait();
             if (receipt.status) {
-                setMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
+                setFaunaMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
             }
             else {
                 console.log(receipt.logs)
@@ -184,13 +186,12 @@ export const Collectible: React.FC<Props> = (props) => {
             const tx = await floraArmy.instance.liberate(mId);
             const receipt = await tx.wait();
             if (receipt.status) {
-                setMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
+                setFloraMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
             }
             else {
                 console.log(receipt.logs)
             }
         }
-        console.log("minion list:", minionIds);
     }
 
     const onGrant: React.MouseEventHandler<HTMLButtonElement> = async () => {

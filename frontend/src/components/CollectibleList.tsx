@@ -56,7 +56,10 @@ interface Props {
     isFauna: boolean,
 }
 
-export const MinionListContext = React.createContext<[BigNumber[], React.Dispatch<React.SetStateAction<BigNumber[]>>]>([[], () => { }]);
+export const MinionListContext = React.createContext<[
+    React.Dispatch<React.SetStateAction<BigNumber[]>>,
+    React.Dispatch<React.SetStateAction<BigNumber[]>>
+]>([() => { }, () => { }]);
 
 export const CollectibleList: React.FC<Props> = (props) => {
     const classes = useStyles();
@@ -65,21 +68,30 @@ export const CollectibleList: React.FC<Props> = (props) => {
     const floraArmy = useContext(FloraArmyContext);
     const faunaArmy = useContext(FaunaArmyContext);
     const account = useContext(CurrentAddressContext);
-    const [minionIds, setMinionIds] = useState<BigNumber[]>([]);
+    const [floraMinionIds, setFloraMinionIds] = useState<BigNumber[]>([]);
+    const [faunaMinionIds, setFaunaMinionIds] = useState<BigNumber[]>([]);
+    const [currentMinionIds, setCurrentMinionIds] = useState<BigNumber[]>([]);
 
     useEffect(() => {
         const fetchPlayerMinions = async () => {
-            if (isFauna && faunaArmy.instance)
-                setMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
-            if (!isFauna && floraArmy.instance)
-                setMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
+            if (floraArmy.instance)
+                setFloraMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
+            if (faunaArmy.instance)
+                setFaunaMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
         }
         fetchPlayerMinions();
-    }, [isFauna, account, faunaArmy, floraArmy])
+    }, [account, faunaArmy, floraArmy])
 
     useEffect(() => {
-        console.log(minionIds);
-    }, [minionIds])
+        if (isFauna) {
+            console.log(faunaMinionIds);
+            setCurrentMinionIds(faunaMinionIds);
+        }
+        else {
+            console.log(floraMinionIds);
+            setCurrentMinionIds(floraMinionIds);
+        }
+    }, [isFauna, floraMinionIds, faunaMinionIds])
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -91,7 +103,6 @@ export const CollectibleList: React.FC<Props> = (props) => {
 
     return (
         <div>
-            <MinionListContext.Provider value={[minionIds, setMinionIds]}>
             <Container maxWidth="lg">
                 <Box
                     display="flex"
@@ -126,14 +137,15 @@ export const CollectibleList: React.FC<Props> = (props) => {
                         </Dialog>
                     </Box>
                 </Box>
+                <MinionListContext.Provider value={[setFloraMinionIds, setFaunaMinionIds]}>
                 <Grid
                     container
                     spacing={5}
                     className={classes.root}
                     alignItems="center"
                 >
-                    {minionIds? (
-                        minionIds.map((mid) => (
+                    {currentMinionIds? (
+                        currentMinionIds.map((mid) => (
                             <Grid item lg={6} key={mid.toNumber()}>
                                 <Collectible
                                     isFauna={isFauna}
@@ -155,8 +167,8 @@ export const CollectibleList: React.FC<Props> = (props) => {
                         </Grid>
                     )}
                 </Grid>
+                </MinionListContext.Provider>
             </Container>
-            </MinionListContext.Provider>
         </div>
     );
 }
