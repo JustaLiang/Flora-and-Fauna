@@ -52,7 +52,7 @@ export const Collectible: React.FC<Props> = (props) => {
     const [setFloraMinionIds, setFaunaMinionIds] = useContext(MinionListContext);
     const [minionProfile, setMinionProfile] = useState<MinionProfile>();
     const [loading, setLoading] = useState(true);
-    const [imageURL, setImageURL] = useState("");
+    const [imageURL, setImageURL] = useState("fetching");
     const { isFauna, mId } = props;
 
     useEffect(() => {
@@ -70,14 +70,33 @@ export const Collectible: React.FC<Props> = (props) => {
             if (!minionProfile) return;
             console.log(toGatewayURL(minionProfile.uri).toString());
             fetch(toGatewayURL(minionProfile.uri).toString())
-                .then((res) => res.json())
+                .then((res) => {
+                    if (res.status === 404) throw Error("URI error: 404")
+                    return res.json()
+                })
                 .then((metadata) => {
                     setImageURL(toGatewayURL(metadata.image).toString());
-                    setLoading(false);
-                });
+                })
+                .catch((err) => {
+                    setImageURL("")
+                    console.log(err)
+                })     
         }
         fetchImageURI();
     }, [minionProfile]);
+
+    useEffect(() => {
+        if (imageURL) {
+            fetch(imageURL)
+                .then((res) => {
+                    if (res.status !== 404)
+                        setLoading(false)
+                })
+        }
+        else {
+            setLoading(false)
+        }
+    }, [imageURL])
 
     const onArm: React.MouseEventHandler<HTMLButtonElement> = async () => {
         if (isFauna && faunaArmy.instance) {
@@ -256,7 +275,7 @@ export const Collectible: React.FC<Props> = (props) => {
                     </Box>
                 }
             />
-            {!loading ? (
+            {imageURL !== "fetching" && !loading ? (
                 <CardMedia
                     className={classes.media}
                     component="img"
