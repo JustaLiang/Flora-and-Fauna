@@ -2,69 +2,130 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-
-/**
- * @notice Methods called by FloraArmy and FaunaArmy
- */
-interface RANK {
-    function transferOwnership(address) external;
-    function query(address, int) external view returns (string memory);
-}
+import "./ArmyBase.sol";
 
 /**
  * @title Ranking system of FloraArmy and FaunaArmy
  * @author Justa Liang
  */
-contract ArmyRank is Ownable {
+abstract contract ArmyRank is ArmyBase, Ownable {
 
-    /// @notice URI prefix of certain branch
-    mapping (address => string) public branchPrefix;
+    /// @notice Base URI (prefix)
+    string public baseURI;
 
     /// @notice Level of power to reach to upgrade minions
     int[5] public powerLevels;
 
     /// @notice Metadata filenames
-    string[5] public jsonNames;
+    string[5] public metadataNames;
+
+    // Mapping for token URIs
+    mapping(uint => string) private _tokenURIs;
 
     /**
      * @dev Set power levels and metadata filenames
-     * @param powerLevels_ Array with length 5, from low level to high
-     * @param jsonNames_ Array with length 5, from low level URI to high
+     * @param powerLevels_ Array with length 5, from high level to low
+     * @param metadataNames_ Array with length 5, from high level URI to low
     */
-    constructor(int[5] memory powerLevels_, string[5] memory jsonNames_) {
+    constructor(int[5] memory powerLevels_, string[5] memory metadataNames_) {
         for (uint i = 0; i < 5; i++) {
             powerLevels[i] = powerLevels_[i];
-            jsonNames[i] = jsonNames_[i];
+            metadataNames[i] = metadataNames_[i];
         }
     }
 
     /**
-     * @dev Call by Army Contract, to dynamically get token URI
-     * @param branchAddr Branch address of the minion
-     * @param power Power of the minion
+     * @notice Get minion's metadata URI
+     * @param minionID ID of the minion
     */
-    function query(address branchAddr, int power) external view returns (string memory uriPrefix) {
+    function tokenURI(uint minionID) public view override returns (string memory) {
+        require(
+            _exists(minionID),
+            "ARMY: commander query for nonexistent minion");
+    
+        string memory grantedURI = _tokenURIs[minionID];
+        if (bytes(grantedURI).length > 0) {
+            return grantedURI;
+        }
+        else {
+            (,,,int power) = getMinionInfo(minionID);
+            for (uint i = 0; i < powerLevels.length; i++) {
+                if (power >= powerLevels[i]) {
+                    return string(abi.encodePacked(baseURI, metadataNames[i]));
+                }
+            }
+            return string(abi.encodePacked(baseURI, metadataNames[4]));
+        }
+    }
+
+    /**
+     * @notice Grant minion with current token URI
+     * @param minionID ID of the minion
+    */
+    function grant(uint minionID) external checkCommander(minionID) {
+        string memory currentURI;
+        (,,,int power) = getMinionInfo(minionID);
         for (uint i = 0; i < powerLevels.length; i++) {
             if (power >= powerLevels[i]) {
-                string memory prefix = branchPrefix[branchAddr];
-                if (bytes(prefix).length == 0) {
-                    uriPrefix = string(abi.encodePacked(branchPrefix[address(0)], jsonNames[i]));
-                }
-                else {
-                    uriPrefix = string(abi.encodePacked(branchPrefix[branchAddr], jsonNames[i]));
-                }
-                return uriPrefix;
+                currentURI = string(abi.encodePacked(baseURI, metadataNames[i]));
             }
+        }
+        _tokenURIs[minionID] = currentURI;
+    }
+
+    /**
+     * @notice Get minion's profile
+     * @param minionID ID of the minion
+     * @return profile Minion info and tokeURI
+    */    
+    function getMinionProfile(uint minionID) public view
+            returns (MinionProfile memory profile) {
+            require(
+                _exists(minionID),
+                "ARMY: commander query for nonexistent minion");            
+            Minion storage m = minions[minionID];
+            profile.branch = m.branchAddr;
+            profile.armed = m.armed;
+            profile.price = m.envFactor;
+            profile.power = m.power;
+            profile.uri = tokenURI(minionID);
+    }
+
+    /**
+     * @notice Get all minions' info given minion IDs
+     * @param minionIDs IDs of the minions
+     * @return teamProfile Array of minion info
+    */
+    function getTeamProfile(uint[] calldata minionIDs)
+            external view returns (MinionProfile[] memory teamProfile) {
+        teamProfile = new MinionProfile[](minionIDs.length);
+        for (uint i = 0; i < minionIDs.length; i++) {
+            teamProfile[i] = getMinionProfile(minionIDs[i]);
+        }
+    }
+
+    /**
+     * @notice Liberate a minion and get some enhancer
+     * @param minionID ID of the minion
+    */
+    function liberate(uint minionID) external checkCommander(minionID) {
+        Minion storage target = minions[minionID];
+        if (target.power > initPower) {
+             enhancerContract.produce(msg.sender, uint(target.power - initPower));
+        }
+        _burn(minionID);
+
+        if (bytes(_tokenURIs[minionID]).length != 0) {
+            delete _tokenURIs[minionID];
         }
     }
 
     /**
      * @dev Update branch prefix (give ownership to Battlefield contract in the future)
-     * @param branchAddr Branch address
-     * @param prefix Prefix of URI to be set
+     * @param baseURI_ Prefix of URI to be set
     */
-    function updateBranchPrefix(address branchAddr, string calldata prefix) external onlyOwner {
-        branchPrefix[branchAddr] = prefix;
+    function updateBaseURI(string calldata baseURI_) external onlyOwner {
+        baseURI = baseURI_;
     }
 
     /**
@@ -79,11 +140,11 @@ contract ArmyRank is Ownable {
 
     /**
      * @dev Change metadat filename (will be discarded)
-     * @param jsonNames_ Array with length 5, from low level URI to high
+     * @param metadataNames_ Array with length 5, from low level URI to high
     */
-    function changeJsonNames(string[5] calldata jsonNames_) external onlyOwner {
+    function changeMetadataNames(string[5] calldata metadataNames_) external onlyOwner {
         for (uint i = 0; i < 5; i++) {
-            jsonNames[i] = jsonNames_[i];
+            metadataNames[i] = metadataNames_[i];
         }
     }
 }

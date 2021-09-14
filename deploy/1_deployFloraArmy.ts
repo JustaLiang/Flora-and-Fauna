@@ -1,4 +1,5 @@
-import { initEnhancer, powerLevels, floraNames } from "../scripts/param";
+import { Contract } from "ethers";
+import { initEnhancer, powerLevels, floraNames, floraPrefix } from "../scripts/param";
 
 module.exports = async ({
     getNamedAccounts,
@@ -7,7 +8,7 @@ module.exports = async ({
     getUnnamedAccounts,
   }) => {
     const chainId = await getChainId();
-    const { deploy, get } = deployments;
+    const { deploy, get, execute } = deployments;
     const { deployer } = await getNamedAccounts();
 
     //--- get ENS registry address
@@ -16,10 +17,13 @@ module.exports = async ({
     console.log("ensAddr:", ensAddr);
 
     //--- deploy FloraArmy
-    const floraArmy = await deploy("FloraArmy", {
+    await deploy("FloraArmy", {
         from: deployer,
         args: [ensAddr, initEnhancer, powerLevels, floraNames]
-    });
-    console.log("FloraArmy deployed to:", floraArmy.address);
+        })
+        .then((floraArmy: Contract) => {
+            console.log("FloraArmy deployed to:", floraArmy.address);
+            execute("FloraArmy", { from: deployer }, "updateBaseURI", floraPrefix);
+        });
 };
   

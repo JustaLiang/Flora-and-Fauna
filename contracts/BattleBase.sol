@@ -2,14 +2,15 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./ArmyInterface.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 /**
  * @notice Operations only for Army contract
  */
-interface ARMY is ArmyInterface {
-    function population() external view returns (uint);
-    function rankContract() external view returns (address);
+interface ARMY is IERC721Enumerable {
+    function minionExists(uint) external view returns (bool);
+    function getMinionInfo(uint) external view returns (address, bool, int, int);
+    function updateBaseURI(string memory) external;
 }
 
 /**
@@ -52,6 +53,7 @@ abstract contract BattleBase is Ownable {
     /// @dev Initial power of flora and fauna minions
     int private _refPower;
 
+    /// @dev Field info for frontend
     struct FieldInfo {
         address leader;
         uint[] defender;
@@ -90,7 +92,7 @@ abstract contract BattleBase is Ownable {
     function expand(uint increaseSize) external onlyOwner {
         totalArea += increaseSize;
         require(
-            totalArea < floraArmy.population() + faunaArmy.population(),
+            totalArea < floraArmy.totalSupply() + faunaArmy.totalSupply(),
             "Battlefield: no need for expansion");
 
         emit TotalArea(totalArea);
@@ -138,8 +140,7 @@ abstract contract BattleBase is Ownable {
      * @param fieldID ID of the field
      * @return fieldInfo Leader, defender and side
     */ 
-    function getFieldInfo(uint fieldID) public view
-            returns (FieldInfo memory fieldInfo) {
+    function getFieldInfo(uint fieldID) public view returns (FieldInfo memory fieldInfo) {
         fieldInfo.leader = getFieldLeader(fieldID);
         if (fieldInfo.leader != address(0)) {
             fieldInfo.defender = getFieldDefender(fieldID);
@@ -154,8 +155,7 @@ abstract contract BattleBase is Ownable {
      * @notice Get the every field info 
      * @return allFieldInfo Info of every field
     */ 
-    function getAllFieldInfo() external view
-            returns (FieldInfo[] memory allFieldInfo) {
+    function getAllFieldInfo() external view returns (FieldInfo[] memory allFieldInfo) {
         allFieldInfo = new FieldInfo[](totalArea);
         for (uint fid = 0; fid < totalArea; fid++) {
             allFieldInfo[fid] = getFieldInfo(fid);
@@ -284,8 +284,8 @@ abstract contract BattleBase is Ownable {
      * @param defenderSide Which side of defender army
      * @param defenderID ID of defender minion
     */
-    function _fight(ArmyInterface attackerSide, uint attackerID,
-                    ArmyInterface defenderSide, uint defenderID
+    function _fight(ARMY attackerSide, uint attackerID,
+                    ARMY defenderSide, uint defenderID
                     ) private view {
         if (defenderSide.minionExists(defenderID)) {
             (,bool aArmed,,int aPower) = attackerSide.getMinionInfo(attackerID);

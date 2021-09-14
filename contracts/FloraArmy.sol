@@ -1,35 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./ArmyBase.sol";
+import "./ArmyRank.sol";
 
 /**
  * @title Flora Army, which grows in bullish market
  * @notice ERC721 token cultivated by predicting market price (using Chainlink oracle)
  * @author Justa Liang
  */
-contract FloraArmy is ArmyBase {
+contract FloraArmy is ArmyRank {
 
     /**
      * @dev Set name, symbol, and addresses of interactive contracts
      * @param ensRegistryAddr Address of ENS Registry
     */
     constructor(address ensRegistryAddr, uint initEnhancer,
-                int[5] memory powerLevels, string[5] memory jsonNames) 
-        ArmyBase(ensRegistryAddr)
+                int[5] memory powerLevels, string[5] memory metadataNames) 
         ERC721("FloraArmy", "FlorA")
+        ArmyBase(ensRegistryAddr)
+        ArmyRank(powerLevels, metadataNames)
     {
         enhancerContract = ENHR(address(new ArmyEnhancer("Chlorophyll", "CHL")));
         enhancerContract.produce(msg.sender, initEnhancer);
-        rankContract = RANK(address(new ArmyRank(powerLevels, jsonNames)));
-        rankContract.transferOwnership(msg.sender);
     }
 
     /**
      * @notice Train a minion and update the environment factor
      * @param minionID ID of the minion
     */
-    function train(uint minionID) external override checkCommander(minionID) {
+    function train(uint minionID) external checkCommander(minionID) {
         Minion storage target = minions[minionID];
         require(
             target.armed,
@@ -51,7 +50,7 @@ contract FloraArmy is ArmyBase {
      * @notice Arm a minion and update its power
      * @param minionID ID of the minion
     */
-    function arm(uint minionID) external override checkCommander(minionID) {
+    function arm(uint minionID) external checkCommander(minionID) {
         Minion storage target = minions[minionID];
         require(
             !target.armed,
@@ -75,7 +74,7 @@ contract FloraArmy is ArmyBase {
      * @dev Commander cost Chlorophyll
      * @param minionID ID of the minion
     */
-    function boost(uint minionID) external override checkCommander(minionID) {
+    function boost(uint minionID) external checkCommander(minionID) {
         Minion storage target = minions[minionID];
         require(
             target.armed,
@@ -100,7 +99,7 @@ contract FloraArmy is ArmyBase {
      * @dev Commander cost Chlorophyll
      * @param minionID ID of the minion
     */
-    function heal(uint minionID) external override checkCommander(minionID) {
+    function heal(uint minionID) external checkCommander(minionID) {
         Minion storage target = minions[minionID];
         require(
             !target.armed,

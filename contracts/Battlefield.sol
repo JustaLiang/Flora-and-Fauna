@@ -4,22 +4,12 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "./BattleBase.sol";
 
-interface RANK {
-    function updateBranchPrefix(address, string calldata) external;
-}
-
 /**
  * @title Battlefield of fighting for next generation
  * @notice Define voting system on battlefield
  * @author Justa Liang
  */
 contract Battlefield is BattleBase, ERC721URIStorage {
-
-    /// @notice Corresponding FloraRank contract
-    RANK public floraRank;
-
-    /// @notice Corresponding FaunaRank contract
-    RANK public faunaRank;
 
     /// @dev Proposal contents
     struct Proposal {
@@ -47,7 +37,7 @@ contract Battlefield is BattleBase, ERC721URIStorage {
     uint public generation;
 
     /// @notice Name of assembly metadata of the medal designs 
-    string public assemblyJson;
+    string public seriesName;
 
     /// @notice Slotting fee for making a proposal
     uint public slottingFee;
@@ -89,12 +79,11 @@ contract Battlefield is BattleBase, ERC721URIStorage {
         ERC721("Flora&Fauna Battlefield", "F&F-BTF")
     {
         generation = 1;
-        floraRank = RANK(floraArmy.rankContract());
-        faunaRank = RANK(faunaArmy.rankContract());
         propInterval = 30 days;
         voteInterval = 5 days;
-        assemblyJson = "series.json";
+        seriesName = "series.json";
         slottingFee = 1e12 wei;
+        updateTime = block.timestamp;
     }
 
     /**
@@ -203,16 +192,16 @@ contract Battlefield is BattleBase, ERC721URIStorage {
         bool floraWin = false;
         bool faunaWin = false;
         if (floraFieldCount >= faunaFieldCount) {
-            floraRank.updateBranchPrefix(address(0), winning.prefixURI);
+            floraArmy.updateBaseURI(winning.prefixURI);
             floraWin = true;
         }
         if (faunaFieldCount >= floraFieldCount) {
-            faunaRank.updateBranchPrefix(address(0), winning.prefixURI);
+            faunaArmy.updateBaseURI(winning.prefixURI);
             faunaWin = true;
         }
 
-        _mint(winning.proposer, generation);
-        _setTokenURI(generation, string(abi.encodePacked(winning.prefixURI, assemblyJson)));
+        _safeMint(winning.proposer, generation);
+        _setTokenURI(generation, string(abi.encodePacked(winning.prefixURI, seriesName)));
 
         delete proposals;
         fieldLocked = false;
@@ -261,7 +250,7 @@ contract Battlefield is BattleBase, ERC721URIStorage {
         slottingFee = slottingFee_;
     }
 
-    function changeAssemblyJson(string calldata assemblyJson_) external onlyOwner {
-        assemblyJson = assemblyJson_;
+    function changeSeriesName(string calldata seriesName_) external onlyOwner {
+        seriesName = seriesName_;
     }
 }
