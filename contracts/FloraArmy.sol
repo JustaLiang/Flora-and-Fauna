@@ -15,10 +15,10 @@ contract FloraArmy is ArmyRank {
      * @param ensRegistryAddr Address of ENS Registry
     */
     constructor(address ensRegistryAddr, uint initEnhancer,
-                int[5] memory powerLevels, string[5] memory metadataNames) 
+                string memory baseURI, int[5] memory powerLevels, string[5] memory metadataNames) 
         ERC721("FloraArmy", "FlorA")
         ArmyBase(ensRegistryAddr)
-        ArmyRank(powerLevels, metadataNames)
+        ArmyRank(baseURI, powerLevels, metadataNames)
     {
         enhancerContract = ENHR(address(new ArmyEnhancer("Chlorophyll", "CHL")));
         enhancerContract.produce(msg.sender, initEnhancer);

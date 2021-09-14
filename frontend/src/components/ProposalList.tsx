@@ -64,41 +64,47 @@ export const ProposalList: React.FC<Props> = () => {
     const onPropose = async (uriPrefix: string) => {
         if (!battlefield.instance) return;
         if (!uriPrefix || uriPrefix.slice(-1) !== '/') return;
-        const tx = await battlefield.instance.propose(uriPrefix, {value: 10**12});
-        const receipt =  await tx.wait();
-        if (receipt.status) {
+        try {
+            const tx = await battlefield.instance.propose(uriPrefix, {value: 10**12});
+            const receipt =  await tx.wait();
+            console.log(receipt);
             const pCount = await battlefield.instance.getProposalCount();
             setProposalCount(pCount.toNumber());
             console.log("Proposal count:", proposalCount);
         }
-        else {
-            console.log(receipt.logs);
+        catch(err) {
+            console.log(err);
+            alert("Error");
         }
     }
 
     const onStartVote = async () => {
         if (!battlefield.instance) return;
-        const tx = await battlefield.instance.startVote();
-        const receipt =  await tx.wait();
-        if (receipt.status) {
+        try {
+            const tx = await battlefield.instance.startVote();
+            const receipt =  await tx.wait();
+            console.log(receipt);
             setLocked(await battlefield.instance.fieldLocked());
         }
-        else {
-            console.log(receipt.logs);
+        catch(err) {
+            console.log(err);
+            alert("Error");
         }
     }
 
     const onEndVote = async () => {
         if (!battlefield.instance) return;
-        const tx = await battlefield.instance.endVote();
-        const receipt =  await tx.wait();
-        if (receipt.status) {
+        try {
+            const tx = await battlefield.instance.endVote();
+            const receipt =  await tx.wait();
+            console.log(receipt);
             setLocked(await battlefield.instance.fieldLocked());
             const pCount = await battlefield.instance.getProposalCount();
             setProposalCount(pCount.toNumber());
         }
-        else {
-            console.log(receipt.logs);
+        catch (err) {
+            console.log(err);
+            alert("Error");
         }
     }
 

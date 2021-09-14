@@ -27,11 +27,14 @@ abstract contract ArmyRank is ArmyBase, Ownable {
      * @param powerLevels_ Array with length 5, from high level to low
      * @param metadataNames_ Array with length 5, from high level URI to low
     */
-    constructor(int[5] memory powerLevels_, string[5] memory metadataNames_) {
+    constructor(string memory baseURI_,
+                int[5] memory powerLevels_,
+                string[5] memory metadataNames_) {
         for (uint i = 0; i < 5; i++) {
             powerLevels[i] = powerLevels_[i];
             metadataNames[i] = metadataNames_[i];
         }
+        baseURI = baseURI_;
     }
 
     /**

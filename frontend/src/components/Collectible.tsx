@@ -57,9 +57,10 @@ export const Collectible: React.FC<Props> = (props) => {
 
     useEffect(() => {
         const fetchMinionProfile = async () => {
-            if (isFauna && faunaArmy.instance)
+            setImageURL("fetching");
+            if (isFauna && faunaArmy.instance && await faunaArmy.instance.minionExists(mId))
                 setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
-            if (!isFauna && floraArmy.instance)
+            if (!isFauna && floraArmy.instance && await floraArmy.instance.minionExists(mId))
                 setMinionProfile(await floraArmy.instance.getMinionProfile(mId));   
         }
         fetchMinionProfile();
@@ -99,116 +100,148 @@ export const Collectible: React.FC<Props> = (props) => {
     }, [imageURL])
 
     const onArm: React.MouseEventHandler<HTMLButtonElement> = async () => {
-        if (isFauna && faunaArmy.instance) {
-            const tx = await faunaArmy.instance.arm(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
+        try {
+            if (isFauna && faunaArmy.instance) {
+                const tx = await faunaArmy.instance.arm(mId);
+                const receipt = await tx.wait();
+                console.log(receipt);
                 setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
-            else
-                console.log(receipt.logs);
-        }
-        if (!isFauna && floraArmy.instance) {
-            const tx = await floraArmy.instance.arm(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
+            }
+            if (!isFauna && floraArmy.instance) {
+                const tx = await floraArmy.instance.arm(mId);
+                const receipt = await tx.wait();
+                console.log(receipt);
                 setMinionProfile(await floraArmy.instance.getMinionProfile(mId)); 
-            else
-                console.log(receipt.logs);
+            }
+        }
+        catch(err) {
+            console.log(err);
+            alert("Error");
         }
     }
 
     const onTrain: React.MouseEventHandler<HTMLButtonElement> = async () => {
-        if (isFauna && faunaArmy.instance) {
-            const tx = await faunaArmy.instance.train(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
-            else
-                console.log(receipt.logs);
+        try {
+            if (isFauna && faunaArmy.instance) {
+                const tx = await faunaArmy.instance.train(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
+                else
+                    console.log(receipt.logs);
+            }
+            if (!isFauna && floraArmy.instance) {
+                const tx = await floraArmy.instance.train(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
+                else
+                    console.log(receipt.logs);
+            }
         }
-        if (!isFauna && floraArmy.instance) {
-            const tx = await floraArmy.instance.train(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
-            else
-                console.log(receipt.logs);
+        catch (err) {
+            console.log(err);
+            alert("Error");
         }
     }
 
     const onBoost: React.MouseEventHandler<HTMLButtonElement> = async () => {
-        if (isFauna && faunaArmy.instance) {
-            const tx = await faunaArmy.instance.boost(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
-            else
-                console.log(receipt.logs);
+        try {
+            if (isFauna && faunaArmy.instance) {
+                const tx = await faunaArmy.instance.boost(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
+                else
+                    console.log(receipt.logs);
+            }
+            if (!isFauna && floraArmy.instance) {
+                const tx = await floraArmy.instance.boost(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
+                else
+                    console.log(receipt.logs);
+            }
         }
-        if (!isFauna && floraArmy.instance) {
-            const tx = await floraArmy.instance.boost(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
-            else
-                console.log(receipt.logs);
+        catch (err) {
+            console.log(err);
+            alert("Error");
         }
     }
 
     const onHeal: React.MouseEventHandler<HTMLButtonElement> = async () => {
-        if (isFauna && faunaArmy.instance) {
-            const tx = await faunaArmy.instance.heal(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
-            else
-                console.log(receipt.logs);
+        try {
+            if (isFauna && faunaArmy.instance) {
+                const tx = await faunaArmy.instance.heal(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
+                else
+                    console.log(receipt.logs);
+            }
+            if (!isFauna && floraArmy.instance) {
+                const tx = await floraArmy.instance.heal(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
+                else
+                    console.log(receipt.logs);
+            }
         }
-        if (!isFauna && floraArmy.instance) {
-            const tx = await floraArmy.instance.heal(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
-            else
-                console.log(receipt.logs);
+        catch (err) {
+            console.log(err);
+            alert("Error");
         }
     }
 
     const onLiberate: React.MouseEventHandler<HTMLButtonElement> = async () => {
-        if (isFauna && faunaArmy.instance) {
-            const tx = await faunaArmy.instance.liberate(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setFaunaMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
-            else
-                console.log(receipt.logs);
+        try {
+            if (isFauna && faunaArmy.instance) {
+                const tx = await faunaArmy.instance.liberate(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setFaunaMinionIds(await faunaArmy.instance.getMinionIDs(account[0]));
+                else
+                    console.log(receipt.logs);
+            }
+            if (!isFauna && floraArmy.instance) {
+                const tx = await floraArmy.instance.liberate(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setFloraMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
+                else
+                    console.log(receipt.logs);
+            }
         }
-        if (!isFauna && floraArmy.instance) {
-            const tx = await floraArmy.instance.liberate(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setFloraMinionIds(await floraArmy.instance.getMinionIDs(account[0]));
-            else
-                console.log(receipt.logs);
+        catch (err) {
+            console.log(err);
+            alert("Error");
         }
     }
 
     const onGrant: React.MouseEventHandler<HTMLButtonElement> = async () => {
-        if (isFauna && faunaArmy.instance) {
-            const tx = await faunaArmy.instance.grant(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
-            else
-                console.log(receipt.logs);
+        try {
+            if (isFauna && faunaArmy.instance) {
+                const tx = await faunaArmy.instance.grant(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setMinionProfile(await faunaArmy.instance.getMinionProfile(mId));
+                else
+                    console.log(receipt.logs);
+            }
+            if (!isFauna && floraArmy.instance) {
+                const tx = await floraArmy.instance.grant(mId);
+                const receipt = await tx.wait();
+                if (receipt.status)
+                    setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
+                else
+                    console.log(receipt.logs);
+            }
         }
-        if (!isFauna && floraArmy.instance) {
-            const tx = await floraArmy.instance.grant(mId);
-            const receipt = await tx.wait();
-            if (receipt.status)
-                setMinionProfile(await floraArmy.instance.getMinionProfile(mId));
-            else
-                console.log(receipt.logs);
+        catch (err) {
+            console.log(err);
+            alert("Error");
         }
     }
 

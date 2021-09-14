@@ -75,9 +75,9 @@ export const Field: React.FC<Props> = (props) => {
     useEffect(() => {
         const { defender, isFlora } = field;
         const fetchProfile = async () => {
-            if (isFlora && floraArmy.instance)
+            if (isFlora && floraArmy.instance && await floraArmy.instance.minionExists(defender[0]))
                 setMinionProfile(await floraArmy.instance.getMinionProfile(defender[0]));
-            if (!isFlora && faunaArmy.instance)
+            if (!isFlora && faunaArmy.instance && await faunaArmy.instance.minionExists(defender[0]))
                 setMinionProfile(await faunaArmy.instance.getMinionProfile(defender[0]));
         }
         if (defender.length) fetchProfile();
@@ -93,37 +93,43 @@ export const Field: React.FC<Props> = (props) => {
 
     const onFloraConquer = async (fid: number, attackerID: number) => {
         if (!battlefield.instance) return;
-        const tx = await battlefield.instance.floraConquer(fid, attackerID);
-        const receipt =  await tx.wait();
-        if (receipt.status) {
+        try {
+            const tx = await battlefield.instance.floraConquer(fid, attackerID);
+            const receipt =  await tx.wait();
+            console.log(receipt)
             setField(await battlefield.instance.getFieldInfo(fid));
         }
-        else {
-            console.log(receipt.logs);
+        catch(err) {
+            console.log(err);
+            alert("Error");
         }
     }
 
     const onFaunaConquer = async (fid: number, attackerID: number) => {
         if (!battlefield.instance) return;
-        const tx = await battlefield.instance.faunaConquer(fid, attackerID);
-        const receipt =  await tx.wait();
-        if (receipt.status) {
+        try {
+            const tx = await battlefield.instance.faunaConquer(fid, attackerID);
+            const receipt =  await tx.wait();
+            console.log(receipt)
             setField(await battlefield.instance.getFieldInfo(fid));
         }
-        else {
-            console.log(receipt.logs);
+        catch(err) {
+            console.log(err);
+            alert("Error")
         }
     }
 
     const onRetreat = async (fid: number) => {
         if (!battlefield.instance) return;
-        const tx = await battlefield.instance.retreat(fid);
-        const receipt =  await tx.wait();
-        if (receipt.status) { 
+        try {
+            const tx = await battlefield.instance.retreat(fid);
+            const receipt =  await tx.wait();
+            console.log(receipt);
             setField(await battlefield.instance.getFieldInfo(fid));
         }
-        else {
-            console.log(receipt.logs);
+        catch(err) {
+            console.log(err);
+            alert("Error")
         }
     }
 

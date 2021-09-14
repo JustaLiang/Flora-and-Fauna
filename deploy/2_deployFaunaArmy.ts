@@ -1,5 +1,4 @@
-import { Contract } from "ethers";
-import { initEnhancer, powerLevels, faunaNames, faunaPrefix } from "../scripts/param";
+import { initEnhancer, faunaPrefix, powerLevels, faunaNames } from "../scripts/param";
 
 module.exports = async ({
     getNamedAccounts,
@@ -8,7 +7,7 @@ module.exports = async ({
     getUnnamedAccounts,
   }) => {
     const chainId = await getChainId();
-    const { deploy, get, execute } = deployments;
+    const { deploy, get } = deployments;
     const { deployer } = await getNamedAccounts();
 
     //--- get ENS registry address
@@ -17,13 +16,10 @@ module.exports = async ({
     console.log("ensAddr:", ensAddr);
 
     //--- deploy FaunaArmy
-    await deploy("FaunaArmy", {
+    const faunaArmy = await deploy("FaunaArmy", {
         from: deployer,
-        args: [ensAddr, initEnhancer, powerLevels, faunaNames]
-        })
-        .then((faunaArmy: Contract) => {
-            console.log("FaunaArmy deployed to:", faunaArmy.address);
-            execute("FaunaArmy", {from: deployer}, "updateBaseURI", faunaPrefix);
-        });
+        args: [ensAddr, initEnhancer, faunaPrefix, powerLevels, faunaNames]
+    });
+    console.log("FaunaArmy deployed at:", faunaArmy.address);
 };
   

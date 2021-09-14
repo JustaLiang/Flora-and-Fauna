@@ -80,13 +80,17 @@ export const Proposal: React.FC<Props> = (props) => {
 
     const onVote = async (fieldId: number) => {
         if (!battlefield.instance) return;
-        const tx = await battlefield.instance.vote(fieldId, pId);
-        const receipt =  await tx.wait();
-        if (receipt.status) {
+        try {
+            const tx = await battlefield.instance.vote(fieldId, pId);
+            const receipt = await tx.wait();
+            console.log(receipt);
             setProposalInfo(await battlefield.instance.proposals(pId));
         }
-        else
-            console.log(receipt.logs);
+        catch(err) {
+            console.log(err);
+            alert("Error");
+        }
+
     }
 
     const onCopy = () => {

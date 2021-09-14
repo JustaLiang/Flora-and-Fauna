@@ -8,6 +8,7 @@ module.exports = async ({
   }) => {
     const { deploy, get, all, read } = deployments;
     const { deployer } = await getNamedAccounts();
+    const chainId = await getChainId();
 
     const floraArmy = await get("FloraArmy");
     const faunaArmy = await get("FaunaArmy");
@@ -17,17 +18,5 @@ module.exports = async ({
         args: [floraArmy.address, faunaArmy.address],
     });
     console.log("Battlefield deployed to:", battlefield.address);
-
-    const allDeployments = await all();
-    Object.keys(allDeployments).map((cName) => {
-      console.log(cName, allDeployments[cName].address);
-    })
-    
-    const testPairs = ['eth-usd', 'btc-usd', 'bnb-usd', 'link-usd'];
-    testPairs.map(async (pair) => {
-      const pairHash = ethers.utils.namehash(pair + ".data.eth");
-      console.log(pair, await read("MockEnsRegistry", "resolver", pairHash));
-      console.log(pair, await read("MockPublicResolver", "addr", pairHash));
-    })
 };
   
