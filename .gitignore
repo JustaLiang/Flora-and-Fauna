@@ -5,4 +5,8 @@ cache
 artifacts
 frontend/src/hardhat
 
+# environmnet
 .env
+
+# MacOS
+.DS_Store
