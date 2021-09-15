@@ -117,7 +117,7 @@ abstract contract ArmyRank is ArmyBase, Ownable {
              enhancerContract.produce(msg.sender, uint(target.power - initPower));
         }
         _burn(minionID);
-
+        delete minions[minionID];
         if (bytes(_tokenURIs[minionID]).length != 0) {
             delete _tokenURIs[minionID];
         }

@@ -5,7 +5,7 @@ import EmojiFlagsIcon from '@material-ui/icons/EmojiFlags';
 import Skeleton from '@material-ui/lab/Skeleton';
 import clsx from 'clsx';
 import { PairMap } from '../assets/map/PairMap';
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber } from 'ethers';
 import { BattlefieldContext, FaunaArmyContext, FloraArmyContext, CurrentAddressContext } from '../hardhat/SymfoniContext';
 import { toGatewayURL } from "nft.storage";
 
@@ -80,8 +80,9 @@ export const Field: React.FC<Props> = (props) => {
             if (!isFlora && faunaArmy.instance && await faunaArmy.instance.minionExists(defender[0]))
                 setMinionProfile(await faunaArmy.instance.getMinionProfile(defender[0]));
         }
+        setImageURL("");
         if (defender.length) fetchProfile();
-        if (account[0]) setChecksumAcc(ethers.utils.getAddress(account[0]));
+        setChecksumAcc(account[0]);
     }, [field, floraArmy, faunaArmy, account])
 
     useEffect(() => {

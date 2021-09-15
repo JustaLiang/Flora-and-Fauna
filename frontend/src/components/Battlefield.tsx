@@ -12,7 +12,8 @@ export const Battlefield: React.FC<Props> = () => {
     useEffect(() => {
         const loadFields = async () => {
             if (!battlefield.instance) return;
-            setFieldInfos(await battlefield.instance.getAllFieldInfo());
+            const totalArea = await battlefield.instance.totalArea();
+            setFieldInfos(await battlefield.instance.getRangeInfo(0, totalArea));
         }
         loadFields();
     }, [battlefield])

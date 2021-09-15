@@ -152,13 +152,13 @@ abstract contract BattleBase is Ownable {
     }
 
     /**
-     * @notice Get the every field info 
-     * @return allFieldInfo Info of every field
+     * @notice Get field infos given range 
+     * @return rangeInfo Info of every field
     */ 
-    function getAllFieldInfo() external view returns (FieldInfo[] memory allFieldInfo) {
-        allFieldInfo = new FieldInfo[](totalArea);
-        for (uint fid = 0; fid < totalArea; fid++) {
-            allFieldInfo[fid] = getFieldInfo(fid);
+    function getRangeInfo(uint startId, uint area) external view returns (FieldInfo[] memory rangeInfo) {
+        rangeInfo = new FieldInfo[](area);
+        for (uint i = 0; i < area; i++) {
+            rangeInfo[i] = getFieldInfo(startId+i);
         }
     }
 
