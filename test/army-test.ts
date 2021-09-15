@@ -38,7 +38,7 @@ describe("Flora and Fauna", async function () {
 
     const ens = await ethers.getContract('MockEnsRegistry', tokenOwner);
     const resolver = await ethers.getContract('MockPublicResolver', tokenOwner);
-    const link_agg = await ethers.getContract(`MockV3Aggregator_${pair}`, tokenOwner);
+    const link_agg = await ethers.getContract('MockV3Aggregator', tokenOwner);
   
     let lastAnswer = await link_agg.latestAnswer();
     // console.log('lastAnswer: ', await lastAnswer.toString());
