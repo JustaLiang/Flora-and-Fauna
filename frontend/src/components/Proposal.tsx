@@ -66,6 +66,7 @@ export const Proposal: React.FC<Props> = (props) => {
     const [fieldId, setFieldId] = useState("");
     const [voteError, setVoteError]=useState(false);
     const [imageURLs, setImageURLs] = useState<string[]>([]);
+    const [imageCount, setImageCount] = useState<number>(0);
     const battlefield = useContext(BattlefieldContext);
     const [proposalInfo, setProposalInfo] = useState<ProposalInfo>();
     const { pId } = props;
@@ -133,26 +134,28 @@ export const Proposal: React.FC<Props> = (props) => {
         if (!proposalInfo) return;
         const { prefixURI } = proposalInfo;
         const httpPrefix = toGatewayURL(prefixURI).toString();
-        var imageList: string[] = [];
         suffixURI.forEach((suffix) => {
             fetch(`${httpPrefix}${suffix}`)
-                .then(res => {
-                    if(res.status===404) console.log('404 metadata not found')
-                    return res.json()
+                .then(async (res) => {
+                    if (res.status === 404) throw Error("URI error: 404");
+                    const metadata = await res.json();
+                    let newImageURLs = imageURLs;
+                    newImageURLs.push(toGatewayURL(metadata.image).toString());
+                    setImageURLs(newImageURLs);
+                    setImageCount(imageURLs.length);
                 })
-                .then((metadata) => {
-                    imageList.push(toGatewayURL(metadata.image).toString());
+                .catch((err) => {
+                    console.log(err)
                 })
         })
-        setImageURLs(imageList);
-    }, [proposalInfo])
+    }, [proposalInfo, imageURLs])
 
     return (
         <div>
             <Card className={classes.card}>
                 <CardHeader title={`📝  Proposal ${pId}`} style={{ textAlign: 'center' }} />
                 <Box className={classes.image}>
-                    {imageURLs.length?<CardCarousel urlList={imageURLs} />: 
+                    {imageCount?<CardCarousel urlList={imageURLs} />:
                     <Box 
                     style={{textAlign:'center',paddingTop:150,width: 280,
                     height: 280,}}>
