@@ -13,7 +13,8 @@ const faunaPrefix = "https://ipfs.io/ipfs/bafybeigd7f3maglyvcyvxonmu4copfosxqocg
 const faunaNames = ['fauna_1.json', 'fauna_2.json', 'fauna_3.json', 'fauna_4.json', 'fauna_5.json'];
 
 
-describe("Deploy all contract", async function () {
+describe("Flora and Fauna", async function () {
+  
 
 
   before(async function () {
@@ -22,23 +23,46 @@ describe("Deploy all contract", async function () {
     
   });
 
-  it('army fixture', async function(){
+  it('BattleField', async function(){
 
-    await deployments.fixture('123');
+    const pair = 'link-usd'
+    const pairHash = ethers.utils.namehash(pair + ".data.eth"); 
+    await deployments.fixture();
     const {tokenOwner} = await getNamedAccounts();
-    const [addr0,addr1, ...addr] = await getUnnamedAccounts();
+    const [owner, addr1, addr2] = await ethers.getSigners();
     
-
+  
     const FloraArmy = await ethers.getContract('FloraArmy', tokenOwner);
+    const FaunaArmy = await ethers.getContract('FaunaArmy', tokenOwner);
+    const Battlefield = await ethers.getContract('Battlefield', tokenOwner);
+
     const ens = await ethers.getContract('MockEnsRegistry', tokenOwner);
     const resolver = await ethers.getContract('MockPublicResolver', tokenOwner);
-    const agg = await ethers.getContract('MockV3Aggregator', tokenOwner);
-
-    let lastAnswer = await agg.latestAnswer();
-    console.log('lastAnswer: ', await lastAnswer.toString());
-
+    const link_agg = await ethers.getContract(`MockV3Aggregator_${pair}`, tokenOwner);
+  
+    let lastAnswer = await link_agg.latestAnswer();
+    // console.log('lastAnswer: ', await lastAnswer.toString());
+  
     const ArmyEnhancer = await ethers.getContractFactory("ArmyEnhancer");
-    const floraEnhancer = ArmyEnhancer.attach(await FloraArmy.enhancerContract())
+    const floraEnhancer = ArmyEnhancer.attach(await FloraArmy.enhancerContract());
+    const faunaEnhancer = ArmyEnhancer.attach(await FaunaArmy.enhancerContract());
+    // console.log(await floraEnhancer.totalSupply());
+
+    await FloraArmy.recruit(pairHash);
+    await FaunaArmy.recruit(pairHash);
+    await FloraArmy.connect(addr1).recruit(pairHash);
+    await FaunaArmy.connect(addr1).recruit(pairHash);
+
+    const ownerFlora = await FloraArmy.getMinionIDs(owner.address);
+    const ownerFauna = await FaunaArmy.getMinionIDs(owner.address);
+    const addrFlora = await FloraArmy.getMinionIDs(addr1.address);
+    const addrFauna = await FaunaArmy.getMinionIDs(addr1.address);
+
+    assert(await Battlefield.getProposalCount() === await BigNumber.from(0), "Proposal length");
+    const ProposalInfo = await Battlefield.getAllProposalInfo();
+    assert(await ProposalInfo.length() === 0, "ProposalInfo length");
+
+    Battlefield.propose(prefixURI);
 
   });
 
