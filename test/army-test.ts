@@ -61,9 +61,6 @@ describe("Flora and Fauna", async function () {
     assert(await Battlefield.getProposalCount() === await BigNumber.from(0), "Proposal length");
     const ProposalInfo = await Battlefield.getAllProposalInfo();
     assert(await ProposalInfo.length() === 0, "ProposalInfo length");
-
-    Battlefield.propose(prefixURI);
-
   });
 
   it("Army base contract", async function () {

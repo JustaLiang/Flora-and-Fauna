@@ -1,9 +1,11 @@
 import { Box, Container, Paper, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { FloraArmyContext, FaunaArmyContext, CurrentAddressContext, ArmyEnhancerContext } from "../hardhat/SymfoniContext";
 import { BalanceContext } from "../pages/Factory";
 import { BigNumber } from "ethers";
+import { ArmyEnhancer } from "../hardhat/typechain/ArmyEnhancer";
+
 const useStyle = makeStyles((theme) => ({
   paper: {
     marginTop: "20px",
@@ -20,6 +22,7 @@ export default function PersonalInfo(properties: Props) {
   const floraArmy = useContext(FloraArmyContext);
   const faunaArmy = useContext(FaunaArmyContext);
   const armyEnhancer = useContext(ArmyEnhancerContext);
+  const [enhancer, setEnhancer] = useState<ArmyEnhancer>();
   const account = useContext(CurrentAddressContext);
   const [balance, setBalance] = useContext(BalanceContext);
 
@@ -31,6 +34,7 @@ export default function PersonalInfo(properties: Props) {
         const enhancer = armyEnhancer.factory.attach(enhrAddr);
         const rawBalance = await enhancer.balanceOf(account[0]);
         const decimals = await enhancer.decimals();
+        setEnhancer(enhancer);
         setBalance(rawBalance.div(BigNumber.from(10).pow(decimals)));
       } 
       if (!isFauna && floraArmy.instance) {
@@ -38,6 +42,7 @@ export default function PersonalInfo(properties: Props) {
         const enhancer = armyEnhancer.factory.attach(enhrAddr);
         const rawBalance = await enhancer.balanceOf(account[0]);
         const decimals = await enhancer.decimals();
+        setEnhancer(enhancer);
         setBalance(rawBalance.div(BigNumber.from(10).pow(decimals)));
       }
     }
@@ -60,8 +65,8 @@ export default function PersonalInfo(properties: Props) {
       >
         {account[0] ? (
           <>
-            <Typography>Your account address: {account[0]}</Typography>
-            <Typography>Your Enhancer Balance: {balance.toString()}</Typography>
+            <Typography>{isFauna?"Hemoglobin (HGB)":"Chlorophyll (CHL)"} contract: {enhancer?.address}</Typography>
+            <Typography>Your {isFauna?"Hemoglobin":"Chlorophyll"} Balance: {balance.toString()}</Typography>
           </>
         ) : (
           <>
