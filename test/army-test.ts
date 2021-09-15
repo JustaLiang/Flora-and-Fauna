@@ -6,11 +6,11 @@ const {deployments} = require('hardhat');
 
 const zeroAddress = ethers.constants.AddressZero;
 const initEnhancer = 7777777777777;
-const powerLevels = [0, 1100, 1300, 1500, 2000];
-const floraPrefix = "https://ipfs.io/ipfs/bafybeieh3wt7szwrdujfver5nfwbqfh7z6pcodk2h5k46m24oqmizolame/";
-const floraNames = ['flora_1.json', 'flora_2.json', 'flora_3.json', 'flora_4.json', 'flora_5.json'];
-const faunaPrefix = "https://ipfs.io/ipfs/bafybeigd7f3maglyvcyvxonmu4copfosxqocg5dpyetw7ozg22m44j27le/";
-const faunaNames = ['fauna_1.json', 'fauna_2.json', 'fauna_3.json', 'fauna_4.json', 'fauna_5.json'];
+const powerLevels = [2000, 1500, 1300, 1100, 0];
+const floraNames = ['flora_5.json', 'flora_4.json', 'flora_3.json', 'flora_2.json', 'flora_1.json'];
+const faunaNames = ['fauna_5.json', 'fauna_4.json', 'fauna_3.json', 'fauna_2.json', 'fauna_1.json'];
+const floraPrefix = "ipfs://bafybeieh3wt7szwrdujfver5nfwbqfh7z6pcodk2h5k46m24oqmizolame/"
+const faunaPrefix = "ipfs://bafybeigd7f3maglyvcyvxonmu4copfosxqocg5dpyetw7ozg22m44j27le/"
 
 
 describe("Flora and Fauna", async function () {
@@ -32,9 +32,9 @@ describe("Flora and Fauna", async function () {
     const [owner, addr1, addr2] = await ethers.getSigners();
     
   
-    const FloraArmy = await ethers.getContract('FloraArmy', tokenOwner);
-    const FaunaArmy = await ethers.getContract('FaunaArmy', tokenOwner);
-    const Battlefield = await ethers.getContract('Battlefield', tokenOwner);
+    const floraArmy = await ethers.getContract('FloraArmy', tokenOwner);
+    const faunaArmy = await ethers.getContract('FaunaArmy', tokenOwner);
+    const battlefield = await ethers.getContract('Battlefield', tokenOwner);
 
     const ens = await ethers.getContract('MockEnsRegistry', tokenOwner);
     const resolver = await ethers.getContract('MockPublicResolver', tokenOwner);
@@ -44,25 +44,55 @@ describe("Flora and Fauna", async function () {
     // console.log('lastAnswer: ', await lastAnswer.toString());
   
     const ArmyEnhancer = await ethers.getContractFactory("ArmyEnhancer");
-    const floraEnhancer = ArmyEnhancer.attach(await FloraArmy.enhancerContract());
-    const faunaEnhancer = ArmyEnhancer.attach(await FaunaArmy.enhancerContract());
+    const floraEnhancer = ArmyEnhancer.attach(await floraArmy.enhancerContract());
+    const faunaEnhancer = ArmyEnhancer.attach(await faunaArmy.enhancerContract());
     // console.log(await floraEnhancer.totalSupply());
 
-    await FloraArmy.recruit(pairHash);
-    await FaunaArmy.recruit(pairHash);
-    await FloraArmy.connect(addr1).recruit(pairHash);
-    await FaunaArmy.connect(addr1).recruit(pairHash);
+    await floraArmy.recruit(pairHash);
+    await faunaArmy.recruit(pairHash);
+    await floraArmy.connect(addr1).recruit(pairHash);
+    await faunaArmy.connect(addr1).recruit(pairHash);
 
-    const ownerFlora = await FloraArmy.getMinionIDs(owner.address);
-    const ownerFauna = await FaunaArmy.getMinionIDs(owner.address);
-    const addrFlora = await FloraArmy.getMinionIDs(addr1.address);
-    const addrFauna = await FaunaArmy.getMinionIDs(addr1.address);
+    const ownerFlora = await floraArmy.getMinionIDs(owner.address);
+    const ownerFauna = await faunaArmy.getMinionIDs(owner.address);
+    const addrFlora = await floraArmy.getMinionIDs(addr1.address);
+    const addrFauna = await faunaArmy.getMinionIDs(addr1.address);
 
-    assert(await Battlefield.getProposalCount() === await BigNumber.from(0), "Proposal length");
-    const ProposalInfo = await Battlefield.getAllProposalInfo();
-    assert(await ProposalInfo.length() === 0, "ProposalInfo length");
+    let ProposalCount = await battlefield.getProposalCount();
+    assert(ProposalCount.toNumber() === 0, "Proposal length is 0");
+    const ProposalInfo = await battlefield.getAllProposalInfo();
+    assert(ProposalInfo.length === 0, "ProposalInfo length is 0");
 
-    Battlefield.propose(prefixURI);
+    await expect(
+      battlefield.propose(faunaPrefix)
+    ).to.be.revertedWith('Battlefield: not enough slotting fee');
+
+    // 1e11 wei or 0.1 slotting fee
+    await expect(
+      battlefield.propose(faunaPrefix, {
+        value: utils.parseEther('0.0000001')
+      })
+     ).to.be.revertedWith('Battlefield: not enough slotting fee');
+
+    await battlefield.propose(faunaPrefix, {
+      value: utils.parseEther('0.000001')
+    })
+
+    ProposalCount = await battlefield.getProposalCount();
+    assert(ProposalCount.toNumber() === 1, "Proposal length is 1");
+
+    assert( await floraArmy.baseURI() === floraPrefix, "floraPrefix is base");
+    assert( await faunaArmy.baseURI() === faunaPrefix, "faunaPrefix is base");
+
+    // set link from 
+    await link_agg.updateAnswer( 40*10**8 );
+    let lastestAnswer = await link_agg.latestAnswer();
+    console.log( 'Now link price: ', lastestAnswer.toNumber() );
+
+    //BattleBase
+    await expect(
+      battlefield.connect(addr1).expand(100)
+    ).to.be.revertedWith('Ownable: caller is not the owner')
 
   });
 
