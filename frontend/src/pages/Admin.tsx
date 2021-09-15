@@ -1,11 +1,14 @@
 
 import React, { useState, useContext, useEffect } from 'react';
-import { MockPublicResolverContext, MockV3AggregatorContext, SignerContext } from '../hardhat/SymfoniContext';
+import { MockPublicResolverContext, MockV3AggregatorContext, SignerContext, CurrentAddressContext } from '../hardhat/SymfoniContext';
 import { ethers, BigNumber } from "ethers"; 
 import { MockV3Aggregator } from '../hardhat/typechain/MockV3Aggregator';
 
+const adminAddress = "0x586EbeC665DEa9B5B459cB9e5562DBCA3Cf2CE13";
+
 export default function Admin() {
     const signer = useContext(SignerContext);
+    const account = useContext(CurrentAddressContext);
     const resolver = useContext(MockPublicResolverContext);
     const mockAgg = useContext(MockV3AggregatorContext);
     const [chainId, setChainId] = useState(0);
@@ -14,8 +17,9 @@ export default function Admin() {
 
     useEffect(() => {
         const fetchChainId = async () => {
-            if (signer[0])
+            if (signer[0]) {
                 setChainId(await signer[0].getChainId());
+            }
         }
         fetchChainId();
     }, [signer, chainId]);
@@ -32,8 +36,8 @@ export default function Admin() {
                     setPrice(await ethAgg.latestAnswer());
                 })
         }
-        resolveAggAddr();
-    }, [resolver, mockAgg]);
+        if (chainId === 1337) resolveAggAddr();
+    }, [chainId, resolver, mockAgg]);
 
     const onRise = async () => {
         if (!ethAgg) return;
@@ -54,15 +58,17 @@ export default function Admin() {
         {chainId === 1337?
             <div> 
                 <h1>ETH/USD: {price.div(10**8).toNumber()}</h1>
-                <br/>
                 <button onClick={onRise}>rise</button>
                 <button onClick={onDrop}>drop</button>
             </div>
         :
-            <h1>Not connect to localhost</h1>
+            <div></div>
+        }
+        {account[0] === adminAddress?
+            <h1>Admin</h1>
+        :
+            <div></div>
         }
         </div>
     )
-
-
 }

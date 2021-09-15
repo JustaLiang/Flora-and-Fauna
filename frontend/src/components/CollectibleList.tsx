@@ -70,7 +70,7 @@ export const CollectibleList: React.FC<Props> = (props) => {
     const account = useContext(CurrentAddressContext);
     const [floraMinionIds, setFloraMinionIds] = useState<BigNumber[]>([]);
     const [faunaMinionIds, setFaunaMinionIds] = useState<BigNumber[]>([]);
-    const [currentMinionIds, setCurrentMinionIds] = useState<BigNumber[]>([]);
+    const [notEmpty, setNotEmpty] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchPlayerMinions = async () => {
@@ -85,11 +85,11 @@ export const CollectibleList: React.FC<Props> = (props) => {
     useEffect(() => {
         if (isFauna) {
             console.log(faunaMinionIds);
-            setCurrentMinionIds(faunaMinionIds);
+            setNotEmpty(faunaMinionIds.length > 0);
         }
         else {
             console.log(floraMinionIds);
-            setCurrentMinionIds(floraMinionIds);
+            setNotEmpty(floraMinionIds.length > 0);
         }
     }, [isFauna, floraMinionIds, faunaMinionIds])
 
@@ -144,15 +144,24 @@ export const CollectibleList: React.FC<Props> = (props) => {
                     className={classes.root}
                     alignItems="center"
                 >
-                    {currentMinionIds? (
-                        currentMinionIds.map((mid) => (
-                            <Grid item lg={6} key={mid.toNumber()}>
-                                <Collectible
-                                    isFauna={isFauna}
-                                    mId={mid.toNumber()}
-                                />
-                            </Grid>
-                        ))
+                    {(notEmpty)? (
+                        isFauna? (
+                            faunaMinionIds.map((mid) => (
+                                <Grid item lg={6} key={mid.toNumber()}>
+                                    <Collectible
+                                        isFauna={isFauna}
+                                        mId={mid.toNumber()}
+                                    />
+                                </Grid>
+                        ))) : (
+                            floraMinionIds.map((mid) => (
+                                <Grid item lg={6} key={mid.toNumber()}>
+                                    <Collectible
+                                        isFauna={isFauna}
+                                        mId={mid.toNumber()}
+                                    />
+                                </Grid>
+                        )))
                     ) : (
                         <Grid item lg={12}>
                             <Paper

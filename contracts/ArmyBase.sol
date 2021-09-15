@@ -103,18 +103,12 @@ abstract contract ArmyBase is ERC721Enumerable {
      * @param commander Commander of these minions
      * @return minionIDs IDs of these minions
     */
-    function getMinionIDs(address commander)
-            public view returns(uint[] memory minionIDs) {
+    function getMinionIDs(address commander) public view returns(uint[] memory minionIDs) {
         uint minionCount = balanceOf(commander);
         minionIDs = new uint[](minionCount);
-        uint listIdx = 0;
-        for (uint minionID = 0; listIdx < minionCount; minionID++) {
-            if (_exists(minionID) && ownerOf(minionID) == commander) {
-                minionIDs[listIdx] = minionID;
-                listIdx++;
-            }
+        for (uint i = 0; i < minionCount; i++) {
+            minionIDs[i] = tokenOfOwnerByIndex(commander, i);
         }
-        return minionIDs;
     }
 
     /**
