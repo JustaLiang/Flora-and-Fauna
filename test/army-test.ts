@@ -23,7 +23,7 @@ describe("Flora and Fauna", async function () {
 
   before(async function () {
     
-    await deployments.fixture('token');
+    await deployments.fixture();
     const pair = 'link-usd'
     const pairHash = await ethers.utils.namehash(pair + ".data.eth"); 
     const {tokenOwner} = await getNamedAccounts();
