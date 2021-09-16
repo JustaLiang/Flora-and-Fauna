@@ -24,7 +24,8 @@ module.exports = async ({
         mockPairs.map(async (pair, idx) => {
             const pairHash = ethers.utils.namehash(pair + ".data.eth");
             console.log(idx, pair, pairHash);
-            const mockAgg = await deploy('MockV3Aggregator', {
+            const mockAgg = await deploy(`MockV3Aggregator_${pair}`, {
+                contract: 'MockV3Aggregator',
                 from: deployer,
                 args:[1, mockPrices[idx]*10**8]
             })
